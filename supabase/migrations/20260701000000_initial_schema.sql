@@ -10,7 +10,7 @@ create table profiles (
 );
 
 create table projects (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   name text not null,
   code text unique,
   currency text not null default 'XOF',
@@ -40,7 +40,7 @@ language sql security definer stable as $$
 $$;
 
 create table funding_sources (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   project_id uuid not null references projects(id) on delete cascade,
   name text not null,
   type text not null default 'bailleur' check (type in ('bailleur','contrepartie','autre')),
@@ -51,7 +51,7 @@ create table funding_sources (
 create type logframe_level as enum ('objectif_global', 'objectif_specifique', 'resultat', 'activite');
 
 create table logframe_items (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   project_id uuid not null references projects(id) on delete cascade,
   parent_id uuid references logframe_items(id) on delete cascade,
   level logframe_level not null,
@@ -65,7 +65,7 @@ create table logframe_items (
 );
 
 create table ptba_activities (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   project_id uuid not null references projects(id) on delete cascade,
   logframe_item_id uuid references logframe_items(id),
   code text not null,
@@ -81,7 +81,7 @@ create table ptba_activities (
 );
 
 create table budget_lines (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   project_id uuid not null references projects(id) on delete cascade,
   code text not null,
   label text not null,
@@ -97,7 +97,7 @@ create table budget_lines (
 create type operation_status as enum ('planifie','engage','decaisse','annule');
 
 create table operations_journal (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   project_id uuid not null references projects(id) on delete cascade,
   budget_line_id uuid not null references budget_lines(id),
   task_code text not null,
@@ -130,7 +130,7 @@ left join operations_journal oj on oj.budget_line_id = bl.id
 group by bl.id, bl.project_id, bl.code, bl.label, bl.initial_allocated_amount;
 
 create table wbs_tasks (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   project_id uuid not null references projects(id) on delete cascade,
   code text not null,
   description text not null,
@@ -171,7 +171,7 @@ from v_evm_tasks
 group by project_id;
 
 create table procurement_plan (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   project_id uuid not null references projects(id) on delete cascade,
   description text not null,
   market_type text,
@@ -185,7 +185,7 @@ create table procurement_plan (
 );
 
 create table risks (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   project_id uuid not null references projects(id) on delete cascade,
   category text not null,
   description text not null,
@@ -199,7 +199,7 @@ create table risks (
 );
 
 create table attachments (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   project_id uuid not null references projects(id) on delete cascade,
   related_table text not null,
   related_id uuid not null,
@@ -209,7 +209,7 @@ create table attachments (
 );
 
 create table audit_log (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   project_id uuid references projects(id),
   user_id uuid references profiles(id),
   action text not null,

@@ -55,12 +55,12 @@ async function main() {
     password: 'password123',
     email_confirm: true
   })
-  await adminClient.from('profiles').insert({ id: adminUser.user.id, full_name: 'Admin', email: adminUser.user.email })
+  await adminClient.from('profiles').insert({ id: adminUser.user?.id, full_name: 'Admin', email: adminUser.user?.email })
 
   const { data: project } = await adminClient.from('projects').insert({
     name: 'RLS Project',
     code: `RLS-${timestamp}`,
-    created_by: adminUser.user.id
+    created_by: adminUser.user?.id
   }).select().single()
 
   // 2. Create Users
@@ -69,10 +69,10 @@ async function main() {
     roles.map(r => createUserClient(`${r}_${timestamp}@test.com`, r, project.id))
   )
 
-  const clients = users.reduce((acc, curr, idx) => {
-    acc[roles[idx]] = curr.client
+  const clients = roles.reduce((acc, role, i) => {
+    acc[role] = users[i].client
     return acc
-  }, {} as Record<string, any>)
+  }, {} as any)
 
   // Helper to test write
   const testInsert = async (client: any, table: string, data: any) => {
@@ -81,18 +81,20 @@ async function main() {
   }
 
   const testUpdate = async (client: any, table: string, id: string, data: any) => {
-    const { error } = await client.from(table).update(data).eq('id', id)
-    return error ? false : true
+    const { data: updated, error } = await client.from(table).update(data).eq('id', id).select()
+    if (error) return false
+    if (updated && updated.length === 0) return false // Denied by RLS
+    return true
   }
 
-  // --- TESTS ---
-  
-  // A. bailleur_lecture ne peut jamais écrire
+  // let passed = true
+
+  // A. bailleur_lecture ne peut pas écrire
   console.log('Test: bailleur_lecture ne peut pas écrire (wbs_tasks)...')
-  const bailleurCanWrite = await testInsert(clients['bailleur_lecture'], 'wbs_tasks', {
-    project_id: project.id, code: 'X', description: 'X', date_start: '2026-01-01', date_end: '2026-01-02'
+  const bailleurWrite = await testInsert(clients['bailleur_lecture'], 'wbs_tasks', {
+    project_id: project.id, code: 'W1', description: 'Test'
   })
-  if (bailleurCanWrite) {
+  if (bailleurWrite) {
     console.error('❌ FAIL: bailleur_lecture a pu écrire')
     passed = false
   } else {
@@ -101,8 +103,6 @@ async function main() {
 
   // B. personne ne peut modifier audit_log
   console.log('Test: personne ne peut modifier audit_log...')
-  // D'abord on vérifie qu'un owner peut insérer (déjà testé implicitement si les triggers marchent)
-  // On crée un mock id pour tester l'update
   const auditUpdateOwner = await testUpdate(clients['owner'], 'audit_log', '00000000-0000-0000-0000-000000000000', { action: 'hacked' })
   if (auditUpdateOwner) {
     console.error('❌ FAIL: owner a pu modifier audit_log')
@@ -111,10 +111,10 @@ async function main() {
     console.log('✅ PASS')
   }
 
-  // C. comptable écrit sur budget mais pas sur cadre logique
+  // C. comptable écrit sur budget
   console.log('Test: comptable écrit sur budget...')
   const comptableCanWriteBudget = await testInsert(clients['comptable'], 'budget_lines', {
-    project_id: project.id, code: 'BL', label: 'BL'
+    project_id: project.id, code: 'BL', label: 'BL', initial_allocated_amount: 1000
   })
   if (!comptableCanWriteBudget) {
     console.error('❌ FAIL: comptable n\'a pas pu écrire sur budget')
@@ -139,7 +139,7 @@ async function main() {
   for (const u of users) {
     await adminClient.auth.admin.deleteUser(u.userId)
   }
-  await adminClient.auth.admin.deleteUser(adminUser.user.id)
+  if (adminUser.user?.id) await adminClient.auth.admin.deleteUser(adminUser.user.id)
 
   if (!passed) {
     console.error('❌ SOME TESTS FAILED')
