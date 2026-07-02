@@ -1,0 +1,321 @@
+<!DOCTYPE html><html class="light" lang="fr"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>PTBA — Plan de Travail et Budget Annuel - ProjetPilote</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#eff4ff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-bright": "#f8f9ff",
+                        "background": "#f8f9ff",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#533200",
+                        "on-primary-container": "#8aa4cf",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-secondary-fixed": "#002109",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#7ffc97",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-container": "#1e3a5f",
+                        "on-primary-fixed-variant": "#2d486d",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-container": "#e39100",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#005320",
+                        "on-primary-fixed": "#001c3b",
+                        "on-tertiary-fixed": "#2a1700",
+                        "tertiary": "#361f00",
+                        "primary-fixed": "#d5e3ff",
+                        "secondary": "#006e2d",
+                        "tertiary-fixed": "#ffddb8",
+                        "secondary-fixed-dim": "#62df7d",
+                        "on-surface": "#0b1c30",
+                        "inverse-surface": "#213145",
+                        "surface-variant": "#d3e4fe",
+                        "surface-tint": "#455f87",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#43474e",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "primary-fixed-dim": "#adc8f5",
+                        "primary": "#022448",
+                        "outline-variant": "#c4c6cf",
+                        "surface-dim": "#cbdbf5",
+                        "surface": "#f8f9ff",
+                        "outline": "#74777f",
+                        "on-background": "#0b1c30",
+                        "surface-container": "#e5eeff",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#7cf994",
+                        "surface-container-high": "#dce9ff",
+                        "on-secondary-container": "#007230",
+                        "error": "#ba1a1a",
+                        "inverse-primary": "#adc8f5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "8px",
+                        "container-margin": "40px",
+                        "xl": "32px",
+                        "unit": "4px",
+                        "gutter": "20px",
+                        "xs": "4px",
+                        "md": "16px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-md": ["13px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["18px", { "lineHeight": "26px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-lg antialiased">
+<!-- SideNavBar -->
+<nav class="hidden md:flex h-screen w-64 flex-col fixed left-0 top-0 bg-surface-container-low dark:bg-inverse-surface shadow-sm z-50 flex flex-col h-full border-r border-outline-variant dark:border-outline">
+<div class="p-lg flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-lg">
+                P
+            </div>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed">ProjetPilote</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Gouvernance &amp; Suivi</p>
+</div>
+</div>
+<div class="px-md mb-md">
+<button class="w-full bg-primary-container text-on-primary-container py-2 px-4 rounded-lg font-label-md text-label-md flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+                Nouveau Projet
+            </button>
+</div>
+<ul class="flex-1 flex flex-col gap-sm mt-4 font-body-md text-body-md text-primary dark:text-primary-fixed-dim">
+<li class="">
+<a class="flex items-center gap-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-lg mx-2 px-4 py-3 transition-colors transition-all duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined">assignment</span>
+                    Projets
+                </a>
+</li>
+<li class="">
+<a class="flex items-center gap-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-lg mx-2 px-4 py-3 transition-colors transition-all duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+                    Cadre Logique
+                </a>
+</li>
+<li class="">
+<a class="flex items-center gap-md bg-secondary-container dark:bg-on-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed font-semibold rounded-lg mx-2 px-4 py-3 transition-all duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+                    PTBA
+                </a>
+</li>
+<li class="">
+<a class="flex items-center gap-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-lg mx-2 px-4 py-3 transition-colors transition-all duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined">payments</span>
+                    Budget
+                </a>
+</li>
+<li class="">
+<a class="flex items-center gap-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-lg mx-2 px-4 py-3 transition-colors transition-all duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+                    EVM
+                </a>
+</li>
+<li class="">
+<a class="flex items-center gap-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-lg mx-2 px-4 py-3 transition-colors transition-all duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined">description</span>
+                    Rapports
+                </a>
+</li>
+</ul>
+<div class="mt-auto border-t border-outline-variant dark:border-outline pt-md pb-lg">
+<ul class="flex flex-col gap-sm font-body-md text-body-md text-primary dark:text-primary-fixed-dim">
+<li class="">
+<a class="flex items-center gap-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-lg mx-2 px-4 py-3 transition-colors transition-all duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined">settings</span>
+                        Paramètres
+                    </a>
+</li>
+<li class="">
+<a class="flex items-center gap-md text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-lg mx-2 px-4 py-3 transition-colors transition-all duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined">help</span>
+                        Aide
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="md:ml-64 flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="h-16 w-full sticky top-0 z-40 bg-surface dark:bg-background border-b border-outline-variant dark:border-outline flat no shadows flex items-center justify-between px-lg">
+<div class="flex items-center gap-md w-full max-w-xl">
+<h2 class="font-headline-md text-headline-md font-semibold text-on-background">PTBA — Plan de Travail et Budget Annuel</h2>
+</div>
+<div class="flex items-center gap-md">
+<button class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-high rounded-full p-2 transition-opacity duration-150 active:opacity-70">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-high rounded-full p-2 transition-opacity duration-150 active:opacity-70">
+<span class="material-symbols-outlined">history</span>
+</button>
+<button class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container dark:hover:bg-surface-container-high rounded-full p-2 transition-opacity duration-150 active:opacity-70">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<img alt="Profil Utilisateur" class="w-8 h-8 rounded-full object-cover ml-2 border border-outline-variant" data-alt="A professional headshot of a corporate user with a neutral background, high resolution, soft lighting, modern style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCI26vD2aT2c4tnwxEMFjM7WpKqe5UF_XONfUUh9VTTnJstUZZEcNCCoZueR6fpFtinbSGrStyD0_vOpFbI-x_bUsCToT3Qvf73I0NZrI1uaSr5jWnCC4L7tTnWgK9AwCLtEVmY4dWCNKKLVhkcOP1MogRcwlomS-F78pu0-uKrmorbuFlkHeLDHtGlXy0faOCBbl_hLQJBumFyq3kSF6Xw8vVIngnu6nGfvAZuI0SFiq3FgnZ1lO0GPA">
+</div>
+</header>
+<!-- Page Canvas -->
+<main class="flex-1 p-xl">
+<!-- Filters Bar -->
+<div class="bg-surface-container-lowest rounded-lg p-md shadow-[0px_1px_3px_rgba(0,0,0,0.05),0px_4px_6px_rgba(0,0,0,0.02)] mb-xl flex items-end gap-lg flex-wrap">
+<div class="flex flex-col gap-xs flex-1 min-w-[200px]">
+<label class="font-label-md text-label-md text-on-surface-variant">Année Fiscale</label>
+<select class="w-full bg-surface-bright border border-outline-variant rounded-md px-3 py-2 text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-colors">
+<option>2024</option>
+<option>2023</option>
+<option>2022</option>
+</select>
+</div>
+<div class="flex flex-col gap-xs flex-1 min-w-[200px]">
+<label class="font-label-md text-label-md text-on-surface-variant">Responsable</label>
+<select class="w-full bg-surface-bright border border-outline-variant rounded-md px-3 py-2 text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-colors">
+<option>Tous les responsables</option>
+<option>Jean Dupont</option>
+<option>Marie Curie</option>
+<option>Alan Turing</option>
+</select>
+</div>
+<div class="flex gap-md ml-auto">
+<button class="bg-surface-container-low text-primary-container py-2 px-4 rounded-md font-label-md text-label-md border border-outline-variant hover:bg-surface-container transition-colors">
+                        Exporter CSV
+                    </button>
+<button class="bg-primary-container text-on-primary-container py-2 px-4 rounded-md font-label-md text-label-md hover:opacity-90 transition-opacity flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                        Appliquer les filtres
+                    </button>
+</div>
+</div>
+<!-- Planning Table -->
+<div class="bg-surface-container-lowest rounded-lg shadow-[0px_1px_3px_rgba(0,0,0,0.05),0px_4px_6px_rgba(0,0,0,0.02)] overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="font-label-md text-label-md text-on-surface-variant p-md whitespace-nowrap">Code</th>
+<th class="font-label-md text-label-md text-on-surface-variant p-md w-1/3">Activité</th>
+<th class="font-label-md text-label-md text-on-surface-variant p-md whitespace-nowrap">Responsable</th>
+<th class="font-label-md text-label-md text-on-surface-variant p-md text-center">Q1</th>
+<th class="font-label-md text-label-md text-on-surface-variant p-md text-center">Q2</th>
+<th class="font-label-md text-label-md text-on-surface-variant p-md text-center">Q3</th>
+<th class="font-label-md text-label-md text-on-surface-variant p-md text-center">Q4</th>
+<th class="font-label-md text-label-md text-on-surface-variant p-md text-right whitespace-nowrap">Budget Prévu (FCFA)</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface">
+<!-- Row 1 -->
+<tr class="border-b border-outline-variant hover:bg-surface-bright transition-colors h-[48px]">
+<td class="p-md font-medium text-primary-container">1.1.1</td>
+<td class="p-md">Formation des équipes locales</td>
+<td class="p-md text-on-surface-variant">Jean Dupont</td>
+<td class="p-md text-center"><div class="w-3 h-3 rounded-full bg-primary-container mx-auto"></div></td>
+<td class="p-md text-center"><div class="w-3 h-3 rounded-full bg-primary-container mx-auto"></div></td>
+<td class="p-md text-center"></td>
+<td class="p-md text-center"></td>
+<td class="p-md text-right font-medium">45 000 FCFA</td>
+</tr>
+<!-- Row 2 -->
+<tr class="border-b border-outline-variant bg-[#F8FAFC] hover:bg-surface-bright transition-colors h-[48px]">
+<td class="p-md font-medium text-primary-container">1.1.2</td>
+<td class="p-md">Acquisition de matériel informatique</td>
+<td class="p-md text-on-surface-variant">Marie Curie</td>
+<td class="p-md text-center"><div class="w-3 h-3 rounded-full bg-primary-container mx-auto"></div></td>
+<td class="p-md text-center"></td>
+<td class="p-md text-center"></td>
+<td class="p-md text-center"></td>
+<td class="p-md text-right font-medium">120 000 FCFA</td>
+</tr>
+<!-- Row 3 -->
+<tr class="border-b border-outline-variant hover:bg-surface-bright transition-colors h-[48px]">
+<td class="p-md font-medium text-primary-container">1.2.1</td>
+<td class="p-md">Campagne de sensibilisation régionale</td>
+<td class="p-md text-on-surface-variant">Alan Turing</td>
+<td class="p-md text-center"></td>
+<td class="p-md text-center"><div class="w-3 h-3 rounded-full bg-primary-container mx-auto"></div></td>
+<td class="p-md text-center"><div class="w-3 h-3 rounded-full bg-primary-container mx-auto"></div></td>
+<td class="p-md text-center"><div class="w-3 h-3 rounded-full bg-primary-container mx-auto"></div></td>
+<td class="p-md text-right font-medium">85 000 FCFA</td>
+</tr>
+<!-- Row 4 -->
+<tr class="border-b border-outline-variant bg-[#F8FAFC] hover:bg-surface-bright transition-colors h-[48px]">
+<td class="p-md font-medium text-primary-container">2.1.1</td>
+<td class="p-md">Audit externe de mi-parcours</td>
+<td class="p-md text-on-surface-variant">Cabinet XYZ</td>
+<td class="p-md text-center"></td>
+<td class="p-md text-center"></td>
+<td class="p-md text-center"><div class="w-3 h-3 rounded-full bg-primary-container mx-auto"></div></td>
+<td class="p-md text-center"></td>
+<td class="p-md text-right font-medium">15 000 FCFA</td>
+</tr>
+<!-- Row 5 -->
+<tr class="border-b border-outline-variant hover:bg-surface-bright transition-colors h-[48px]">
+<td class="p-md font-medium text-primary-container">3.1.1</td>
+<td class="p-md">Déploiement plateforme digitale</td>
+<td class="p-md text-on-surface-variant">Jean Dupont</td>
+<td class="p-md text-center"><div class="w-3 h-3 rounded-full bg-primary-container mx-auto"></div></td>
+<td class="p-md text-center"><div class="w-3 h-3 rounded-full bg-primary-container mx-auto"></div></td>
+<td class="p-md text-center"><div class="w-3 h-3 rounded-full bg-primary-container mx-auto"></div></td>
+<td class="p-md text-center"><div class="w-3 h-3 rounded-full bg-primary-container mx-auto"></div></td>
+<td class="p-md text-right font-medium">210 000 FCFA</td>
+</tr>
+</tbody>
+<tfoot>
+<tr class="bg-surface-container-low border-t-2 border-outline h-[48px]">
+<td class="p-md font-headline-sm text-headline-sm font-semibold text-right" colspan="7">Total Général</td>
+<td class="p-md font-headline-sm text-headline-sm font-semibold text-right text-primary-container">475 000 FCFA</td>
+</tr>
+</tfoot>
+</table>
+</div>
+</div>
+</main>
+</div>
+
+
+</body></html>

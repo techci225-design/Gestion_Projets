@@ -3,6 +3,7 @@
 import { z } from 'zod'
 import { createClient } from '../supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireRole } from './auth.actions'
 
 const logframeSchema = z.object({
   project_id: z.string().uuid(),
@@ -20,6 +21,13 @@ export async function createLogframeItem(data: z.infer<typeof logframeSchema>) {
   const parsed = logframeSchema.safeParse(data)
   if (!parsed.success) return { error: 'Invalid data', details: parsed.error.issues }
 
+  // RBAC check: owner, chef_projet
+  try {
+    await requireRole(parsed.data.project_id, ['owner', 'chef_projet'])
+  } catch (error: any) {
+    return { error: error.message }
+  }
+
   const supabase = await createClient()
   const { data: result, error } = await supabase.from('logframe_items').insert(parsed.data).select().single()
 
@@ -27,3 +35,4 @@ export async function createLogframeItem(data: z.infer<typeof logframeSchema>) {
   revalidatePath(`/projects/${parsed.data.project_id}/cadre-logique`)
   return { data: result }
 }
+

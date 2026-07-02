@@ -3,6 +3,7 @@
 import { z } from 'zod'
 import { createClient } from '../supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireRole } from './auth.actions'
 
 const riskSchema = z.object({
   project_id: z.string().uuid(),
@@ -18,6 +19,12 @@ const riskSchema = z.object({
 export async function createRisk(data: z.infer<typeof riskSchema>) {
   const parsed = riskSchema.safeParse(data)
   if (!parsed.success) return { error: 'Invalid data', details: parsed.error.issues }
+
+  try {
+    await requireRole(parsed.data.project_id, ['owner', 'chef_projet', 'consultant'])
+  } catch (error: any) {
+    return { error: error.message }
+  }
 
   const supabase = await createClient()
   const { data: result, error } = await supabase.from('risks').insert(parsed.data).select().single()

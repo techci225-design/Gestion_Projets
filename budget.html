@@ -1,0 +1,334 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ProjetPilote - Budget</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed": "#002109",
+                      "surface-dim": "#cbdbf5",
+                      "tertiary": "#361f00",
+                      "background": "#f8f9ff",
+                      "on-primary": "#ffffff",
+                      "outline": "#74777f",
+                      "primary": "#022448",
+                      "on-tertiary-container": "#e39100",
+                      "on-background": "#0b1c30",
+                      "on-secondary-fixed-variant": "#005320",
+                      "secondary-fixed-dim": "#62df7d",
+                      "on-primary-fixed": "#001c3b",
+                      "on-error-container": "#93000a",
+                      "on-error": "#ffffff",
+                      "inverse-primary": "#adc8f5",
+                      "on-primary-fixed-variant": "#2d486d",
+                      "surface-container-high": "#dce9ff",
+                      "on-surface": "#0b1c30",
+                      "on-secondary": "#ffffff",
+                      "surface-container-highest": "#d3e4fe",
+                      "inverse-surface": "#213145",
+                      "surface-container-low": "#eff4ff",
+                      "outline-variant": "#c4c6cf",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "on-surface-variant": "#43474e",
+                      "error-container": "#ffdad6",
+                      "surface-container": "#e5eeff",
+                      "tertiary-fixed": "#ffddb8",
+                      "tertiary-container": "#533200",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-container": "#007230",
+                      "primary-container": "#1e3a5f",
+                      "secondary-fixed": "#7ffc97",
+                      "surface-tint": "#455f87",
+                      "error": "#ba1a1a",
+                      "primary-fixed": "#d5e3ff",
+                      "on-primary-container": "#8aa4cf",
+                      "surface-variant": "#d3e4fe",
+                      "secondary-container": "#7cf994",
+                      "inverse-on-surface": "#eaf1ff",
+                      "secondary": "#006e2d",
+                      "on-tertiary-fixed": "#2a1700",
+                      "primary-fixed-dim": "#adc8f5",
+                      "surface-container-lowest": "#ffffff",
+                      "surface": "#f8f9ff",
+                      "surface-bright": "#f8f9ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "sm": "8px",
+                      "gutter": "20px",
+                      "unit": "4px",
+                      "lg": "24px",
+                      "xl": "32px",
+                      "md": "16px",
+                      "container-margin": "40px"
+              },
+              "fontFamily": {
+                      "headline-sm": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "26px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "18px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "36px",
+                              {
+                                      "lineHeight": "44px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "13px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "22px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .elevation-1 {
+            box-shadow: 0px 1px 3px rgba(0,0,0,0.05), 0px 4px 6px rgba(0,0,0,0.02);
+        }
+        .zebra-row:nth-child(even) {
+            background-color: #F8FAFC;
+        }
+        /* Overriding emerald for progress based on prompt requirement */
+        .bg-emerald-green { background-color: #16A34A; }
+        .text-emerald-green { color: #16A34A; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="bg-surface-container-low dark:bg-inverse-surface shadow-sm h-screen w-64 flex flex-col fixed left-0 top-0 border-r border-outline-variant dark:border-outline z-50">
+<div class="p-lg flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold">
+                PP
+            </div>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary dark:text-primary-fixed inline-block mr-xs" style="opacity: 0;">ProjetPilote /</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant inline-block">Gouvernance &amp; Suivi</p>
+</div>
+</div>
+<div class="px-md mb-lg">
+<button class="w-full bg-primary-container text-on-primary-container font-label-md py-sm rounded-lg flex items-center justify-center gap-xs hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+                Nouveau Projet
+            </button>
+</div>
+<div class="flex-1 overflow-y-auto px-xs">
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-lg mx-2 px-4 py-3 transition-colors flex items-center gap-sm mb-xs" href="#">
+<span class="material-symbols-outlined">assignment</span>
+<span class="font-label-md">Projets</span>
+</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-lg mx-2 px-4 py-3 transition-colors flex items-center gap-sm mb-xs" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-label-md">Cadre Logique</span>
+</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-lg mx-2 px-4 py-3 transition-colors flex items-center gap-sm mb-xs" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md">PTBA</span>
+</a>
+<a class="bg-secondary-container dark:bg-on-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed font-semibold rounded-lg mx-2 px-4 py-3 transition-all duration-200 active:scale-95 flex items-center gap-sm mb-xs" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
+<span class="font-label-md">Budget</span>
+</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-lg mx-2 px-4 py-3 transition-colors flex items-center gap-sm mb-xs" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-label-md">EVM</span>
+</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-lg mx-2 px-4 py-3 transition-colors flex items-center gap-sm mb-xs" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label-md">Rapports</span>
+</a>
+</div>
+<div class="p-xs border-t border-outline-variant/30 mt-auto">
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-lg mx-2 px-4 py-3 transition-colors flex items-center gap-sm mb-xs" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md">Paramètres</span>
+</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-lg mx-2 px-4 py-3 transition-colors flex items-center gap-sm" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-md">Aide</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col ml-64 bg-background">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-background border-b border-outline-variant dark:border-outline h-16 w-full sticky top-0 z-40 flex items-center justify-between px-lg">
+<div class="flex items-center gap-md">
+<!-- Search placeholder -->
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-full py-2 pl-10 pr-4 font-body-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="Rechercher..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-sm text-on-surface-variant">
+<button class="hover:bg-surface-container dark:hover:bg-surface-container-high rounded-full p-2 transition-opacity duration-150 active:opacity-70">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="hover:bg-surface-container dark:hover:bg-surface-container-high rounded-full p-2 transition-opacity duration-150 active:opacity-70">
+<span class="material-symbols-outlined">history</span>
+</button>
+<button class="hover:bg-surface-container dark:hover:bg-surface-container-high rounded-full p-2 transition-opacity duration-150 active:opacity-70">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="ml-md h-8 w-8 rounded-full bg-primary-fixed overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="Professional portrait of a government official or project manager in a well-lit modern office setting, confident expression, high quality, corporate photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZMVheYTFNwDCQRDsGuW97qVBVcxmE7pno4smD1GeZKDLlzrpTbjzwRsoBMbCQnI8euRg-EHlUpD4fhOuSFtfghljoraglEV-PAMvdxuQRf1FruCW92ktuXXXHaZIYuEOKQFKWlTszIyxyKNycsRfxPI6Q4dMIVOMk02EV8nBxbbmh7TgmRAvhBQgTwfayLnB3EK2iAIitIAs2PQPyVgBLQd-oo7YLXeuYwB_5N0V5ZWxNRG4wo9WH2Q">
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 p-xl">
+<!-- Header Section -->
+<div class="mb-xl flex justify-between items-end">
+<div>
+<h2 class="font-display-lg text-display-lg text-primary mb-xs">Budget — Consommation par ligne budgétaire</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Suivi détaillé des allocations et décaissements du projet.</p>
+</div>
+<div class="flex gap-md">
+<button class="px-md py-2 bg-surface-container border border-outline-variant rounded-lg font-label-md text-primary flex items-center gap-sm hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-sm">download</span>
+                        Exporter
+                    </button>
+</div>
+</div>
+<!-- Top Summary Card -->
+<div class="bg-surface rounded-lg elevation-1 p-lg mb-xl">
+<div class="flex items-center justify-between mb-sm">
+<h3 class="font-headline-md text-headline-md text-primary">Taux de consommation total du projet</h3>
+<div class="font-display-lg text-display-lg text-primary">65% <span class="font-body-lg text-on-surface-variant">consommé</span></div>
+</div>
+<div class="w-full bg-surface-container-high h-4 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 65%;"></div>
+</div>
+<div class="flex justify-between mt-sm font-body-sm text-on-surface-variant"><span class="">0&nbsp;FCFA</span><span class="">Budget Total: 1&nbsp;500&nbsp;000&nbsp;FCFA</span></div>
+</div>
+<!-- Data Table Card -->
+<div class="bg-surface rounded-lg elevation-1 overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse font-body-sm">
+<thead class="bg-surface-container-low border-b border-outline-variant font-label-md text-on-surface-variant">
+<tr><th class="p-md font-medium">Ligne Budgétaire</th><th class="p-md font-medium text-right">Budget Initial (FCFA)</th><th class="p-md font-medium text-right">Cumul Engagé (FCFA)</th><th class="p-md font-medium text-right">Cumul Décaissé (FCFA)</th><th class="p-md font-medium text-right">Solde Disponible (FCFA)</th><th class="p-md font-medium w-48">Taux de Consommation (%)</th></tr>
+</thead>
+<tbody>
+<!-- Category 1 -->
+<tr class="bg-surface-container-highest border-b border-outline-variant/50 font-bold text-on-surface">
+<td class="p-md" colspan="6">1. Équipements</td>
+</tr>
+<tr class="zebra-row border-b border-outline-variant/30 h-10"><td class="p-md pl-xl">1.1 Matériel Informatique</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md"><div class="flex items-center gap-sm"><div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden"><div class="bg-error h-full" style="width: 93%;"></div></div><span class="font-mono text-xs w-8 text-right">93%</span></div></td></tr>
+<tr class="zebra-row border-b border-outline-variant/30 h-10"><td class="p-md pl-xl">1.2 Véhicules</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md"><div class="flex items-center gap-sm"><div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden"><div class="bg-emerald-green h-full" style="width: 25%;"></div></div><span class="font-mono text-xs w-8 text-right">25%</span></div></td></tr>
+<tr class="bg-surface-container-low border-b-2 border-outline-variant/50 font-medium h-10"><td class="p-md text-right">Sous-total Équipements</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono text-xs pr-lg">150&nbsp;000&nbsp;FCFA</td></tr>
+<!-- Category 2 -->
+<tr class="bg-surface-container-highest border-b border-outline-variant/50 font-bold text-on-surface mt-sm">
+<td class="p-md" colspan="6">2. Fonctionnement</td>
+</tr>
+<tr class="zebra-row border-b border-outline-variant/30 h-10"><td class="p-md pl-xl">2.1 Loyer Bureaux</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md"><div class="flex items-center gap-sm"><div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden"><div class="bg-on-tertiary-container h-full" style="width: 50%;"></div></div><span class="font-mono text-xs w-8 text-right">50%</span></div></td></tr>
+<tr class="zebra-row border-b border-outline-variant/30 h-10"><td class="p-md pl-xl">2.2 Fournitures</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md"><div class="flex items-center gap-sm"><div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden"><div class="bg-on-tertiary-container h-full" style="width: 83%;"></div></div><span class="font-mono text-xs w-8 text-right">83%</span></div></td></tr>
+<tr class="zebra-row border-b border-outline-variant/30 h-10"><td class="p-md pl-xl">2.3 Missions &amp; Déplacements</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono text-error">150&nbsp;000&nbsp;FCFA</td><td class="p-md"><div class="flex items-center gap-sm"><div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden"><div class="bg-error h-full" style="width: 100%;"></div></div><span class="font-mono text-xs w-8 text-right text-error">105%</span></div></td></tr>
+<tr class="bg-surface-container-low border-b-2 border-outline-variant/50 font-medium h-10"><td class="p-md text-right">Sous-total Fonctionnement</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono text-error">150&nbsp;000&nbsp;FCFA</td><td class="p-md text-right font-mono text-xs pr-lg">150&nbsp;000&nbsp;FCFA</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+</div>
+
+
+
+
+
+
+</body></html>

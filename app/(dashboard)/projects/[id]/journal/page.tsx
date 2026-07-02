@@ -9,20 +9,29 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
   const { id } = await params
   const supabase = await createClient()
 
-  const { data: journal, error } = await supabase
-    .from('operations_journal')
-    .select(`
-      *,
-      budget_lines(code, label)
-    `)
-    .eq('project_id', id)
-    .order('date_transaction', { ascending: false })
+  let journal = null
+  let queryError = null
 
-  if (error) {
+  try {
+    const res = await supabase
+      .from('operations_journal')
+      .select(`
+        *,
+        budget_lines(code, label)
+      `)
+      .eq('project_id', id)
+      .order('created_at', { ascending: false })
+    journal = res.data
+    queryError = res.error
+  } catch (err: any) {
+    queryError = { message: err.message || 'Erreur de connexion à la base de données' }
+  }
+
+  if (queryError) {
     return (
       <div className="p-6">
         <Header title="Journal des Opérations" />
-        <div className="mt-6 text-danger">Erreur de chargement: {error.message}</div>
+        <div className="mt-6 text-danger bg-red-50 border border-red-200 p-4 rounded-lg">Erreur de chargement: {queryError.message}</div>
       </div>
     )
   }
@@ -48,7 +57,7 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
       
       <div className="flex-1 p-6 overflow-y-auto">
         <div className="bg-surface border border-border rounded-lg shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-surface-dim border-b border-border text-[13px] font-semibold text-text-primary uppercase tracking-wider">
@@ -66,15 +75,15 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
                   journal.map((op) => (
                     <tr key={op.id} className="border-b border-border hover:bg-surface-dim/50 transition-colors">
                       <td className="p-4 text-text-secondary">
-                        {format(new Date(op.date_transaction), 'dd MMM yyyy', { locale: fr })}
+                        {format(new Date(op.created_at), 'dd MMM yyyy', { locale: fr })}
                       </td>
-                      <td className="p-4 text-text-primary font-medium">{op.description}</td>
+                      <td className="p-4 text-text-primary font-medium">{op.task_code} {op.phase_wbs ? `- ${op.phase_wbs}` : ''}</td>
                       <td className="p-4 text-text-secondary">
                         {op.budget_lines ? `${op.budget_lines.code} - ${op.budget_lines.label}` : '—'}
                       </td>
                       <td className="p-4 text-center">{getStatusBadge(op.status)}</td>
                       <td className="p-4 text-right text-text-secondary">
-                        {formatCurrency(op.amount_planned)}
+                        {formatCurrency(op.planned_cost)}
                       </td>
                       <td className="p-4 text-right text-text-secondary">
                         {formatCurrency(op.montant_engage)}
@@ -93,6 +102,40 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden flex flex-col p-4 gap-4 bg-background-main">
+            {journal && journal.length > 0 ? (
+              journal.map((op) => (
+                <div key={op.id} className="bg-surface p-4 rounded-xl shadow-sm border border-border">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h4 className="font-semibold text-on-surface">{op.task_code} {op.phase_wbs ? `- ${op.phase_wbs}` : ''}</h4>
+                      <p className="text-xs text-on-surface-variant">{format(new Date(op.created_at), 'dd MMM yyyy', { locale: fr })}</p>
+                    </div>
+                    {getStatusBadge(op.status)}
+                  </div>
+                  <div className="text-sm text-on-surface-variant mb-4 pb-4 border-b border-border">
+                    Ligne : {op.budget_lines ? `${op.budget_lines.code}` : '—'}
+                  </div>
+                  <div className="flex justify-between items-end text-sm">
+                    <div>
+                      <p className="text-on-surface-variant text-xs">Engagé</p>
+                      <p className="font-medium">{formatCurrency(op.montant_engage)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-on-surface-variant text-xs">Décaissé</p>
+                      <p className="font-bold text-primary">{formatCurrency(op.montant_decaisse)}</p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-8 text-center text-on-surface-variant bg-surface rounded-xl">
+                Aucune opération enregistrée.
+              </div>
+            )}
           </div>
         </div>
       </div>

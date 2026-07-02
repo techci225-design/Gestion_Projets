@@ -1,0 +1,480 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ProjetPilote - Journal des opérations</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-error-container": "#93000a",
+                      "surface-container-highest": "#d3e4fe",
+                      "primary-container": "#1e3a5f",
+                      "on-primary-fixed-variant": "#2d486d",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary-container": "#e39100",
+                      "on-secondary-fixed-variant": "#005320",
+                      "error-container": "#ffdad6",
+                      "tertiary-container": "#533200",
+                      "surface-bright": "#f8f9ff",
+                      "background": "#f8f9ff",
+                      "surface-container-low": "#eff4ff",
+                      "inverse-on-surface": "#eaf1ff",
+                      "secondary-fixed": "#7ffc97",
+                      "on-error": "#ffffff",
+                      "on-primary-container": "#8aa4cf",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "on-secondary-fixed": "#002109",
+                      "on-background": "#0b1c30",
+                      "surface": "#f8f9ff",
+                      "outline": "#74777f",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "on-surface-variant": "#43474e",
+                      "surface-dim": "#cbdbf5",
+                      "primary-fixed-dim": "#adc8f5",
+                      "primary": "#022448",
+                      "outline-variant": "#c4c6cf",
+                      "surface-container-high": "#dce9ff",
+                      "on-secondary-container": "#007230",
+                      "error": "#ba1a1a",
+                      "secondary-container": "#7cf994",
+                      "inverse-primary": "#adc8f5",
+                      "surface-container": "#e5eeff",
+                      "on-primary": "#ffffff",
+                      "on-tertiary-fixed": "#2a1700",
+                      "on-primary-fixed": "#001c3b",
+                      "primary-fixed": "#d5e3ff",
+                      "tertiary": "#361f00",
+                      "surface-variant": "#d3e4fe",
+                      "surface-tint": "#455f87",
+                      "on-tertiary": "#ffffff",
+                      "tertiary-fixed": "#ffddb8",
+                      "secondary-fixed-dim": "#62df7d",
+                      "on-surface": "#0b1c30",
+                      "inverse-surface": "#213145",
+                      "secondary": "#006e2d"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "container-margin": "40px",
+                      "sm": "8px",
+                      "xs": "4px",
+                      "md": "16px",
+                      "lg": "24px",
+                      "xl": "32px",
+                      "unit": "4px",
+                      "gutter": "20px"
+              },
+              "fontFamily": {
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "18px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-md": [
+                              "13px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-lg": [
+                              "36px",
+                              {
+                                      "lineHeight": "44px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "26px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "22px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c4c6cf;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #74777f;
+        }
+        
+        .number-font {
+            font-variant-numeric: tabular-nums;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md h-screen overflow-hidden flex">
+<!-- SideNavBar -->
+<nav class="h-screen w-64 fixed left-0 top-0 bg-surface-container-lowest shadow-sm flex flex-col py-lg px-md z-20">
+<!-- Brand Header -->
+<div class="flex items-center gap-sm mb-xl px-sm">
+<img alt="ProjetPilote Institutional Logo" class="w-8 h-8 rounded" data-alt="A minimalist, highly professional logo for an institutional project management tool, using deep navy blue and crisp white. The logo conveys stability and oversight. Clean lines, vector style, white background, no gradients." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKG3-F__nlHZJauE3EN0xJlbX_KBzimxGM6MP0iljsW0z0E6jQDY_7iyhzV1l_cECVA8bVFcTtiqwNYIxQ_J5pcDYmbtaSws99ftxNiEhXt05YYx33NrVUZCQGorFUQKI8hxol616-_2c8E5EvGPQbxowTBZvFkR8JuK7zxmx4pHuMce0U5HGVN3k9MNxrd0ZJPVCP8K4xFfx2Aft_CiDbE0xKEwVNn7NTD2etjtWKYv5zidY6yFuzgw">
+<div>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">ProjetPilote</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Gouvernance &amp; Suivi</p>
+</div>
+</div>
+<!-- Main Nav -->
+<ul class="flex flex-col gap-xs flex-1">
+<li class="">
+<a class="flex items-center gap-md px-md py-sm rounded-md text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-label-md text-label-md">Cadre Logique</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-md px-md py-sm rounded-md text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md">PTBA</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-md px-md py-sm rounded-md text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Budget</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-md px-md py-sm rounded-md text-primary font-bold border-r-4 border-primary bg-surface-container-low opacity-90 transition-opacity" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">history_edu</span>
+<span class="font-label-md text-label-md">Journal des opérations</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-md px-md py-sm rounded-md text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">trending_up</span>
+<span class="font-label-md text-label-md">EVM</span>
+</a>
+</li>
+</ul>
+<!-- Footer Nav -->
+<div class="mt-auto border-t border-surface-variant pt-md">
+<ul class="flex flex-col gap-xs">
+<li class="">
+<a class="flex items-center gap-md px-md py-sm rounded-md text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="font-label-md text-label-md">Mon Profil</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-md px-md py-sm rounded-md text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Paramètres</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 ml-64 flex flex-col relative h-full">
+<!-- TopNavBar -->
+<header class="h-16 flex justify-between items-center px-xl bg-surface z-10 w-full shrink-0">
+<h2 class="font-headline-lg text-headline-lg text-primary tracking-tight">Journal des opérations</h2>
+<div class="flex items-center gap-md">
+<div class="flex items-center text-on-surface-variant gap-sm mr-md">
+<button class="p-xs hover:text-primary transition-colors rounded-full hover:bg-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-xs hover:text-primary transition-colors rounded-full hover:bg-surface-variant">
+<span class="material-symbols-outlined">history</span>
+</button>
+<button class="p-xs hover:text-primary transition-colors rounded-full hover:bg-surface-variant">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+<button class="bg-primary-container text-on-primary font-label-md text-label-md py-sm px-lg rounded-md hover:bg-on-primary-fixed-variant transition-colors flex items-center gap-xs shadow-sm" onclick="document.getElementById('drawer').classList.remove('translate-x-full'); document.getElementById('drawer-backdrop').classList.remove('hidden');">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    Nouvelle opération
+                </button>
+<img alt="User Profile" class="w-8 h-8 rounded-full ml-sm object-cover border border-outline-variant" data-alt="A professional headshot of a user in an institutional setting, clean background, good lighting, conveying trust and competence." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAm1DnNjc2bXmAW8uoO6ntFCoEiWUAMjyjaLviBUavlQRIz_g3ZDnEIv5fIrce0BeoXi2uRrAiEzpV8M-QtYwhPmgbUB_ptf_8AkhkLqFon2bzJAcbXyKx6DZPa0VBa9KHVd-PVDSMNvBqwpbe1zdGVij-ZdUzBx_p_bR87n2UrZRQClkK7JG4XrWw3inqDmS29ivxUaoO29j3P5AQK7bQ8O2sbR1yLNONPAiNcHbLclMAxTGF4nV49zA">
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 overflow-auto custom-scrollbar p-xl bg-background">
+<!-- Table Container -->
+<div class="bg-surface-container-lowest rounded-lg shadow-[0px_1px_3px_rgba(0,0,0,0.05),_0px_4px_6px_rgba(0,0,0,0.02)] overflow-hidden">
+<div class="overflow-x-auto custom-scrollbar">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface border-b border-outline-variant">
+<th class="font-label-md text-label-md text-on-surface-variant py-sm px-md font-medium whitespace-nowrap">ID Tâche</th>
+<th class="font-label-md text-label-md text-on-surface-variant py-sm px-md font-medium">Ligne Budgétaire</th>
+<th class="font-label-md text-label-md text-on-surface-variant py-sm px-md font-medium">Statut</th>
+<th class="font-label-md text-label-md text-on-surface-variant py-sm px-md font-medium text-right">Coût Prévu (FCFA)</th>
+<th class="font-label-md text-label-md text-on-surface-variant py-sm px-md font-medium text-right">Coût Réel (FCFA)</th>
+<th class="font-label-md text-label-md text-on-surface-variant py-sm px-md font-medium text-right">Reste à Engager (FCFA)</th>
+<th class="font-label-md text-label-md text-on-surface-variant py-sm px-md font-medium text-right">Montant Engagé (FCFA)</th>
+<th class="font-label-md text-label-md text-on-surface-variant py-sm px-md font-medium text-right">Montant Décaissé (FCFA)</th>
+<th class="font-label-md text-label-md text-on-surface-variant py-sm px-md font-medium text-right">Écart (FCFA)</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm text-on-surface">
+<!-- Row 1: Planifié -->
+<tr class="border-b border-outline-variant/30 hover:bg-surface-bright transition-colors h-[40px]">
+<td class="py-xs px-md text-primary font-medium">T-1042</td>
+<td class="py-xs px-md truncate max-w-[200px]" title="Consultation technique">Consultation technique</td>
+<td class="py-xs px-md">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-surface-variant text-on-surface-variant">
+                                        Planifié
+                                    </span>
+</td>
+<td class="py-xs px-md text-right number-font">15 000 FCFA</td>
+<td class="py-xs px-md text-right number-font text-outline">-</td>
+<td class="py-xs px-md text-right number-font">15 000 FCFA</td>
+<td class="py-xs px-md text-right number-font text-outline">-</td>
+<td class="py-xs px-md text-right number-font text-outline">-</td>
+<td class="py-xs px-md text-right number-font text-outline">-</td>
+</tr>
+<!-- Row 2: Engagé -->
+<tr class="bg-[#F8FAFC] border-b border-outline-variant/30 hover:bg-surface-bright transition-colors h-[40px]">
+<td class="py-xs px-md text-primary font-medium">T-1038</td>
+<td class="py-xs px-md truncate max-w-[200px]" title="Acquisition matériel informatique">Acquisition matériel inf...</td>
+<td class="py-xs px-md">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-primary-fixed text-on-primary-fixed">
+                                        Engagé
+                                    </span>
+</td>
+<td class="py-xs px-md text-right number-font">45 000 FCFA</td>
+<td class="py-xs px-md text-right number-font text-outline">-</td>
+<td class="py-xs px-md text-right number-font">5 000 FCFA</td>
+<td class="py-xs px-md text-right number-font">45 000 FCFA</td>
+<td class="py-xs px-md text-right number-font text-outline">-</td>
+<td class="py-xs px-md text-right number-font text-outline">-</td>
+</tr>
+<!-- Row 3: Décaissé (Positive écart) -->
+<tr class="border-b border-outline-variant/30 hover:bg-surface-bright transition-colors h-[40px]">
+<td class="py-xs px-md text-primary font-medium">T-1021</td>
+<td class="py-xs px-md truncate max-w-[200px]" title="Formation des cadres locaux">Formation des cadres...</td>
+<td class="py-xs px-md">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-secondary-container text-on-secondary-container">
+                                        Décaissé
+                                    </span>
+</td>
+<td class="py-xs px-md text-right number-font">30 000 FCFA</td>
+<td class="py-xs px-md text-right number-font">28 500 FCFA</td>
+<td class="py-xs px-md text-right number-font">0 FCFA</td>
+<td class="py-xs px-md text-right number-font">28 500 FCFA</td>
+<td class="py-xs px-md text-right number-font">28 500 FCFA</td>
+<td class="py-xs px-md text-right number-font text-secondary font-medium">+1 500 FCFA</td>
+</tr>
+<!-- Row 4: Décaissé (Negative écart) -->
+<tr class="bg-[#F8FAFC] border-b border-outline-variant/30 hover:bg-surface-bright transition-colors h-[40px]">
+<td class="py-xs px-md text-primary font-medium">T-1015</td>
+<td class="py-xs px-md truncate max-w-[200px]" title="Étude d'impact environnemental">Étude d'impact envir...</td>
+<td class="py-xs px-md">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-secondary-container text-on-secondary-container">
+                                        Décaissé
+                                    </span>
+</td>
+<td class="py-xs px-md text-right number-font">80 000 FCFA</td>
+<td class="py-xs px-md text-right number-font">85 200 FCFA</td>
+<td class="py-xs px-md text-right number-font">0 FCFA</td>
+<td class="py-xs px-md text-right number-font">85 200 FCFA</td>
+<td class="py-xs px-md text-right number-font">85 200 FCFA</td>
+<td class="py-xs px-md text-right number-font text-error font-medium">-5 200 FCFA</td>
+</tr>
+<!-- Row 5: Annulé -->
+<tr class="border-b border-outline-variant/30 hover:bg-surface-bright transition-colors h-[40px] opacity-70">
+<td class="py-xs px-md text-primary font-medium line-through">T-1055</td>
+<td class="py-xs px-md truncate max-w-[200px] line-through" title="Déplacement international">Déplacement internati...</td>
+<td class="py-xs px-md">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-error-container text-on-error-container line-through">
+                                        Annulé
+                                    </span>
+</td>
+<td class="py-xs px-md text-right number-font line-through">12 000 FCFA</td>
+<td class="py-xs px-md text-right number-font line-through">0 FCFA</td>
+<td class="py-xs px-md text-right number-font line-through">0 FCFA</td>
+<td class="py-xs px-md text-right number-font line-through">0 FCFA</td>
+<td class="py-xs px-md text-right number-font line-through">0 FCFA</td>
+<td class="py-xs px-md text-right number-font text-outline line-through">-</td>
+</tr>
+<!-- Row 6: Engagé -->
+<tr class="bg-[#F8FAFC] hover:bg-surface-bright transition-colors h-[40px]">
+<td class="py-xs px-md text-primary font-medium">T-1062</td>
+<td class="py-xs px-md truncate max-w-[200px]" title="Audit annuel de projet">Audit annuel de proj...</td>
+<td class="py-xs px-md">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-primary-fixed text-on-primary-fixed">
+                                        Engagé
+                                    </span>
+</td>
+<td class="py-xs px-md text-right number-font">25 000 FCFA</td>
+<td class="py-xs px-md text-right number-font text-outline">-</td>
+<td class="py-xs px-md text-right number-font">0 FCFA</td>
+<td class="py-xs px-md text-right number-font">25 000 FCFA</td>
+<td class="py-xs px-md text-right number-font text-outline">-</td>
+<td class="py-xs px-md text-right number-font text-outline">-</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+</div>
+<!-- Drawer Backdrop -->
+<div class="fixed inset-0 bg-on-background/20 backdrop-blur-sm z-30 hidden transition-opacity" id="drawer-backdrop" onclick="document.getElementById('drawer').classList.add('translate-x-full'); this.classList.add('hidden');"></div>
+<!-- Side Drawer -->
+<div class="fixed top-0 right-0 h-full w-[400px] bg-surface-container-lowest shadow-[-4px_0_24px_rgba(0,0,0,0.05)] z-40 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col" id="drawer">
+<!-- Drawer Header -->
+<div class="px-lg py-md border-b border-outline-variant flex justify-between items-center bg-surface shrink-0">
+<h3 class="font-headline-md text-headline-md text-primary">Nouvelle opération</h3>
+<button class="text-on-surface-variant hover:text-on-background p-xs rounded-full hover:bg-surface-variant transition-colors" onclick="document.getElementById('drawer').classList.add('translate-x-full'); document.getElementById('drawer-backdrop').classList.add('hidden');">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Drawer Body -->
+<div class="p-lg flex-1 overflow-y-auto custom-scrollbar">
+<form class="flex flex-col gap-lg">
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface">Tâche</label>
+<input class="w-full border border-[#cbd5e1] rounded-md px-md py-sm font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-outline-variant transition-colors" placeholder="Ex: T-1063 - Description..." type="text">
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface">Ligne budgétaire</label>
+<select class="w-full border border-[#cbd5e1] rounded-md px-md py-sm font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary appearance-none bg-surface-container-lowest">
+<option disabled="" selected="" value="">Sélectionner une ligne...</option>
+<option value="1">1.1 Personnel</option>
+<option value="2">1.2 Équipement</option>
+<option value="3">2.1 Formations</option>
+<option value="4">3.1 Frais de gestion</option>
+</select>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-md text-label-md text-on-surface">Statut</label>
+<select class="w-full border border-[#cbd5e1] rounded-md px-md py-sm font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary appearance-none bg-surface-container-lowest">
+<option value="planifie">Planifié</option>
+<option value="engage">Engagé</option>
+<option value="decaisse">Décaissé</option>
+<option value="annule">Annulé</option>
+</select>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<div class="flex flex-col gap-xs relative">
+<label class="font-label-md text-label-md text-on-surface">Coût prévu</label>
+<div class="relative">
+<input class="w-full border border-[#cbd5e1] rounded-md pl-md pr-lg py-sm font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary number-font text-right" placeholder="0" type="text">
+<span class="absolute right-md top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md">FCFA</span>
+</div>
+</div>
+<div class="flex flex-col gap-xs relative">
+<label class="font-label-md text-label-md text-on-surface">Coût réel</label>
+<div class="relative">
+<input class="w-full border border-[#cbd5e1] rounded-md pl-md pr-lg py-sm font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary number-font text-right" placeholder="0" type="text">
+<span class="absolute right-md top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md">FCFA</span>
+</div>
+</div>
+</div>
+</form>
+</div>
+<!-- Drawer Footer -->
+<div class="p-lg border-t border-outline-variant bg-surface flex justify-end gap-md shrink-0">
+<button class="px-lg py-sm rounded-md font-label-md text-label-md text-primary bg-[#f1f5f9] hover:bg-[#e2e8f0] transition-colors" onclick="document.getElementById('drawer').classList.add('translate-x-full'); document.getElementById('drawer-backdrop').classList.add('hidden');">
+                Annuler
+            </button>
+<button class="px-lg py-sm rounded-md font-label-md text-label-md text-on-primary bg-primary-container hover:bg-on-primary-fixed-variant transition-colors shadow-sm">
+                Enregistrer
+            </button>
+</div>
+</div>
+
+
+
+
+
+
+</body></html>

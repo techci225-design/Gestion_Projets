@@ -1,0 +1,458 @@
+<!DOCTYPE html><html class="light" lang="fr"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Membres du projet - GovTrack Project Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#002109",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#ffddb8",
+                        "background": "#f8f9ff",
+                        "primary-fixed-dim": "#adc8f5",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#f8f9ff",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary": "#022448",
+                        "primary-container": "#1e3a5f",
+                        "on-tertiary-fixed": "#2a1700",
+                        "secondary-fixed-dim": "#62df7d",
+                        "surface-bright": "#f8f9ff",
+                        "on-primary-fixed-variant": "#2d486d",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#7ffc97",
+                        "surface-tint": "#455f87",
+                        "inverse-primary": "#adc8f5",
+                        "on-surface": "#0b1c30",
+                        "on-surface-variant": "#43474e",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#0b1c30",
+                        "on-primary-fixed": "#001c3b",
+                        "surface-container": "#e5eeff",
+                        "surface-container-high": "#dce9ff",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#d3e4fe",
+                        "on-tertiary-container": "#e39100",
+                        "inverse-surface": "#213145",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "tertiary": "#361f00",
+                        "on-primary-container": "#8aa4cf",
+                        "secondary-container": "#7cf994",
+                        "outline-variant": "#c4c6cf",
+                        "surface-dim": "#cbdbf5",
+                        "tertiary-container": "#533200",
+                        "on-secondary-container": "#007230",
+                        "surface-container-highest": "#d3e4fe",
+                        "primary-fixed": "#d5e3ff",
+                        "on-secondary-fixed-variant": "#005320",
+                        "secondary": "#006e2d",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container-low": "#eff4ff",
+                        "outline": "#74777f",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "xs": "4px",
+                        "gutter": "20px",
+                        "container-margin": "40px",
+                        "sm": "8px",
+                        "xl": "32px",
+                        "lg": "24px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-sm": ["18px", { "lineHeight": "26px", "fontWeight": "600" }],
+                        "headline-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["13px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .zebra-stripe:nth-child(even) { background-color: #F8FAFC; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface-container-low dark:bg-inverse-surface border-r border-outline-variant py-md z-50 shadow-[0px_1px_3px_rgba(0,0,0,0.05)]">
+<div class="px-md mb-xl flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-headline-sm font-bold">
+<span class="material-symbols-outlined text-white" data-icon="account_balance">account_balance</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm text-primary dark:text-primary-fixed-dim font-bold">ProjetPilote</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Gouvernance &amp; Suivi</p>
+</div>
+</div>
+<div class="px-md mb-md">
+<button class="w-full bg-primary-container text-white rounded-md py-sm px-md flex items-center justify-center gap-xs font-label-md hover:bg-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                Nouveau Projet
+            </button>
+</div>
+<ul class="flex-1 overflow-y-auto px-sm space-y-1">
+<li class="">
+<a class="flex items-center gap-md px-md py-sm rounded-md font-label-md text-label-md text-primary dark:text-primary-fixed-dim font-bold border-l-4 border-primary dark:border-primary-fixed-dim bg-surface-container dark:bg-primary-container active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="folder_managed">folder_managed</span>
+                    Projets
+                </a>
+</li>
+<li class="">
+<a class="flex items-center gap-md px-md py-sm rounded-md font-label-md text-label-md text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                    Tableaux EVM
+                </a>
+</li>
+<li class="">
+<a class="flex items-center gap-md px-md py-sm rounded-md font-label-md text-label-md text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+                    Cadre Logique
+                </a>
+</li>
+<li class="">
+<a class="flex items-center gap-md px-md py-sm rounded-md font-label-md text-label-md text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+                    PTBA
+                </a>
+</li>
+<li class="">
+<a class="flex items-center gap-md px-md py-sm rounded-md font-label-md text-label-md text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+                    Budgets
+                </a>
+</li>
+<li class="">
+<a class="flex items-center gap-md px-md py-sm rounded-md font-label-md text-label-md text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="history_edu">history_edu</span>
+                    Opérations
+                </a>
+</li>
+<li class="">
+<a class="flex items-center gap-md px-md py-sm rounded-md font-label-md text-label-md text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="shopping_cart">shopping_cart</span>
+                    Passation Marchés
+                </a>
+</li>
+<li class="">
+<a class="flex items-center gap-md px-md py-sm rounded-md font-label-md text-label-md text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+                    Risques
+                </a>
+</li>
+</ul>
+<div class="px-sm mt-auto pt-md border-t border-outline-variant">
+<ul class="space-y-1">
+<li class="">
+<a class="flex items-center gap-md px-md py-sm rounded-md font-label-md text-label-md text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                        Paramètres
+                    </a>
+</li>
+<li class="">
+<a class="flex items-center gap-md px-md py-sm rounded-md font-label-md text-label-md text-on-surface-variant dark:text-outline hover:text-primary dark:hover:text-primary-fixed-dim hover:bg-surface-container-high dark:hover:bg-surface-container transition-all active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                        Déconnexion
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col md:ml-64 w-full">
+<!-- TopNavBar -->
+<header class="w-full h-16 bg-surface dark:bg-surface-dim shadow-sm flex justify-between items-center px-lg sticky top-0 z-40">
+<div class="flex items-center gap-md">
+<div class="font-headline-md text-headline-md text-primary dark:text-primary-fixed-dim font-bold">ProjetPilote</div><p class="font-body-sm text-body-sm text-on-surface-variant ml-md hidden sm:block">Gouvernance &amp; Suivi</p>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm" data-icon="search">search</span>
+<input class="pl-xl pr-md py-sm rounded-full border border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-1 focus:ring-primary text-body-sm font-body-sm w-64 transition-colors" placeholder="Rechercher..." type="text">
+</div>
+<button class="p-sm rounded-full hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors text-on-surface-variant cursor-pointer">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-sm rounded-full hover:bg-surface-container-low dark:hover:bg-surface-container-high transition-colors text-on-surface-variant cursor-pointer">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+</button>
+<button class="text-primary font-label-md text-label-md hover:bg-surface-container-low px-sm py-xs rounded-md transition-colors">
+                    Support
+                </button>
+<div class="w-8 h-8 rounded-full bg-surface-variant border border-outline-variant overflow-hidden cursor-pointer">
+<img alt="User profile photo" class="w-full h-full object-cover" data-alt="A professional headshot of a government official in a bright modern office setting, wearing business attire, soft natural lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHS0g69hZytSwZxA5FNEZrjdSKiDooCqgnNomCwpdr6qnSBObQ_fGq3KVSAcxyvClXH8RbGPaOC_5iquw3q-70_07BhV0sKYFhUHiazeQTukh5rLgPXc5EMN3-thJJ3OzwOs4WBbxfPW65stsJxzUJhKfysohEGLrIKKSUSf9D6WrDhc3vZ0VyWWAo5SiMCLY4tchPpqMYZ2U2OW0oTDAzkRnX918z5W_Q3kES2x-BeYCkn4Mn1TRqeA">
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 p-lg max-w-[1440px] mx-auto w-full">
+<!-- Page Header -->
+<div class="flex justify-between items-center mb-xl mt-md">
+<div>
+<div class="flex items-center gap-sm text-body-sm font-body-sm text-on-surface-variant mb-xs">
+<a class="hover:text-primary transition-colors" href="#">Projets</a>
+<span class="material-symbols-outlined text-[16px]" data-icon="chevron_right">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">ProjetPilote</a>
+<span class="material-symbols-outlined text-[16px]" data-icon="chevron_right">chevron_right</span>
+<span class="text-on-surface">Membres</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Membres du projet</h2>
+</div>
+<button class="bg-primary-container text-white px-lg py-sm rounded-md font-label-md text-label-md flex items-center gap-xs hover:bg-[#152a45] transition-colors shadow-sm" id="btn-invite-modal">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+                    Inviter un membre
+                </button>
+</div>
+<!-- Members Data Table Card -->
+<div class="bg-surface-container-lowest rounded-lg shadow-[0px_1px_3px_rgba(0,0,0,0.05),_0px_4px_6px_rgba(0,0,0,0.02)] overflow-hidden">
+<!-- Table Controls -->
+<div class="p-md border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]" data-icon="search">search</span>
+<input class="pl-xl pr-md py-[6px] rounded-md border border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-1 focus:ring-primary text-body-sm font-body-sm w-72 transition-colors" placeholder="Filtrer les membres..." type="text">
+</div>
+<div class="flex gap-sm">
+<button class="p-xs rounded-md border border-outline-variant text-on-surface-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="filter_list">filter_list</span>
+</button>
+</div>
+</div>
+<!-- Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant text-on-surface-variant font-label-md text-label-md">
+<th class="p-md font-medium">Avatar &amp; Nom</th>
+<th class="p-md font-medium">Email</th>
+<th class="p-md font-medium">Rôle</th>
+<th class="p-md font-medium text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface">
+<!-- Row 1: Owner -->
+<tr class="border-b border-outline-variant zebra-stripe h-[48px] hover:bg-surface-container-low transition-colors">
+<td class="p-md">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded-full bg-primary-container text-white flex items-center justify-center font-label-md text-label-md">JD</div>
+<span class="font-medium">Jean Dupont</span>
+</div>
+</td>
+<td class="p-md text-on-surface-variant">jean.dupont@gov.tg</td>
+<td class="p-md">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[12px] font-medium bg-[#1e3a5f]/10 text-[#1e3a5f]">
+                                        Propriétaire
+                                    </span>
+</td>
+<td class="p-md text-right relative">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1 rounded-md hover:bg-surface-container">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Chef de projet -->
+<tr class="border-b border-outline-variant zebra-stripe h-[48px] hover:bg-surface-container-low transition-colors">
+<td class="p-md">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded-full overflow-hidden">
+<img alt="Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a diverse project manager in an airy bright office, natural lighting, looking confident." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCC3aO-t12s8C7tkVIB9bPl4ndbUiwJrIVXyTYxMD9lQBJ3kuQzHboA4CrYuseivjgl5ph7VCgGzrK_Ibz4IVDve8nuceKwIlEk2lqDoBhFpdV4otSp4xxEc7CMX6UoAVVUmSDvoi1wPtCNublGfHjRLrPYkvKo0gnBdJzfn5TZpKrUgruW5OxIi7l79r2pfn2rPuurp_TBQxs0BNHa_hXPRtc9psk-UdVU2AlW7CHMuUqAhKmc9XNDXQ">
+</div>
+<span class="font-medium">Marie Curie</span>
+</div>
+</td>
+<td class="p-md text-on-surface-variant">m.curie@projetpilote.org</td>
+<td class="p-md">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[12px] font-medium bg-blue-100 text-blue-800">
+                                        Chef de projet
+                                    </span>
+</td>
+<td class="p-md text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1 rounded-md hover:bg-surface-container">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Comptable -->
+<tr class="border-b border-outline-variant zebra-stripe h-[48px] hover:bg-surface-container-low transition-colors">
+<td class="p-md">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded-full bg-purple-100 text-purple-800 flex items-center justify-center font-label-md text-label-md">AL</div>
+<span class="font-medium">Albert Lemaire</span>
+</div>
+</td>
+<td class="p-md text-on-surface-variant">finance@projetpilote.org</td>
+<td class="p-md">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[12px] font-medium bg-purple-100 text-purple-800" style="background-color: rgb(124, 58, 237); color: white;">
+                                        Comptable
+                                    </span>
+</td>
+<td class="p-md text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1 rounded-md hover:bg-surface-container">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Bailleur -->
+<tr class="border-b border-outline-variant zebra-stripe h-[48px] hover:bg-surface-container-low transition-colors">
+<td class="p-md">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center font-label-md text-label-md">BM</div>
+<span class="font-medium">Banque Mondiale</span>
+</div>
+</td>
+<td class="p-md text-on-surface-variant">oversight@worldbank.org</td>
+<td class="p-md">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[12px] font-medium bg-gray-100 text-gray-700">
+                                        Bailleur (lecture seule)
+                                    </span>
+</td>
+<td class="p-md text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1 rounded-md hover:bg-surface-container">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: Consultant -->
+<tr class="border-b border-outline-variant zebra-stripe h-[48px] hover:bg-surface-container-low transition-colors">
+<td class="p-md">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded-full overflow-hidden">
+<img alt="Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a technical consultant in a modern data center environment, bright cool lighting, focused expression." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCteSDUBBi2K5LcBDtaPCLfiuQGjGbPHuJRUCnj4iIingYxAv2I4tjzEa5RD2G3AShWjo-RakDOKlMIxKleu1tOlyrAhUkWbrP0nRt6B-uk6KDM7bfCqDf3LpF2F_nbkX1zYJbKxt_SaZD13lTwoKcNFhePOtfB_Ls-dBF61fFRCzPlNwmfPKwkaI2BFySB8Fk-2JhGElb6Gq50lQVG34846_8rKj-MZoy3wTIaqcGupOHZdDtVw21V7Q">
+</div>
+<span class="font-medium">Sarah Connor</span>
+</div>
+</td>
+<td class="p-md text-on-surface-variant">s.connor@consulting.dev</td>
+<td class="p-md">
+<span class="inline-flex items-center px-2 py-1 rounded-full text-[12px] font-medium bg-green-100 text-green-800">
+                                        Consultant
+                                    </span>
+</td>
+<td class="p-md text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-1 rounded-md hover:bg-surface-container relative group">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+<!-- Inline Dropdown Example (Hidden by default, shown on hover for demo) -->
+<div class="hidden group-hover:block absolute right-0 top-full mt-1 w-48 bg-surface-container-lowest rounded-md shadow-lg border border-outline-variant z-10 text-left">
+<div class="py-1">
+<a class="block px-md py-sm text-body-sm text-on-surface hover:bg-surface-container-low" href="#">Modifier le rôle</a>
+<a class="block px-md py-sm text-body-sm text-error hover:bg-error-container/50" href="#">Retirer du projet</a>
+</div>
+</div>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination (Simple) -->
+<div class="p-md border-t border-outline-variant flex justify-between items-center text-body-sm text-on-surface-variant bg-surface-container-lowest">
+<span class="">Affichage 1 à 5 sur 12 membres</span>
+<div class="flex gap-sm">
+<button class="px-sm py-xs border border-outline-variant rounded-md hover:bg-surface-container-low disabled:opacity-50">Précédent</button>
+<button class="px-sm py-xs border border-outline-variant rounded-md hover:bg-surface-container-low">Suivant</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Modal Form (Invite Member) - Hidden by default -->
+<div class="fixed inset-0 z-50 flex items-center justify-center hidden" id="invite-modal">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-on-surface/20 backdrop-blur-[2px] transition-opacity" id="modal-backdrop"></div>
+<!-- Modal Content -->
+<div class="relative bg-surface-container-lowest rounded-xl shadow-lg w-full max-w-md mx-md border border-outline-variant flex flex-col">
+<!-- Header -->
+<div class="px-lg py-md border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Inviter un nouveau membre</h3>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors" id="btn-close-modal">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<!-- Body -->
+<div class="p-lg space-y-md">
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-xs" for="email">Adresse email</label>
+<input class="w-full px-md py-sm rounded-md border border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-1 focus:ring-primary text-body-md font-body-md transition-colors" id="email" placeholder="nom@exemple.com" type="email">
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface mb-xs" for="role">Rôle</label>
+<select class="w-full px-md py-sm rounded-md border border-outline-variant bg-surface-container-lowest focus:border-primary focus:ring-1 focus:ring-primary text-body-md font-body-md transition-colors appearance-none" id="role">
+<option value="chef">Chef de projet</option>
+<option value="comptable">Comptable</option>
+<option value="consultant">Consultant</option>
+<option value="bailleur">Bailleur (lecture seule)</option>
+</select>
+</div>
+<p class="text-body-sm text-on-surface-variant mt-xs">Un email d'invitation sera envoyé à cette adresse avec les instructions de connexion.</p>
+</div>
+<!-- Footer -->
+<div class="px-lg py-md border-t border-outline-variant flex justify-end gap-md bg-surface-container-low rounded-b-xl">
+<button class="px-lg py-sm rounded-md font-label-md text-label-md text-primary bg-slate-100 hover:bg-slate-200 transition-colors" id="btn-cancel-modal">
+                    Annuler
+                </button>
+<button class="px-lg py-sm rounded-md font-label-md text-label-md text-white bg-primary-container hover:bg-[#152a45] transition-colors shadow-sm">
+                    Envoyer l'invitation
+                </button>
+</div>
+</div>
+</div>
+<script>
+        // Simple modal toggle logic
+        const modal = document.getElementById('invite-modal');
+        const btnInvite = document.getElementById('btn-invite-modal');
+        const btnClose = document.getElementById('btn-close-modal');
+        const btnCancel = document.getElementById('btn-cancel-modal');
+        const backdrop = document.getElementById('modal-backdrop');
+
+        function toggleModal() {
+            modal.classList.toggle('hidden');
+        }
+
+        btnInvite.addEventListener('click', toggleModal);
+        btnClose.addEventListener('click', toggleModal);
+        btnCancel.addEventListener('click', toggleModal);
+        backdrop.addEventListener('click', toggleModal);
+    </script>
+
+
+
+
+</body></html>

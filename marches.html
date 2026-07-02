@@ -1,0 +1,393 @@
+<!DOCTYPE html><html class="light" lang="fr"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Plan de Passation des Marchés</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-lowest": "#ffffff",
+                      "on-surface-variant": "#43474e",
+                      "on-error": "#ffffff",
+                      "inverse-on-surface": "#eaf1ff",
+                      "surface-tint": "#455f87",
+                      "primary": "#022448",
+                      "tertiary-container": "#533200",
+                      "surface-dim": "#cbdbf5",
+                      "primary-fixed": "#d5e3ff",
+                      "on-secondary-fixed": "#002109",
+                      "surface-container-highest": "#d3e4fe",
+                      "on-primary-fixed-variant": "#2d486d",
+                      "secondary": "#006e2d",
+                      "tertiary-fixed": "#ffddb8",
+                      "surface-container": "#e5eeff",
+                      "surface-container-low": "#eff4ff",
+                      "secondary-fixed": "#7ffc97",
+                      "secondary-container": "#7cf994",
+                      "on-surface": "#0b1c30",
+                      "on-secondary-fixed-variant": "#005320",
+                      "background": "#f8f9ff",
+                      "primary-container": "#1e3a5f",
+                      "inverse-surface": "#213145",
+                      "on-primary": "#ffffff",
+                      "on-primary-fixed": "#001c3b",
+                      "surface-variant": "#d3e4fe",
+                      "on-tertiary-fixed": "#2a1700",
+                      "surface-bright": "#f8f9ff",
+                      "on-primary-container": "#8aa4cf",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-container": "#e39100",
+                      "inverse-primary": "#adc8f5",
+                      "primary-fixed-dim": "#adc8f5",
+                      "secondary-fixed-dim": "#62df7d",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "on-error-container": "#93000a",
+                      "on-secondary": "#ffffff",
+                      "on-background": "#0b1c30",
+                      "on-secondary-container": "#007230",
+                      "surface-container-high": "#dce9ff",
+                      "error": "#ba1a1a",
+                      "outline": "#74777f",
+                      "error-container": "#ffdad6",
+                      "tertiary": "#361f00",
+                      "surface": "#f8f9ff",
+                      "outline-variant": "#c4c6cf",
+                      "on-tertiary-fixed-variant": "#653e00"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "4px",
+                      "md": "16px",
+                      "sm": "8px",
+                      "gutter": "20px",
+                      "xs": "4px",
+                      "xl": "32px",
+                      "container-margin": "40px",
+                      "lg": "24px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "22px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "36px",
+                              {
+                                      "lineHeight": "44px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-md": [
+                              "13px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "18px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "26px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col h-screen border-r border-outline-variant dark:border-outline h-full w-64 fixed left-0 top-0 bg-surface-container-low dark:bg-surface-dim shadow-sm z-40">
+<div class="px-md py-lg flex flex-col gap-sm border-b border-outline-variant">
+<div class="w-12 h-12 rounded-full overflow-hidden mb-sm shrink-0">
+<img alt="Logo du Ministère" class="w-full h-full object-cover" data-alt="Official ministry logo, crisp, modern, vector style, blue and gold colors, light background. A symbol of institutional authority and governance." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgha7EArUe5ZSU-8o5Y2053bCI-Yd31n9vIzcyfHz3zD4wGdRocBglQAs2TlLJjcOtFzpxL43dhXLfZq8Zhjd-ZkehimXGnDVO6huioav2p6d4J-J_ZgEuzQaBrvwraXQcAAtWGl-Yev22a2i-AOkqu3jiMEzYWsb0k8i7SMpiPw2snMRy0oQhentzTuzXMrEhAGGGbFRft3OjQ8ocNh7oOmlNCJWApZT7kHM0v9c9CsdsVdxBR323gg">
+</div>
+<h1 class="font-headline-sm text-headline-sm font-black text-primary">ProjetPilote</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Gouvernance &amp; Suivi</p>
+</div>
+<div class="flex-1 overflow-y-auto py-md px-sm flex flex-col gap-xs">
+<a class="flex items-center gap-md px-md py-sm transition-all duration-200 text-on-surface-variant hover:text-primary hover:bg-surface-container-high dark:hover:bg-inverse-surface rounded-lg" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-body-md text-body-md">Cadre Logique</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm transition-all duration-200 text-on-surface-variant hover:text-primary hover:bg-surface-container-high dark:hover:bg-inverse-surface rounded-lg" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-body-md text-body-md">PTBA</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm transition-all duration-200 text-on-surface-variant hover:text-primary hover:bg-surface-container-high dark:hover:bg-inverse-surface rounded-lg" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-body-md text-body-md">Budget</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm transition-all duration-200 text-on-surface-variant hover:text-primary hover:bg-surface-container-high dark:hover:bg-inverse-surface rounded-lg" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-md text-body-md">EVM</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm transition-all duration-200 bg-primary-container text-on-primary-container font-semibold rounded-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">shopping_cart</span>
+<span class="font-body-md text-body-md">Passation des Marchés</span>
+</a>
+</div>
+<div class="border-t border-outline-variant p-sm flex flex-col gap-xs">
+<a class="flex items-center gap-md px-md py-sm transition-all duration-200 text-on-surface-variant hover:text-primary hover:bg-surface-container-high dark:hover:bg-inverse-surface rounded-lg" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-md text-body-md">Aide</span>
+</a>
+<a class="flex items-center gap-md px-md py-sm transition-all duration-200 text-on-surface-variant hover:text-primary hover:bg-surface-container-high dark:hover:bg-inverse-surface rounded-lg" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-body-md text-body-md">Déconnexion</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col md:ml-64 w-full">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center px-lg h-[64px] w-full z-50 docked full-width top-0 bg-surface-container-lowest dark:bg-inverse-surface shadow-sm dark:shadow-none sticky">
+<div class="flex items-center gap-md">
+<button class="md:hidden p-sm text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<span class="text-headline-sm font-headline-sm font-bold text-primary dark:text-primary-fixed">Gestion de Projets Institutionnels</span>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary rounded-full text-body-md font-body-md w-64 transition-all outline-none" placeholder="Rechercher..." type="text">
+</div>
+<button class="p-sm text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors cursor-pointer duration-200 active:scale-95 rounded-full">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-sm text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors cursor-pointer duration-200 active:scale-95 rounded-full">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden ml-sm border border-outline-variant cursor-pointer">
+<img alt="Photo de profil de l'utilisateur" class="w-full h-full object-cover" data-alt="Portrait of a professional user, neutral background, corporate attire. Soft lighting, high quality, realistic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSwSyVOlqa5jJayqmFk2yN_mIpzSsquazrZ9uB5u0rvDMEMSOFHkRqrioGC0e_-cuR2KJWiqD8WXvU960Q6Fl2xFaiNx8B5OtuRlLF6y554n6wuxHWgnU_aL7CK8_O1h3D5FieYrt8laD1AnS5EPqPPgC2lhb2dTVsn-jWQDlU3ZkYP7LkX8AJUi7CsKuFZOP_P67ygaaSfKbVU9dcAvu9AsXAbJ3Ph9LOUs5KxbjnF4UY6_7wjR0TLg">
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 p-lg max-w-[1440px] mx-auto w-full flex flex-col gap-xl">
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-md">
+<h2 class="font-headline-lg text-headline-lg text-primary">Plan de Passation des Marchés</h2>
+<button class="bg-primary-container text-on-primary hover:bg-primary-container/90 px-md py-sm rounded flex items-center gap-sm font-label-md text-label-md transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    Nouveau Marché
+                </button>
+</div>
+<!-- Filters Section (Glassmorphism Lite / Cards) -->
+<div class="bg-surface-container-lowest rounded-lg shadow-[0px_1px_3px_rgba(0,0,0,0.05),_0px_4px_6px_rgba(0,0,0,0.02)] p-lg flex flex-col gap-md">
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Filtres</h3>
+<div class="flex flex-wrap gap-md">
+<div class="flex-1 min-w-[200px]">
+<label class="block font-body-sm text-body-sm text-on-surface-variant mb-xs">Type de marché</label>
+<select class="w-full border-outline-variant rounded bg-surface-container-lowest text-body-md font-body-md focus:border-primary focus:ring-1 focus:ring-primary py-2 px-3">
+<option>Tous les types</option>
+<option>Fournitures</option>
+<option>Travaux</option>
+<option>Services de consultants</option>
+<option>Services autres que les consultants</option>
+</select>
+</div>
+<div class="flex-1 min-w-[200px]">
+<label class="block font-body-sm text-body-sm text-on-surface-variant mb-xs">Statut</label>
+<select class="w-full border-outline-variant rounded bg-surface-container-lowest text-body-md font-body-md focus:border-primary focus:ring-1 focus:ring-primary py-2 px-3">
+<option>Tous les statuts</option>
+<option>En préparation</option>
+<option>Lancé</option>
+<option>En évaluation</option>
+<option>Attribué</option>
+<option>Signé</option>
+</select>
+</div>
+<div class="flex items-end">
+<button class="bg-surface-container-low text-primary border border-outline-variant hover:bg-surface-container px-md py-2 rounded font-label-md text-label-md transition-colors h-[42px]">
+                            Appliquer les filtres
+                        </button>
+</div>
+</div>
+<div class="flex gap-md mt-2 border-t border-outline-variant/30 pt-md"><div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-tertiary-container"></div><span class="text-body-sm text-on-surface-variant">● Échéance proche (&lt;15 jours)</span></div><div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-error"></div><span class="text-body-sm text-on-surface-variant">● Échéance dépassée</span></div></div><div class="flex gap-md mt-2 border-t border-outline-variant/30 pt-md"><div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-tertiary-container"></div><span class="text-body-sm text-on-surface-variant">● Échéance proche (&lt;15 jours)</span></div><div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-error"></div><span class="text-body-sm text-on-surface-variant">● Échéance dépassée</span></div></div></div>
+<!-- Data Table Section -->
+<div class="bg-surface-container-lowest rounded-lg shadow-[0px_1px_3px_rgba(0,0,0,0.05),_0px_4px_6px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[1000px]">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-semibold">Description du marché</th>
+<th class="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-semibold">Type</th>
+<th class="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-semibold">Méthode</th>
+<th class="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-semibold">Revue</th>
+<th class="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-semibold">Date prévue d'avis</th>
+<th class="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-semibold">Date signature</th>
+<th class="py-3 px-4 font-label-md text-label-md text-on-surface-variant font-semibold text-right">Montant estimé (FCFA)</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface">
+<!-- Row 1 (Normal) -->
+<tr class="border-b border-outline-variant/30 hover:bg-[#F8FAFC] transition-colors h-[48px]">
+<td class="py-2 px-4">
+<div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-tertiary-container shrink-0" title="Échéance dans moins de 15 jours"></div><div class="w-2 h-2 rounded-full bg-tertiary-container shrink-0" title="Échéance dans moins de 15 jours"></div>
+<span class="truncate max-w-[250px]" title="Acquisition de matériel informatique">Acquisition de matériel informatique</span>
+</div>
+</td>
+<td class="py-2 px-4"><span class="bg-surface-container px-2 py-1 rounded text-body-sm text-primary">Fournitures</span></td>
+<td class="py-2 px-4">Demande de Cotations</td>
+<td class="py-2 px-4">A posteriori</td>
+<td class="py-2 px-4 text-on-surface-variant text-tertiary-container font-medium">15/11/2023</td>
+<td class="py-2 px-4 text-on-surface-variant">20/12/2023</td>
+<td class="py-2 px-4 text-right font-medium">15 000 000 FCFA</td>
+</tr>
+<!-- Row 2 (Warning - 15 days) -->
+<tr class="border-b border-outline-variant/30 hover:bg-[#F8FAFC] transition-colors h-[48px] bg-slate-50/50">
+<td class="py-2 px-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-tertiary-container shrink-0" title="Échéance dans moins de 15 jours"></div>
+<span class="truncate max-w-[250px]" title="Travaux de réhabilitation du centre de santé">Travaux de réhabilitation du centre de santé</span>
+</div>
+</td>
+<td class="py-2 px-4"><span class="bg-surface-container px-2 py-1 rounded text-body-sm text-primary">Travaux</span></td>
+<td class="py-2 px-4">Appel d'Offres International</td>
+<td class="py-2 px-4">A priori</td>
+<td class="py-2 px-4 text-tertiary-container font-medium">28/10/2023</td>
+<td class="py-2 px-4 text-on-surface-variant">15/01/2024</td>
+<td class="py-2 px-4 text-right font-medium">450 000 000 FCFA</td>
+</tr>
+<!-- Row 3 (Alert - Overdue) -->
+<tr class="border-b border-outline-variant/30 hover:bg-[#F8FAFC] transition-colors h-[48px]">
+<td class="py-2 px-4">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-error shrink-0" title="Échéance dépassée"></div>
+<span class="truncate max-w-[250px]" title="Consultant pour l'audit financier">Consultant pour l'audit financier</span>
+</div>
+</td>
+<td class="py-2 px-4"><span class="bg-surface-container px-2 py-1 rounded text-body-sm text-primary">Services de consultants</span></td>
+<td class="py-2 px-4">Sélection de Consultants</td>
+<td class="py-2 px-4">A priori</td>
+<td class="py-2 px-4 text-on-surface-variant">01/09/2023</td>
+<td class="py-2 px-4 text-error font-medium">15/10/2023</td>
+<td class="py-2 px-4 text-right font-medium">25 500 000 FCFA</td>
+</tr>
+<!-- Row 4 (Normal) -->
+<tr class="border-b border-outline-variant/30 hover:bg-[#F8FAFC] transition-colors h-[48px] bg-slate-50/50">
+<td class="py-2 px-4">
+<div class="flex items-center gap-2">
+<span class="truncate max-w-[250px]" title="Acquisition de véhicules de supervision">Acquisition de véhicules de supervision</span>
+</div>
+</td>
+<td class="py-2 px-4"><span class="bg-surface-container px-2 py-1 rounded text-body-sm text-primary">Fournitures</span></td>
+<td class="py-2 px-4">Appel d'Offres National</td>
+<td class="py-2 px-4">A priori</td>
+<td class="py-2 px-4 text-on-surface-variant">05/12/2023</td>
+<td class="py-2 px-4 text-on-surface-variant">10/02/2024</td>
+<td class="py-2 px-4 text-right font-medium">120 000 000 FCFA</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination / Footer -->
+<div class="p-4 border-t border-outline-variant flex items-center justify-between bg-surface-container-lowest">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Affichage 1-4 sur 24 marchés</span>
+<div class="flex gap-1">
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container-low text-on-surface-variant disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-primary-container text-on-primary font-label-md text-label-md">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container-low text-on-surface font-label-md text-label-md">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container-low text-on-surface font-label-md text-label-md">3</button>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-surface-container-low text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+
+
+
+
+
+</body></html>

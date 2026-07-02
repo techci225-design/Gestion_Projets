@@ -3,6 +3,7 @@
 import { z } from 'zod'
 import { createClient } from '../supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireRole } from './auth.actions'
 
 const procurementSchema = z.object({
   project_id: z.string().uuid(),
@@ -19,6 +20,12 @@ const procurementSchema = z.object({
 export async function createProcurement(data: z.infer<typeof procurementSchema>) {
   const parsed = procurementSchema.safeParse(data)
   if (!parsed.success) return { error: 'Invalid data', details: parsed.error.issues }
+
+  try {
+    await requireRole(parsed.data.project_id, ['owner', 'chef_projet'])
+  } catch (error: any) {
+    return { error: error.message }
+  }
 
   const supabase = await createClient()
   const { data: result, error } = await supabase.from('procurement_plan').insert(parsed.data).select().single()

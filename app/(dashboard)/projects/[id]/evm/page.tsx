@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { MarchesClient } from './marches-client'
+import { EvmClient } from './evm-client'
 
-export default async function MarchesPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EvmPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
 
@@ -16,16 +16,24 @@ export default async function MarchesPage({ params }: { params: Promise<{ id: st
     redirect('/projects')
   }
 
-  const { data: marches } = await supabase
-    .from('procurement_plan')
+  const { data: summaryData } = await supabase
+    .from('v_evm_project_summary')
+    .select('*')
+    .eq('project_id', id)
+    .single()
+
+  const { data: indicators } = await supabase
+    .from('v_evm_indicators')
     .select('*')
     .eq('project_id', id)
     .order('created_at', { ascending: false })
 
   return (
-    <MarchesClient 
-      projectId={id} 
-      marches={marches || []} 
+    <EvmClient 
+      projectId={id}
+      project={project}
+      summary={summaryData || null}
+      indicators={indicators || []}
     />
   )
 }

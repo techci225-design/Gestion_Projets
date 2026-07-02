@@ -16,10 +16,18 @@ const budgetLineSchema = z.object({
   counterpart_amount: z.number().min(0).default(0)
 })
 
+import { requireRole } from './auth.actions'
+
 export async function createBudgetLine(data: z.infer<typeof budgetLineSchema>) {
   const parsed = budgetLineSchema.safeParse(data)
   if (!parsed.success) {
     return { error: 'Invalid data', details: parsed.error.issues }
+  }
+
+  try {
+    await requireRole(parsed.data.project_id, ['owner', 'comptable'])
+  } catch (error: any) {
+    return { error: error.message }
   }
 
   const supabase = await createClient()
@@ -53,6 +61,12 @@ export async function createOperation(data: z.infer<typeof operationJournalSchem
   const parsed = operationJournalSchema.safeParse(data)
   if (!parsed.success) {
     return { error: 'Invalid data', details: parsed.error.issues }
+  }
+
+  try {
+    await requireRole(parsed.data.project_id, ['owner', 'comptable'])
+  } catch (error: any) {
+    return { error: error.message }
   }
 
   const supabase = await createClient()

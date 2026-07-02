@@ -1,12 +1,12 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
   BriefcaseBusiness, LayoutGrid, Settings, FolderTree, 
   CalendarDays, Wallet, Receipt, TrendingUp, ShoppingCart, 
-  AlertTriangle, Users, User, Home, MoreHorizontal
+  AlertTriangle, Users, User, Home, MoreHorizontal, ShieldAlert, X
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -14,6 +14,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ userFullName }: SidebarProps) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const pathname = usePathname()
 
   // Extract project ID if we are inside a project route
@@ -23,20 +24,22 @@ export function Sidebar({ userFullName }: SidebarProps) {
   const projectId = isProjectRoute ? segments[2] : null
 
   const projectLinks = [
+    { name: 'Tableau de bord', href: `/projects/${projectId}`, icon: TrendingUp },
     { name: 'Cadre Logique', href: `/projects/${projectId}/cadre-logique`, icon: FolderTree },
     { name: 'PTBA', href: `/projects/${projectId}/ptba`, icon: CalendarDays },
     { name: 'Budget', href: `/projects/${projectId}/budget`, icon: Wallet },
     { name: 'Journal des opérations', href: `/projects/${projectId}/journal`, icon: Receipt },
-    { name: 'EVM', href: `/projects/${projectId}`, icon: TrendingUp },
+    { name: 'Suivi EVM (Tâches)', href: `/projects/${projectId}/evm`, icon: TrendingUp },
     { name: 'Passation des Marchés', href: `/projects/${projectId}/marches`, icon: ShoppingCart },
     { name: 'Risques', href: `/projects/${projectId}/risques`, icon: AlertTriangle },
     { name: 'Membres', href: `/projects/${projectId}/membres`, icon: Users },
+    { name: 'Journal d\'Audit', href: `/projects/${projectId}/audit`, icon: ShieldAlert },
   ]
 
   const mobileTabs = [
     { name: 'Accueil', href: '/projects', icon: Home },
     { name: 'Budget', href: projectId ? `/projects/${projectId}/budget` : '/projects', icon: Wallet },
-    { name: 'EVM', href: projectId ? `/projects/${projectId}` : '/projects', icon: TrendingUp },
+    { name: 'EVM', href: projectId ? `/projects/${projectId}/evm` : '/projects', icon: TrendingUp },
     { name: 'Risques', href: projectId ? `/projects/${projectId}/risques` : '/projects', icon: AlertTriangle },
     { name: 'Plus', href: '#', icon: MoreHorizontal },
   ]
@@ -68,7 +71,7 @@ export function Sidebar({ userFullName }: SidebarProps) {
               <div className="ml-6 mt-2 space-y-1 border-l-2 border-border pl-2">
                 {projectLinks.map((link) => {
                   const Icon = link.icon
-                  const isActive = pathname === link.href || (link.name === 'EVM' && pathname === `/projects/${projectId}`)
+                  const isActive = pathname === link.href
                   return (
                     <Link
                       key={link.name}
@@ -113,7 +116,21 @@ export function Sidebar({ userFullName }: SidebarProps) {
       <nav className="md:hidden fixed bottom-0 left-0 w-full bg-surface border-t border-border flex items-center justify-around pb-safe z-20">
         {mobileTabs.map((tab) => {
           const Icon = tab.icon
-          const isActive = pathname === tab.href || (tab.name === 'EVM' && pathname === `/projects/${projectId}`)
+          const isActive = pathname === tab.href
+
+          if (tab.name === 'Plus') {
+            return (
+              <button
+                key={tab.name}
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="flex flex-col items-center p-3 flex-1 transition-colors text-text-secondary hover:text-primary"
+              >
+                <Icon className="w-5 h-5 mb-1" />
+                <span className="text-[10px] font-medium">{tab.name}</span>
+              </button>
+            )
+          }
+
           return (
             <Link
               key={tab.name}
@@ -128,6 +145,30 @@ export function Sidebar({ userFullName }: SidebarProps) {
           )
         })}
       </nav>
+
+      {/* Mobile Menu Bottom Sheet */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
+          <div className="absolute inset-0 bg-on-surface/20 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
+          <div className="relative bg-surface rounded-t-2xl pb-safe animate-in slide-in-from-bottom-full duration-200">
+             <div className="p-4 border-b border-border flex justify-between items-center">
+                <h3 className="font-semibold text-on-surface">Plus de modules</h3>
+                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 rounded-full hover:bg-surface-container"><X className="w-5 h-5 text-on-surface-variant"/></button>
+             </div>
+             <div className="grid grid-cols-3 gap-4 p-4 max-h-[60vh] overflow-y-auto">
+               {projectLinks.filter(pl => !mobileTabs.find(mt => mt.name === pl.name)).map(link => {
+                 const LinkIcon = link.icon
+                 return (
+                  <Link key={link.name} href={link.href} onClick={() => setIsMobileMenuOpen(false)} className="flex flex-col items-center p-4 rounded-xl bg-surface-container-low border border-border text-on-surface hover:border-primary transition-colors">
+                    <LinkIcon className="w-6 h-6 mb-2 text-primary" />
+                    <span className="text-[10px] text-center font-medium">{link.name}</span>
+                  </Link>
+                 )
+               })}
+             </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

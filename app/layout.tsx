@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { PwaRegister } from "@/components/PwaRegister";
 
 const inter = Inter({
-  variable: "--font-inter",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "ProjetPilote - Pilotage de vos projets bailleurs",
-  description: "SaaS web de gestion de projets financés par des bailleurs de fonds",
+  title: "ProjetPilote",
+  description: "Pilotage de vos projets bailleurs",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
@@ -20,9 +21,12 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${inter.variable} h-full antialiased`}
+      className="h-full"
     >
-      <body className="h-full flex flex-col">{children}</body>
+      <body className={`${inter.className} h-full antialiased bg-background-main text-on-surface flex flex-col`}>
+        <PwaRegister />
+        {children}
+      </body>
     </html>
   );
 }

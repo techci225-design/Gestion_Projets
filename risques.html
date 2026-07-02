@@ -1,0 +1,424 @@
+<!DOCTYPE html><html class="light" lang="fr"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Matrice des Risques - Gouvernance Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#d3e4fe",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-secondary-container": "#007230",
+                        "primary-fixed-dim": "#adc8f5",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface-tint": "#455f87",
+                        "tertiary-container": "#533200",
+                        "error-container": "#ffdad6",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#f8f9ff",
+                        "on-primary-fixed": "#001c3b",
+                        "tertiary": "#361f00",
+                        "surface": "#f8f9ff",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "primary": "#022448",
+                        "on-background": "#0b1c30",
+                        "surface-container-high": "#dce9ff",
+                        "primary-fixed": "#d5e3ff",
+                        "outline-variant": "#c4c6cf",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "surface-container": "#e5eeff",
+                        "on-secondary-fixed": "#002109",
+                        "outline": "#74777f",
+                        "on-surface": "#0b1c30",
+                        "inverse-primary": "#adc8f5",
+                        "inverse-on-surface": "#eaf1ff",
+                        "secondary": "#006e2d",
+                        "inverse-surface": "#213145",
+                        "on-tertiary-container": "#e39100",
+                        "background": "#f8f9ff",
+                        "secondary-fixed-dim": "#62df7d",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed-variant": "#005320",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#7ffc97",
+                        "on-primary-container": "#8aa4cf",
+                        "secondary-container": "#7cf994",
+                        "primary-container": "#1e3a5f",
+                        "on-surface-variant": "#43474e",
+                        "on-tertiary-fixed": "#2a1700",
+                        "surface-dim": "#cbdbf5",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#2d486d",
+                        "surface-container-low": "#eff4ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "unit": "4px",
+                        "container-margin": "40px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "lg": "24px",
+                        "sm": "8px",
+                        "gutter": "20px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-sm": ["18px", { "lineHeight": "26px", "fontWeight": "600" }],
+                        "headline-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "label-md": ["13px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9ff; }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); }
+        .heatmap-cell { transition: all 0.2s ease-in-out; }
+        .heatmap-cell:hover { transform: scale(1.02); z-index: 10; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .risk-point { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12px; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); position: absolute; cursor: pointer; transition: transform 0.2s; }
+        .risk-point:hover { transform: scale(1.2); }
+        
+        /* Custom Colors for Heatmap (Not in theme, required for specific request) */
+        .bg-heatmap-low { background-color: #d1fae5; }
+        .bg-heatmap-med-low { background-color: #fef3c7; }
+        .bg-heatmap-med { background-color: #fde68a; }
+        .bg-heatmap-med-high { background-color: #fed7aa; }
+        .bg-heatmap-high { background-color: #fca5a5; }
+        .bg-heatmap-critical { background-color: #f87171; }
+    </style>
+</head>
+<body class="bg-background text-on-background flex min-h-screen">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col bg-surface-container-low dark:bg-inverse-surface w-64 h-screen fixed left-0 top-0 border-r border-outline-variant dark:border-outline z-40">
+<div class="p-lg flex flex-col gap-sm">
+<div class="flex items-center gap-md mb-xl">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-extrabold text-primary dark:text-inverse-primary">ProjetPilote</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Gouvernance &amp; Suivi</p>
+</div>
+</div>
+<ul class="flex flex-col gap-xs flex-1">
+<li class="px-md py-sm rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container transition-all cursor-pointer active:scale-98 flex items-center gap-md">
+<span class="material-symbols-outlined">folder</span>
+<span class="font-label-md text-label-md">Projets</span>
+</li>
+<li class="px-md py-sm rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container transition-all cursor-pointer active:scale-98 flex items-center gap-md">
+<span class="material-symbols-outlined">assignment</span>
+<span class="font-label-md text-label-md">Cadre Logique</span>
+</li>
+<li class="px-md py-sm rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container transition-all cursor-pointer active:scale-98 flex items-center gap-md">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md">PTBA</span>
+</li>
+<li class="px-md py-sm rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container transition-all cursor-pointer active:scale-98 flex items-center gap-md">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Budget</span>
+</li>
+<li class="px-md py-sm rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container transition-all cursor-pointer active:scale-98 flex items-center gap-md">
+<span class="material-symbols-outlined">trending_up</span>
+<span class="font-label-md text-label-md">EVM</span>
+</li>
+<li class="px-md py-sm rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container transition-all cursor-pointer active:scale-98 flex items-center gap-md">
+<span class="material-symbols-outlined">shopping_cart</span>
+<span class="font-label-md text-label-md">Passation des Marchés</span>
+</li>
+<li class="px-md py-sm bg-primary-container text-on-primary-container dark:bg-primary dark:text-on-primary rounded-lg font-semibold cursor-pointer active:scale-98 flex items-center gap-md">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">warning</span>
+<span class="font-label-md text-label-md">Risques</span>
+</li>
+</ul>
+</div>
+<div class="mt-auto p-lg border-t border-outline-variant">
+<ul class="flex flex-col gap-xs">
+<li class="px-md py-sm rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container transition-all cursor-pointer active:scale-98 flex items-center gap-md">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-md text-label-md">Aide</span>
+</li>
+<li class="px-md py-sm rounded-lg text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container transition-all cursor-pointer active:scale-98 flex items-center gap-md">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Déconnexion</span>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 md:ml-64 flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="sticky top-0 w-full z-30 flex items-center justify-between px-md h-16 bg-surface dark:bg-inverse-surface shadow-sm dark:shadow-none transition-colors">
+<!-- Mobile Menu Button (Visible only on mobile) -->
+<button class="md:hidden p-sm rounded-full text-on-surface-variant hover:bg-surface-container transition-colors focus:outline-none">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<!-- Brand Logo / Title (Left side on mobile, empty or integrated on desktop) -->
+<div class="flex items-center gap-md">
+<span class="md:hidden font-headline-sm text-headline-sm font-bold text-primary dark:text-inverse-primary">ProjetPilote</span>
+<!-- Search Bar (Left aligned as per JSON) -->
+<div class="hidden md:flex items-center bg-surface-container-high rounded-full px-md py-sm w-64 border border-transparent focus-within:border-primary transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant text-sm mr-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md font-body-md text-on-surface w-full p-0" placeholder="Rechercher..." type="text">
+</div>
+</div>
+<!-- Trailing Actions -->
+<div class="flex items-center gap-sm">
+<button class="p-sm rounded-full text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer active:scale-95 focus:outline-none relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-sm rounded-full text-on-surface-variant hover:bg-surface-container transition-colors cursor-pointer active:scale-95 focus:outline-none">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary-container ml-sm cursor-pointer border border-outline-variant overflow-hidden">
+<img alt="Photo de profil de l'utilisateur" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-CzfKdJPN61xaw_j3-hlTTLyJsU9yORIt10FrRa380bzNhmMoFrTMw3LKiRT_RTaYDdbjdBX5fF-7MyvSNI0sKta0tkVFA-jjEvN7kDfvo9S9C0F16vEKpmfSr5OSXvQ9JmU1-WrTBPeZKdRYscgut_zObIf9w7yFCMsgBPhqUANeytbnHsymO_uRDxdJcderg9H6dvGDolP6VstVFJsYGTtPNYRQ2j1qAl0aRod9iERxpuoIs9-R3g">
+</div>
+</div>
+</header>
+<!-- Page Canvas -->
+<main class="flex-1 p-lg md:p-xl xl:px-container-margin overflow-y-auto">
+<!-- Page Header -->
+<div class="mb-lg flex justify-between items-end">
+<div>
+<h1 class="font-display-lg text-display-lg text-primary mb-xs">Matrice des Risques</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Analyse et évaluation de la criticité des risques du projet en cours.</p>
+</div>
+<button class="bg-primary text-on-primary font-label-md text-label-md px-lg py-sm rounded-lg hover:bg-primary-fixed-variant transition-colors shadow-sm flex items-center gap-sm">
+<span class="material-symbols-outlined text-sm">add</span>
+                    Nouveau Risque
+                </button>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-lg">
+<!-- Heatmap Section (Top Left - Spans 8 cols) -->
+<section class="lg:col-span-8 bg-surface-container-lowest rounded-xl shadow-sm p-lg border border-surface-container-highest">
+<h2 class="font-headline-md text-headline-md text-primary mb-md flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">grid_on</span>
+                        Heatmap d'Évaluation
+                    </h2>
+<div class="relative w-full max-w-2xl mx-auto mt-xl mb-md">
+<!-- Y-Axis Label -->
+<div class="absolute -left-12 top-1/2 -translate-y-1/2 -rotate-90 font-label-md text-label-md text-on-surface-variant whitespace-nowrap">
+                            Impact (Y)
+                        </div>
+<!-- Y-Axis Numbers -->
+<div class="absolute -left-6 top-0 bottom-8 flex flex-col justify-around text-center font-label-md text-on-surface-variant">
+<span class="">3</span>
+<span class="">2</span>
+<span class="">1</span>
+</div>
+<!-- 3x3 Grid -->
+<div class="grid grid-cols-3 grid-rows-3 gap-1 h-80 ml-4 mb-4 relative bg-surface-container">
+<!-- Row 1 (Impact 3) -->
+<div class="heatmap-cell bg-heatmap-med rounded-tl-lg relative">
+<div class="risk-point bg-primary" style="top: 20%; left: 30%;">R3</div>
+</div>
+<div class="heatmap-cell bg-heatmap-med-high relative">
+<div class="risk-point bg-primary" style="top: 50%; left: 50%;">R5</div>
+</div>
+<div class="heatmap-cell bg-heatmap-critical rounded-tr-lg relative">
+<div class="risk-point bg-on-error-container" style="top: 30%; left: 60%;">R1</div>
+</div>
+<!-- Row 2 (Impact 2) -->
+<div class="heatmap-cell bg-heatmap-med-low relative"></div>
+<div class="heatmap-cell bg-heatmap-med relative">
+<div class="risk-point bg-primary" style="top: 40%; left: 20%;">R6</div>
+</div>
+<div class="heatmap-cell bg-heatmap-high relative">
+<div class="risk-point bg-primary" style="top: 70%; left: 40%;">R2</div>
+</div>
+<!-- Row 3 (Impact 1) -->
+<div class="heatmap-cell bg-heatmap-low rounded-bl-lg relative">
+<div class="risk-point bg-secondary" style="top: 60%; left: 50%;">R4</div>
+</div>
+<div class="heatmap-cell bg-heatmap-med-low relative"></div>
+<div class="heatmap-cell bg-heatmap-med rounded-br-lg relative"></div>
+</div>
+<!-- X-Axis Numbers -->
+<div class="flex justify-around ml-4 text-center font-label-md text-on-surface-variant">
+<span class="w-1/3">1</span>
+<span class="w-1/3">2</span>
+<span class="w-1/3">3</span>
+</div>
+<!-- X-Axis Label -->
+<div class="text-center font-label-md text-label-md text-on-surface-variant mt-sm ml-4">
+                            Probabilité (X)
+                        </div>
+</div>
+</section>
+<!-- Summary Stats Section (Top Right - Spans 4 cols) -->
+<section class="lg:col-span-4 flex flex-col gap-md">
+<!-- Critical Risks Card -->
+<div class="bg-error-container rounded-xl p-md shadow-sm border border-error/20 flex-1 flex flex-col justify-center relative overflow-hidden">
+<div class="absolute -right-4 -top-4 opacity-10">
+<span class="material-symbols-outlined text-[100px]">warning</span>
+</div>
+<h3 class="font-label-md text-label-md text-on-error-container uppercase tracking-wider mb-sm">Risques Critiques</h3>
+<div class="font-display-lg text-display-lg text-on-error-container mb-xs">1</div>
+<p class="font-body-sm text-body-sm text-on-error-container/80">Nécessite une action immédiate (Score 9)</p>
+</div>
+<!-- High Risks Card -->
+<div class="bg-tertiary-fixed rounded-xl p-md shadow-sm border border-tertiary/10 flex-1 flex flex-col justify-center relative overflow-hidden">
+<div class="absolute -right-4 -top-4 opacity-10">
+<span class="material-symbols-outlined text-[100px]">trending_up</span>
+</div>
+<h3 class="font-label-md text-label-md text-on-tertiary-container uppercase tracking-wider mb-sm">Risques Élevés</h3>
+<div class="font-display-lg text-display-lg text-on-tertiary-container mb-xs">2</div>
+<p class="font-body-sm text-body-sm text-on-tertiary-container/80">Surveillance accrue requise (Score 6-8)</p>
+</div>
+<!-- Moderate Risks Card -->
+<div class="bg-surface-variant rounded-xl p-md shadow-sm border border-outline-variant/30 flex-1 flex flex-col justify-center relative overflow-hidden">
+<div class="absolute -right-4 -top-4 opacity-10">
+<span class="material-symbols-outlined text-[100px]">sync</span>
+</div>
+<h3 class="font-label-md text-label-md text-primary uppercase tracking-wider mb-sm">Risques Modérés</h3>
+<div class="font-display-lg text-display-lg text-primary mb-xs">3</div>
+<p class="font-body-sm text-body-sm text-primary/80">Plan d'atténuation en cours (Score 3-4)</p>
+</div>
+</section>
+<!-- Data Table Section (Full Width Bottom) -->
+<section class="lg:col-span-12 bg-surface-container-lowest rounded-xl shadow-sm border border-surface-container-highest overflow-hidden">
+<div class="p-md border-b border-surface-container-highest flex justify-between items-center bg-surface-bright">
+<h2 class="font-headline-sm text-headline-sm text-primary">Registre des Risques</h2>
+<div class="flex gap-sm">
+<button class="p-sm text-on-surface-variant hover:bg-surface-container rounded-md transition-colors"><span class="material-symbols-outlined text-sm">filter_list</span></button>
+<button class="p-sm text-on-surface-variant hover:bg-surface-container rounded-md transition-colors"><span class="material-symbols-outlined text-sm">download</span></button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant/50 font-label-md text-label-md text-on-surface-variant">
+<th class="p-md font-medium">ID</th>
+<th class="p-md font-medium">Catégorie</th>
+<th class="p-md font-medium w-1/4">Description</th>
+<th class="p-md font-medium text-center">P (1-3)</th>
+<th class="p-md font-medium text-center">I (1-3)</th>
+<th class="p-md font-medium text-center">Criticité</th>
+<th class="p-md font-medium">Stratégie d'atténuation</th>
+<th class="p-md font-medium">Responsable</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface">
+<!-- Row 1: Critical -->
+<tr class="border-b border-outline-variant/20 hover:bg-surface-container-lowest transition-colors bg-[#f8fafc]">
+<td class="p-md font-semibold text-primary">R1</td>
+<td class="p-md">Financier</td>
+<td class="p-md">Dépassement du budget alloué suite à l'inflation des matériaux.</td>
+<td class="p-md text-center">3</td>
+<td class="p-md text-center">3</td>
+<td class="p-md text-center">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-error-container text-on-error-container font-label-md text-xs">
+                                            9 - Critique
+                                        </span>
+</td>
+<td class="p-md text-on-surface-variant text-sm">Révision des contrats, recherche de fonds d'urgence.</td>
+<td class="p-md">
+<div class="flex items-center gap-xs">
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs font-bold">DA</div>
+<span class="">Dir. Achats</span>
+</div>
+</td>
+</tr>
+<!-- Row 2: High -->
+<tr class="border-b border-outline-variant/20 hover:bg-surface-container-lowest transition-colors bg-white">
+<td class="p-md font-semibold text-primary">R2</td>
+<td class="p-md">Technique</td>
+<td class="p-md">Défaillance matérielle sur le site principal.</td>
+<td class="p-md text-center">3</td>
+<td class="p-md text-center">2</td>
+<td class="p-md text-center">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-container font-label-md text-xs">
+                                            6 - Élevé
+                                        </span>
+</td>
+<td class="p-md text-on-surface-variant text-sm">Contrats de maintenance préventive renforcés.</td>
+<td class="p-md">
+<div class="flex items-center gap-xs">
+<div class="w-6 h-6 rounded-full bg-surface-tint text-on-primary flex items-center justify-center text-xs font-bold">IT</div>
+<span class="">Resp. Tech</span>
+</div>
+</td>
+</tr>
+<!-- Row 3: Moderate -->
+<tr class="border-b border-outline-variant/20 hover:bg-surface-container-lowest transition-colors bg-[#f8fafc]">
+<td class="p-md font-semibold text-primary">R3</td>
+<td class="p-md">Ressources Humaines</td>
+<td class="p-md">Départ de personnel clé durant la phase critique.</td>
+<td class="p-md text-center">1</td>
+<td class="p-md text-center">3</td>
+<td class="p-md text-center">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-surface-variant text-primary font-label-md text-xs">
+                                            3 - Modéré
+                                        </span>
+</td>
+<td class="p-md text-on-surface-variant text-sm">Plan de succession et documentation stricte.</td>
+<td class="p-md">
+<div class="flex items-center gap-xs">
+<div class="w-6 h-6 rounded-full bg-surface-tint text-on-primary flex items-center justify-center text-xs font-bold">RH</div>
+<span class="">Dir. RH</span>
+</div>
+</td>
+</tr>
+<!-- Row 4: Low -->
+<tr class="hover:bg-surface-container-lowest transition-colors bg-white">
+<td class="p-md font-semibold text-primary">R4</td>
+<td class="p-md">Opérationnel</td>
+<td class="p-md">Retard mineur dans la livraison des fournitures de bureau.</td>
+<td class="p-md text-center">2</td>
+<td class="p-md text-center">1</td>
+<td class="p-md text-center">
+<span class="inline-flex items-center px-2 py-1 rounded-full bg-secondary-fixed-dim text-on-secondary-container font-label-md text-xs">
+                                            2 - Faible
+                                        </span>
+</td>
+<td class="p-md text-on-surface-variant text-sm">Stock tampon maintenu au siège.</td>
+<td class="p-md">
+<div class="flex items-center gap-xs">
+<div class="w-6 h-6 rounded-full bg-surface-tint text-on-primary flex items-center justify-center text-xs font-bold">LO</div>
+<span class="">Logistique</span>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+</main>
+</div>
+
+
+</body></html>

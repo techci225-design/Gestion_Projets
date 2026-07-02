@@ -1,0 +1,353 @@
+<!DOCTYPE html><html class="light" lang="fr"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Suivi de la Valeur Acquise (EVM) - GovTrack Manager</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#74777f",
+                        "inverse-on-surface": "#eaf1ff",
+                        "surface-container-high": "#dce9ff",
+                        "primary-container": "#1e3a5f",
+                        "tertiary-container": "#533200",
+                        "surface": "#f8f9ff",
+                        "on-primary-fixed-variant": "#2d486d",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed-dim": "#adc8f5",
+                        "primary-fixed": "#d5e3ff",
+                        "tertiary": "#361f00",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed": "#002109",
+                        "on-surface": "#0b1c30",
+                        "on-primary-fixed": "#001c3b",
+                        "tertiary-fixed": "#ffddb8",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface-container": "#e5eeff",
+                        "inverse-surface": "#213145",
+                        "on-surface-variant": "#43474e",
+                        "on-primary-container": "#8aa4cf",
+                        "on-secondary-container": "#007230",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed-dim": "#62df7d",
+                        "surface-dim": "#cbdbf5",
+                        "secondary": "#006e2d",
+                        "surface-tint": "#455f87",
+                        "on-tertiary-container": "#e39100",
+                        "surface-variant": "#d3e4fe",
+                        "inverse-primary": "#adc8f5",
+                        "background": "#f8f9ff",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-tertiary-fixed": "#2a1700",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "secondary-container": "#7cf994",
+                        "on-secondary-fixed-variant": "#005320",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#c4c6cf",
+                        "surface-container-low": "#eff4ff",
+                        "surface-bright": "#f8f9ff",
+                        "secondary-fixed": "#7ffc97",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#0b1c30",
+                        "primary": "#022448"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "gutter": "20px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "container-margin": "40px",
+                        "md": "16px",
+                        "unit": "4px",
+                        "lg": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["13px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["18px", { "lineHeight": "26px", "fontWeight": "600" }],
+                        "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9ff; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0px 1px 3px rgba(0,0,0,0.05), 0px 4px 6px rgba(0,0,0,0.02);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex font-body-md">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-surface dark:bg-inverse-surface bg-surface-container-low dark:bg-inverse-surface shadow-sm flex flex-col py-lg px-md z-50">
+<!-- Brand -->
+<div class="flex items-center gap-sm mb-xl">
+<div class="w-10 h-10 rounded-lg bg-primary text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed">ProjetPilote</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Gouvernance &amp; Suivi</p>
+</div>
+</div>
+<!-- Navigation -->
+<nav class="flex-1 space-y-sm">
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="font-label-md text-label-md">Projets</span>
+</a>
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-label-md text-label-md">Cadre Logique</span>
+</a>
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md">PTBA</span>
+</a>
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">Budget</span>
+</a>
+<a class="flex items-center gap-sm p-sm rounded-lg bg-primary-container text-on-primary-container transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">monitoring</span>
+<span class="font-label-md text-label-md">EVM</span>
+</a>
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md text-label-md">Journal des opérations</span>
+</a>
+<a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200 ease-in-out" href="#"><span class="material-symbols-outlined">shopping_cart</span><span class="font-label-md text-label-md">Passation des Marchés</span></a><a class="flex items-center gap-sm p-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200 ease-in-out mt-auto" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Paramètres</span>
+</a>
+</nav>
+<button class="mt-lg w-full bg-primary text-on-primary font-label-md text-label-md py-sm rounded-lg shadow-sm hover:opacity-90 transition-opacity">
+            Nouveau Projet
+        </button>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="ml-64 flex-1 flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] border-b border-outline-variant dark:border-outline flat no shadows flex justify-between items-center h-16 px-container-margin z-40 bg-white">
+<div class="flex items-center">
+<span class="material-symbols-outlined text-outline mr-sm">search</span>
+<input class="border-none bg-transparent focus:ring-0 text-on-surface font-body-md text-body-md w-64 placeholder-outline-variant" placeholder="Rechercher..." type="text">
+</div>
+<div class="flex items-center gap-md">
+<h2 class="font-headline-sm text-headline-sm font-semibold text-primary dark:text-primary-fixed hidden lg:block mr-xl">Projet d'Appui au Développement (PAD)</h2>
+<button class="text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed cursor-pointer active:opacity-80 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed cursor-pointer active:opacity-80 transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-variant ml-sm cursor-pointer border border-outline-variant">
+<img alt="Profil de l'Administrateur" class="w-full h-full object-cover" data-alt="A professional headshot of a corporate administrator, light mode aesthetic, clean white background, conveying trust and reliability in an institutional setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAw486TBLNWUa1TiOLqxkWejp8PZjNILBMex8vgMQsql-QzR50eGRO7kfC3cPLCE0NcELAXYlmEtqnQjlmRoThwXFiMFvLV7znx3TtoU4PKCKzQ8Lczl3gu-Tc_rbSLpXM5GDDvlNjObgELfinUG85i2yueon19aVyaLBUBfb9d9tQT96OwG1IZwSPYowv5i5_XtkS3Ox8oVWM_hP8v8vh6XrmN6qEIgmTyyIu16IuYiMv3vyL0Li0dUA">
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 mt-16 p-container-margin overflow-y-auto">
+<!-- Page Header & EVM Summary -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-xl gap-md">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-primary mb-xs">Suivi de la Valeur Acquise (EVM)</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Analyse des performances de coût et de délai</p>
+</div>
+<div class="glass-panel p-md rounded-xl flex items-center gap-lg">
+<div class="flex flex-col">
+<label class="font-label-md text-label-md text-on-surface-variant mb-xs">Arrêté des comptes au :</label>
+<div class="relative">
+<input class="font-body-md text-body-md bg-surface border border-outline-variant rounded-md px-sm py-xs text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none cursor-pointer" type="date" value="2024-03-31">
+</div>
+</div>
+<div class="h-10 w-px bg-outline-variant mx-xs"></div>
+<div class="flex gap-md">
+<div class="flex flex-col items-center">
+<span class="font-label-md text-label-md text-on-surface-variant mb-xs">CPI Global</span>
+<div class="bg-secondary-container text-on-secondary-container font-headline-sm text-headline-sm px-md py-xs rounded-full border border-secondary-fixed">
+                                1.05
+                            </div>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-label-md text-label-md text-on-surface-variant mb-xs">SPI Global</span>
+<div class="bg-tertiary-fixed text-on-tertiary-container font-headline-sm text-headline-sm px-md py-xs rounded-full border border-tertiary-fixed-dim">
+                                0.92
+                            </div>
+</div>
+</div>
+</div>
+</div>
+<!-- Data Table -->
+<div class="glass-panel rounded-xl overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="p-md font-label-md text-label-md text-on-surface-variant w-24">Code</th>
+<th class="p-md font-label-md text-label-md text-on-surface-variant">Description</th>
+<th class="p-md font-label-md text-label-md text-on-surface-variant w-40">Responsable</th>
+<th class="p-md font-label-md text-label-md text-on-surface-variant w-48">Période</th>
+<th class="p-md font-label-md text-label-md text-on-surface-variant w-32">% Avancement</th>
+<th class="p-md font-label-md text-label-md text-on-surface-variant w-32 text-right">Budget Alloué (FCFA)</th>
+<th class="p-md font-label-md text-label-md text-on-surface-variant w-32 text-right">Coût Réel (FCFA)</th>
+<th class="p-md font-label-md text-label-md text-on-surface-variant w-24 text-center">CPI</th>
+<th class="p-md font-label-md text-label-md text-on-surface-variant w-24 text-center">SPI</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface">
+<!-- Row 1 -->
+<tr class="border-b border-outline-variant hover:bg-surface-container-lowest transition-colors h-12">
+<td class="p-md font-label-md text-label-md">1.1.1</td>
+<td class="p-md font-medium">Formation des équipes locales</td>
+<td class="p-md">Jean Dupont</td>
+<td class="p-md text-on-surface-variant text-sm">01/01/24 – 31/03/24</td>
+<td class="p-md">
+<div class="flex items-center gap-xs">
+<span class="w-8 text-right font-label-md">100%</span>
+<div class="flex-1 h-2 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-secondary" style="width: 100%;"></div>
+</div>
+</div>
+</td>
+<td class="p-md text-right font-medium">45 000 FCFA</td>
+<td class="p-md text-right font-medium">42 500 FCFA</td>
+<td class="p-md text-center">
+<span class="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-secondary-container text-on-secondary-container">1.06</span>
+</td>
+<td class="p-md text-center">
+<span class="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-secondary-container text-on-secondary-container">1.00</span>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="border-b border-outline-variant bg-[#F8FAFC] hover:bg-surface-container-lowest transition-colors h-12">
+<td class="p-md font-label-md text-label-md">1.1.2</td>
+<td class="p-md font-medium">Acquisition de matériel IT</td>
+<td class="p-md">Marie Curie</td>
+<td class="p-md text-on-surface-variant text-sm">15/01/24 – 15/04/24</td>
+<td class="p-md">
+<div class="flex items-center gap-xs">
+<span class="w-8 text-right font-label-md">75%</span>
+<div class="flex-1 h-2 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 75%;"></div>
+</div>
+</div>
+</td>
+<td class="p-md text-right font-medium">120 000 FCFA</td>
+<td class="p-md text-right font-medium">95 000 FCFA</td>
+<td class="p-md text-center">
+<span class="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-tertiary-fixed text-on-tertiary-container">0.95</span>
+</td>
+<td class="p-md text-center">
+<span class="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-error-container text-on-error-container">0.85</span>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="border-b border-outline-variant hover:bg-surface-container-lowest transition-colors h-12">
+<td class="p-md font-label-md text-label-md">1.2.1</td>
+<td class="p-md font-medium">Déploiement logiciel terrain</td>
+<td class="p-md">Paul Martin</td>
+<td class="p-md text-on-surface-variant text-sm">01/02/24 – 30/06/24</td>
+<td class="p-md">
+<div class="flex items-center gap-xs">
+<span class="w-8 text-right font-label-md">40%</span>
+<div class="flex-1 h-2 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 40%;"></div>
+</div>
+</div>
+</td>
+<td class="p-md text-right font-medium">85 000 FCFA</td>
+<td class="p-md text-right font-medium">40 000 FCFA</td>
+<td class="p-md text-center">
+<span class="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-error-container text-on-error-container">0.85</span>
+</td>
+<td class="p-md text-center">
+<span class="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-tertiary-fixed text-on-tertiary-container">0.92</span>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="border-b border-outline-variant bg-[#F8FAFC] hover:bg-surface-container-lowest transition-colors h-12">
+<td class="p-md font-label-md text-label-md">1.2.2</td>
+<td class="p-md font-medium">Audit de sécurité</td>
+<td class="p-md">Sarah Connor</td>
+<td class="p-md text-on-surface-variant text-sm">01/03/24 – 15/03/24</td>
+<td class="p-md">
+<div class="flex items-center gap-xs">
+<span class="w-8 text-right font-label-md">100%</span>
+<div class="flex-1 h-2 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-secondary" style="width: 100%;"></div>
+</div>
+</div>
+</td>
+<td class="p-md text-right font-medium">15 000 FCFA</td>
+<td class="p-md text-right font-medium">14 200 FCFA</td>
+<td class="p-md text-center">
+<span class="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-secondary-container text-on-secondary-container">1.06</span>
+</td>
+<td class="p-md text-center">
+<span class="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-secondary-container text-on-secondary-container">1.00</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination / Footer -->
+<div class="p-sm border-t border-outline-variant bg-surface-container-low flex justify-between items-center text-on-surface-variant font-body-sm">
+<span class="">Affichage 1 à 4 sur 24 éléments</span>
+<div class="flex gap-xs">
+<button class="p-xs rounded hover:bg-surface-variant transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="p-xs rounded hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+
+
+
+
+
+</body></html>

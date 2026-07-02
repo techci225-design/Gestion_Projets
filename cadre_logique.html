@@ -1,0 +1,418 @@
+<!DOCTYPE html><html class="light" lang="fr"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>GovTrack Pro - Cadre Logique</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface": "#0b1c30",
+                      "tertiary-container": "#533200",
+                      "outline": "#74777f",
+                      "secondary": "#006e2d",
+                      "inverse-primary": "#adc8f5",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "on-tertiary-container": "#e39100",
+                      "on-error-container": "#93000a",
+                      "surface-tint": "#455f87",
+                      "inverse-surface": "#213145",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-fixed": "#2a1700",
+                      "secondary-fixed": "#7ffc97",
+                      "secondary-container": "#7cf994",
+                      "on-background": "#0b1c30",
+                      "surface-variant": "#d3e4fe",
+                      "surface-bright": "#f8f9ff",
+                      "on-primary": "#ffffff",
+                      "surface-container-low": "#eff4ff",
+                      "on-primary-fixed": "#001c3b",
+                      "primary-fixed-dim": "#adc8f5",
+                      "error": "#ba1a1a",
+                      "on-secondary": "#ffffff",
+                      "on-secondary-container": "#007230",
+                      "primary": "#022448",
+                      "on-error": "#ffffff",
+                      "surface-container-highest": "#d3e4fe",
+                      "primary-container": "#1e3a5f",
+                      "outline-variant": "#c4c6cf",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "surface-container": "#e5eeff",
+                      "tertiary-fixed": "#ffddb8",
+                      "tertiary": "#361f00",
+                      "on-primary-container": "#8aa4cf",
+                      "primary-fixed": "#d5e3ff",
+                      "on-primary-fixed-variant": "#2d486d",
+                      "surface-dim": "#cbdbf5",
+                      "on-secondary-fixed-variant": "#005320",
+                      "surface": "#f8f9ff",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed-dim": "#62df7d",
+                      "error-container": "#ffdad6",
+                      "background": "#f8f9ff",
+                      "on-secondary-fixed": "#002109",
+                      "surface-container-high": "#dce9ff",
+                      "on-surface-variant": "#43474e",
+                      "inverse-on-surface": "#eaf1ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "lg": "24px",
+                      "container-margin": "40px",
+                      "xl": "32px",
+                      "unit": "4px",
+                      "sm": "8px",
+                      "md": "16px",
+                      "gutter": "20px"
+              },
+              "fontFamily": {
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "36px",
+                              {
+                                      "lineHeight": "44px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "26px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "28px",
+                              {
+                                      "lineHeight": "36px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "22px",
+                              {
+                                      "lineHeight": "30px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "13px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "18px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .hierarchy-lvl-1 { background-color: #f0f7ff; }
+        .hierarchy-lvl-2 { background-color: #f0fff4; }
+        .hierarchy-lvl-3 { background-color: #fffaf0; }
+        .hierarchy-lvl-4 { background-color: #f8fafc; }
+        
+        .accordion-content {
+            transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            max-height: 2000px; /* Arbitrary large max-height for expanded state */
+            opacity: 1;
+            overflow: hidden;
+        }
+        .accordion-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+        }
+        
+        /* Subtle striping for data tables inside hierarchy */
+        .data-table-row:nth-child(even) {
+            background-color: rgba(248, 250, 252, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface dark:bg-inverse-surface shadow-sm py-md px-sm border-r border-outline-variant z-50">
+<!-- Header -->
+<div class="flex items-center gap-sm mb-xl px-sm">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="A minimalist, highly professional logo for an institutional governance platform. The logo features abstract geometric shapes in shades of deep navy blue and crisp white, symbolizing structure, data, and reliable oversight. The aesthetic is clean, modern corporate, rendered with precise vector-like qualities on a white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQkALQuZg8uiGVSjO4i4LbvKWiBJtpyp4SBNadTgwrZEhEKqvHHQmrX2P9dsa64OJ5YodaaT8LWJtSQLYWqr-JlpEJPC1ZkeSKOY9nB7pvj-h1Ou7wGLJ9mIl_MvJIja1YSJkNIWR4_NK64xJe2l6ewiKsRdAcRyNDFlMEfS40BSbwKGQbFqYObwkmrWaUYjYBB20sQBvCEE2eTPm8ouV-QeCZzqld9Ngyltmc7T9IjcyYBaVi5hj0hg">
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-inverse-primary leading-tight">ProjetPilote</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Gouvernance &amp; Suivi</p>
+</div>
+</div>
+<!-- CTA -->
+<button class="bg-primary-container text-on-primary font-label-md text-label-md rounded-lg py-sm px-md mb-lg mx-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-xs shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1; font-size: 18px;">add</span>
+            Nouveau Projet
+        </button>
+<!-- Navigation Links -->
+<div class="flex-1 overflow-y-auto">
+<ul class="space-y-xs">
+<li class="">
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high dark:hover:bg-on-surface-variant/10 transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" style="font-size: 20px;">dashboard</span>
+                        Projets
+                    </a>
+</li>
+<li class="">
+<!-- Active State for Cadre Logistique -->
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-primary dark:text-inverse-primary font-bold border-r-4 border-primary dark:border-inverse-primary bg-primary-container/10 transition-colors font-body-md text-body-md opacity-90 transition-opacity duration-150" href="#">
+<span class="material-symbols-outlined" style="font-size: 20px;">account_tree</span>
+                        Cadre Logistique
+                    </a>
+</li>
+<li class="">
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high dark:hover:bg-on-surface-variant/10 transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" style="font-size: 20px;">calendar_today</span>
+                        PTBA
+                    </a>
+</li>
+<li class="">
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high dark:hover:bg-on-surface-variant/10 transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" style="font-size: 20px;">payments</span>
+                        Budget
+                    </a>
+</li>
+<li class="">
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high dark:hover:bg-on-surface-variant/10 transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" style="font-size: 20px;">monitoring</span>
+                        EVM
+                    </a>
+</li>
+<li class="">
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high dark:hover:bg-on-surface-variant/10 transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" style="font-size: 20px;">settings</span>
+                        Paramètres
+                    </a>
+</li>
+</ul>
+</div>
+<!-- Footer Links -->
+<div class="mt-auto pt-md border-t border-outline-variant dark:border-outline">
+<ul class="space-y-xs">
+<li class="">
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high dark:hover:bg-on-surface-variant/10 transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" style="font-size: 20px;">help</span>
+                        Aide
+                    </a>
+</li>
+<li class="">
+<a class="flex items-center gap-sm px-md py-sm rounded-lg text-on-surface-variant dark:text-outline-variant hover:text-primary dark:hover:text-inverse-primary hover:bg-surface-container-high dark:hover:bg-on-surface-variant/10 transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" style="font-size: 20px;">logout</span>
+                        Déconnexion
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-0 md:ml-64 pt-lg px-gutter pb-xl min-h-screen max-w-[1440px] mx-auto w-full">
+<!-- Top App Bar equivalent for content area context -->
+<header class="flex justify-between items-center mb-xl">
+<div>
+<p class="font-label-md text-label-md text-outline uppercase tracking-wider mb-xs">ProjetPilote / Planification</p>
+<h2 class="font-display-lg text-display-lg text-primary">Cadre Logique</h2>
+</div>
+<button class="bg-primary-container text-on-primary font-label-md text-label-md rounded-lg py-sm px-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-xs shadow-sm">
+<span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+                Ajouter un élément
+            </button>
+</header>
+<!-- Logical Framework Accordion Table Structure -->
+<section class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant overflow-hidden">
+<!-- Global Headers for Columns (Only visible on wide screens if we wanted, but we'll inline headers for clarity in deep hierarchy, or use a pseudo-table header) -->
+<div class="hidden lg:grid grid-cols-12 gap-sm px-md py-sm bg-surface-container-low border-b border-outline-variant font-label-md text-label-md text-on-surface-variant uppercase tracking-wider sticky top-0 z-10">
+<div class="col-span-3">Niveau / Description</div>
+<div class="col-span-2">Indicateur (IOV)</div>
+<div class="col-span-1">Ligne de base</div>
+<div class="col-span-2">Cible visée</div>
+<div class="col-span-2">Source de vérification</div>
+<div class="col-span-2">Hypothèses &amp; Risques</div>
+</div>
+<!-- Accordion Container -->
+<div class="flex flex-col">
+<!-- LEVEL 1: Objectif Global -->
+<div class="hierarchy-item group">
+<div class="hierarchy-lvl-1 flex flex-col lg:grid lg:grid-cols-12 gap-sm px-md py-md border-b border-outline-variant/50 items-start cursor-pointer hover:bg-surface-variant transition-colors" onclick="toggleAccordion('lvl1-content', 'lvl1-icon')">
+<div class="col-span-3 flex items-start gap-xs w-full">
+<span class="material-symbols-outlined text-primary mt-[2px] transition-transform duration-200" id="lvl1-icon" style="font-size: 20px;">expand_more</span>
+<div>
+<span class="inline-block bg-primary text-on-primary font-label-md text-[10px] px-2 py-0.5 rounded-full mb-1">Niveau 1</span>
+<h3 class="font-headline-sm text-headline-sm text-primary font-semibold leading-tight">Objectif Global (Impact)</h3>
+<p class="font-body-sm text-body-sm text-on-surface mt-1">Améliorer la résilience économique et l'accès aux services de base dans la région cible d'ici 2028.</p>
+</div>
+</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-2 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Indicateur:</span>Taux de pauvreté régional réduit</div>
+<div class="col-span-1 lg:block flex flex-col w-full mt-2 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Base:</span>45% (2023)</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-2 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Cible:</span>30% (2028)</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-2 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Source:</span>Rapport national INSD</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-2 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Hypothèses:</span>Stabilité macroéconomique maintenue au niveau national.</div>
+</div>
+<!-- Level 1 Content (Children) -->
+<div class="accordion-content" id="lvl1-content">
+<!-- LEVEL 2: Objectifs Spécifiques -->
+<div class="hierarchy-item border-l-4 border-l-secondary ml-4">
+<div class="hierarchy-lvl-2 flex flex-col lg:grid lg:grid-cols-12 gap-sm pl-md pr-md py-md border-b border-outline-variant/30 items-start cursor-pointer hover:bg-secondary-container/30 transition-colors" onclick="toggleAccordion('lvl2-1-content', 'lvl2-1-icon')">
+<div class="col-span-3 flex items-start gap-xs w-full">
+<span class="material-symbols-outlined text-secondary mt-[2px] transition-transform duration-200" id="lvl2-1-icon" style="font-size: 20px;">expand_more</span>
+<div>
+<span class="inline-block bg-secondary text-on-secondary font-label-md text-[10px] px-2 py-0.5 rounded-full mb-1">Niveau 2</span>
+<h4 class="font-headline-sm text-body-lg font-semibold text-on-surface leading-tight">Objectif Spécifique 1 (Effet)</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Augmenter la productivité agricole des petites exploitations de 30%.</p>
+</div>
+</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-2 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Indicateur:</span>Rendement moyen par hectare (T/ha)</div>
+<div class="col-span-1 lg:block flex flex-col w-full mt-2 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Base:</span>1.2 T/ha</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-2 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Cible:</span>1.8 T/ha</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-2 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Source:</span>Enquêtes agricoles annuelles du projet</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-2 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Hypothèses:</span>Conditions pluviométriques favorables (pas de sécheresse sévère).</div>
+</div>
+<!-- Level 2 Content (Children) -->
+<div class="accordion-content" id="lvl2-1-content">
+<!-- LEVEL 3: Résultats -->
+<div class="hierarchy-item border-l-4 border-l-tertiary-container ml-8">
+<div class="hierarchy-lvl-3 flex flex-col lg:grid lg:grid-cols-12 gap-sm pl-md pr-md py-md border-b border-outline-variant/30 items-start cursor-pointer hover:bg-tertiary-fixed/30 transition-colors" onclick="toggleAccordion('lvl3-1-content', 'lvl3-1-icon')">
+<div class="col-span-3 flex items-start gap-xs w-full">
+<span class="material-symbols-outlined text-tertiary-container mt-[2px] transition-transform duration-200" id="lvl3-1-icon" style="font-size: 20px;">expand_more</span>
+<div>
+<span class="inline-block bg-tertiary-container text-on-primary font-label-md text-[10px] px-2 py-0.5 rounded-full mb-1">Niveau 3</span>
+<h5 class="font-body-lg font-medium text-on-surface leading-tight">Résultat 1.1 (Extrant)</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Les agriculteurs adoptent des semences améliorées et des techniques résilientes au climat.</p>
+</div>
+</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-2 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Indicateur:</span>% de ménages agricoles utilisant des semences améliorées</div>
+<div class="col-span-1 lg:block flex flex-col w-full mt-2 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Base:</span>15%</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-2 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Cible:</span>60%</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-2 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Source:</span>Rapports de distribution, registre des coopératives</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-2 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Hypothèses:</span>Disponibilité des semences sur le marché local en temps voulu.</div>
+</div>
+<!-- Level 3 Content (Children) -->
+<div class="accordion-content" id="lvl3-1-content">
+<!-- LEVEL 4: Activités -->
+<div class="hierarchy-item border-l-4 border-l-outline ml-12">
+<div class="hierarchy-lvl-4 flex flex-col lg:grid lg:grid-cols-12 gap-sm pl-md pr-md py-sm border-b border-outline-variant/20 items-start data-table-row">
+<div class="col-span-3 flex items-start gap-xs w-full pl-6">
+<div>
+<span class="inline-block border border-outline text-outline font-label-md text-[9px] px-2 py-0.5 rounded-full mb-1">Niveau 4</span>
+<p class="font-body-md text-on-surface leading-snug">Activité 1.1.1: Organiser des campagnes de sensibilisation villageoises.</p>
+</div>
+</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-1 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Indicateur:</span>Nombre de campagnes réalisées</div>
+<div class="col-span-1 lg:block flex flex-col w-full mt-1 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Base:</span>0</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-1 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Cible:</span>24 (2 par village)</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-1 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Source:</span>Feuilles de présence, photos, CR</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-1 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Coûts/Ressources:</span>15 000 FCFA (Budget Ligne 4.1)</div>
+</div>
+<div class="hierarchy-lvl-4 flex flex-col lg:grid lg:grid-cols-12 gap-sm pl-md pr-md py-sm border-b border-outline-variant/20 items-start data-table-row">
+<div class="col-span-3 flex items-start gap-xs w-full pl-6">
+<div>
+<span class="inline-block border border-outline text-outline font-label-md text-[9px] px-2 py-0.5 rounded-full mb-1">Niveau 4</span>
+<p class="font-body-md text-on-surface leading-snug">Activité 1.1.2: Distribuer des kits de semences subventionnés.</p>
+</div>
+</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-1 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Indicateur:</span>Nombre de kits distribués</div>
+<div class="col-span-1 lg:block flex flex-col w-full mt-1 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Base:</span>0</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-1 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Cible:</span>1500 kits</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-1 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Source:</span>Bons de livraison signés</div>
+<div class="col-span-2 lg:block flex flex-col w-full mt-1 lg:mt-0"><span class="lg:hidden font-label-md text-xs text-outline mb-1">Coûts/Ressources:</span>45 000 FCFA (Budget Ligne 4.2)</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<script>
+        function toggleAccordion(contentId, iconId) {
+            const content = document.getElementById(contentId);
+            const icon = document.getElementById(iconId);
+            
+            if (content.classList.contains('collapsed')) {
+                content.classList.remove('collapsed');
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                content.classList.add('collapsed');
+                icon.style.transform = 'rotate(-90deg)';
+            }
+        }
+    </script>
+
+
+
+
+</body></html>
