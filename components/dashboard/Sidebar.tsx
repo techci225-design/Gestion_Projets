@@ -2,11 +2,12 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { logout } from '@/app/(auth)/login/actions'
 import { 
   BriefcaseBusiness, LayoutGrid, Settings, FolderTree, 
   CalendarDays, Wallet, Receipt, TrendingUp, ShoppingCart, 
-  AlertTriangle, Users, User, Home, MoreHorizontal, ShieldAlert, X
+  AlertTriangle, Users, User, Home, MoreHorizontal, ShieldAlert, X, LogOut
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -16,6 +17,12 @@ interface SidebarProps {
 export function Sidebar({ userFullName }: SidebarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    await logout()
+    router.push('/login')
+  }
 
   // Extract project ID if we are inside a project route
   // e.g., /projects/123/evm
@@ -101,14 +108,19 @@ export function Sidebar({ userFullName }: SidebarProps) {
 
         </nav>
 
-        <div className="p-4 border-t border-border flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold uppercase">
-            {userFullName.charAt(0)}
+        <div className="p-4 border-t border-border flex items-center gap-3 justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold uppercase">
+              {userFullName.charAt(0)}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-text-primary truncate">{userFullName}</p>
+              <Link href="/profile" className="text-xs text-text-secondary hover:text-primary transition-colors">Mon Profil</Link>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-text-primary truncate">{userFullName}</p>
-            <Link href="/profile" className="text-xs text-text-secondary hover:text-primary transition-colors">Mon Profil</Link>
-          </div>
+          <button onClick={handleLogout} className="p-2 text-text-secondary hover:text-danger hover:bg-danger/10 rounded-lg transition-colors">
+            <LogOut className="w-5 h-5" />
+          </button>
         </div>
       </aside>
 
