@@ -18,36 +18,51 @@ export async function createProject(formData: FormData) {
     return { error: 'Le nom du projet est requis' }
   }
 
-  const adminClient = createAdminClient()
+  let adminClient;
+  try {
+    adminClient = createAdminClient()
+  } catch (err: any) {
+    return { error: 'Erreur de configuration serveur (Clé Admin manquante ou invalide). Veuillez vérifier la variable SUPABASE_SERVICE_ROLE_KEY sur Vercel.' }
+  }
 
   // Insert project
-  const { data: project, error } = await adminClient
-    .from('projects')
-    .insert({
-      name,
-      code: code || null,
-      start_date: startDate || null,
-      end_date: endDate || null,
-      created_by: user.id
-    })
-    .select()
-    .single()
+  let project;
+  try {
+    const { data, error } = await adminClient
+      .from('projects')
+      .insert({
+        name,
+        code: code || null,
+        start_date: startDate || null,
+        end_date: endDate || null,
+        created_by: user.id
+      })
+      .select()
+      .single()
 
-  if (error) {
-    return { error: error.message }
+    if (error) {
+      return { error: error.message }
+    }
+    project = data;
+  } catch (err: any) {
+    return { error: err.message || 'Erreur inconnue lors de la création du projet.' }
   }
 
   // Insert user as owner in project_members
-  const { error: memberError } = await adminClient
-    .from('project_members')
-    .insert({
-      project_id: project.id,
-      user_id: user.id,
-      role: 'owner'
-    })
+  try {
+    const { error: memberError } = await adminClient
+      .from('project_members')
+      .insert({
+        project_id: project.id,
+        user_id: user.id,
+        role: 'owner'
+      })
 
-  if (memberError) {
-    return { error: memberError.message }
+    if (memberError) {
+      return { error: memberError.message }
+    }
+  } catch (err: any) {
+    return { error: err.message || 'Erreur inconnue lors de l\'ajout du membre.' }
   }
 
   revalidatePath('/projects')
