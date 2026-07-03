@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 export async function createProject(formData: FormData) {
@@ -17,8 +18,10 @@ export async function createProject(formData: FormData) {
     return { error: 'Le nom du projet est requis' }
   }
 
+  const adminClient = createAdminClient()
+
   // Insert project
-  const { data: project, error } = await supabase
+  const { data: project, error } = await adminClient
     .from('projects')
     .insert({
       name,
@@ -35,7 +38,7 @@ export async function createProject(formData: FormData) {
   }
 
   // Insert user as owner in project_members
-  const { error: memberError } = await supabase
+  const { error: memberError } = await adminClient
     .from('project_members')
     .insert({
       project_id: project.id,
