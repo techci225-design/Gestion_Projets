@@ -65,7 +65,7 @@ export function EvmHistory({ projectId, snapshots, currentSummary }: { projectId
               <Tooltip 
                 contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#f8fafc' }}
                 labelFormatter={(val) => new Date(val).toLocaleDateString('fr-FR')}
-                formatter={(value: number) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(value)}
+                formatter={(value: any) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(value)}
               />
               <Legend />
               <Line type="monotone" dataKey="pv_total" name="PV (Valeur Planifiée)" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />

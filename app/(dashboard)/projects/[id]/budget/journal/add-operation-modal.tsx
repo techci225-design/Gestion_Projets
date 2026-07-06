@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 export function AddOperationModal({ 
   projectId,
   budgetLines,
+  fundingSources,
   onClose
 }: { 
   projectId: string
