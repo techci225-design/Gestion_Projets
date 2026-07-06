@@ -58,12 +58,14 @@ BEGIN
   END LOOP;
 
   -- 5. Insérer dans l'audit_log
-  INSERT INTO audit_log (project_id, user_id, action, details)
+  INSERT INTO audit_log (project_id, user_id, action, entity_table, entity_id, after_data)
   VALUES (
     v_project_id,
     v_user_id,
     'CREATE',
-    'Création du projet avec assistant (financements et budget)'
+    'projects',
+    v_project_id,
+    jsonb_build_object('message', 'Création du projet avec assistant (financements et budget)')
   );
 
   RETURN v_project_id;
