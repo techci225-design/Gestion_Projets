@@ -46,6 +46,25 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources }:
     }
   }
 
+  if (!budgetLines || budgetLines.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh]">
+        <div className="bg-surface border border-border rounded-xl p-8 max-w-md text-center shadow-sm">
+          <h3 className="text-xl font-bold text-text-primary mb-3">Budget non défini</h3>
+          <p className="text-text-secondary mb-6">
+            Vous devez d'abord définir votre nomenclature budgétaire avant de saisir des opérations.
+          </p>
+          <a 
+            href={`/projects/${projectId}/budget`}
+            className="inline-flex items-center justify-center bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg font-medium transition-colors"
+          >
+            Définir le budget
+          </a>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col h-full space-y-6">
       {/* Header */}

@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Plus, Download } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Plus, Download, CheckCircle2, WalletCards } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { AddBudgetModal } from './add-budget-modal'
+import { useSearchParams, useRouter } from 'next/navigation'
 
 export interface BudgetConsumption {
   budget_line_id: string
@@ -20,6 +21,20 @@ export interface BudgetConsumption {
 
 export function BudgetClient({ items, fundingSources, projectId }: { items: BudgetConsumption[], fundingSources?: any[], projectId: string }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const [showSuccess, setShowSuccess] = useState(false)
+
+  useEffect(() => {
+    if (searchParams.get('new') === 'true') {
+      setShowSuccess(true)
+      const timer = setTimeout(() => {
+        setShowSuccess(false)
+        router.replace(`/projects/${projectId}/budget`)
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [searchParams, projectId, router])
 
   // Calculate totals
   const totalAllocated = items.reduce((acc, item) => acc + Number(item.initial_allocated_amount), 0)
@@ -127,113 +142,121 @@ export function BudgetClient({ items, fundingSources, projectId }: { items: Budg
         </div>
       )}
 
-      {/* Data Table Card */}
-      <div className="bg-white rounded-lg shadow-sm border border-border overflow-hidden">
-        <div className="overflow-x-auto hidden md:block">
-          <table className="w-full text-left border-collapse text-sm">
-            <thead className="bg-surface-dim border-b border-border text-text-secondary font-medium">
-              <tr>
-                <th className="p-4">Ligne Budgétaire</th>
-                <th className="p-4 text-right">Budget Initial (FCFA)</th>
-                <th className="p-4 text-right">Cumul Engagé (FCFA)</th>
-                <th className="p-4 text-right">Cumul Décaissé (FCFA)</th>
-                <th className="p-4 text-right">Solde Disponible (FCFA)</th>
-                <th className="p-4 w-48">Taux de Consommation (%)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedKeys.map(key => {
-                const groupItems = categories[key]
-                const groupAlloc = groupItems.reduce((acc, i) => acc + Number(i.initial_allocated_amount), 0)
-                const groupEngage = groupItems.reduce((acc, i) => acc + Number(i.total_engage), 0)
-                const groupDecaisse = groupItems.reduce((acc, i) => acc + Number(i.total_decaisse), 0)
-                const groupSolde = groupAlloc - groupEngage - groupDecaisse
-                
-                return (
-                  <React.Fragment key={key}>
-                    <tr className="bg-slate-50 border-b border-border/50 font-bold text-text-primary">
-                      <td className="p-4" colSpan={6}>{key}. Catégorie {key}</td>
-                    </tr>
-                    {groupItems.map((item, idx) => (
-                      <tr key={item.budget_line_id} className={`border-b border-border/30 h-10 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
-                        <td className="p-4 pl-8">{item.code} {item.label}</td>
-                        <td className="p-4 text-right font-mono">{formatCurrency(item.initial_allocated_amount)}</td>
-                        <td className="p-4 text-right font-mono">{formatCurrency(item.total_engage)}</td>
-                        <td className="p-4 text-right font-mono">{formatCurrency(item.total_decaisse)}</td>
-                        <td className="p-4 text-right font-mono">{formatCurrency(item.solde_disponible)}</td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-2">
-                            <div className="w-full bg-surface-dim h-2 rounded-full overflow-hidden">
-                              <div className={`${getAlertBarColor(item.niveau_alerte)} h-full`} style={{ width: `${Math.min(item.taux_consommation * 100, 100)}%` }}></div>
-                            </div>
-                            <span className={`font-mono text-xs w-10 text-right ${item.niveau_alerte === 'rouge' ? 'text-danger' : 'text-text-primary'}`}>
-                              {Math.round(item.taux_consommation * 100)}%
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                    <tr className="bg-surface-dim/30 border-b-2 border-border/50 font-medium h-10">
-                      <td className="p-4 text-right">Sous-total Catégorie {key}</td>
-                      <td className="p-4 text-right font-mono">{formatCurrency(groupAlloc)}</td>
-                      <td className="p-4 text-right font-mono">{formatCurrency(groupEngage)}</td>
-                      <td className="p-4 text-right font-mono">{formatCurrency(groupDecaisse)}</td>
-                      <td className="p-4 text-right font-mono">{formatCurrency(groupSolde)}</td>
-                      <td className="p-4 text-right font-mono text-xs pr-6">—</td>
-                    </tr>
-                  </React.Fragment>
-                )
-              })}
-              
-              {items.length === 0 && (
+      {/* Empty State or Data Table */}
+      {items.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-12 bg-surface border border-dashed border-border rounded-xl text-center">
+          <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
+            <WalletCards className="w-8 h-8" />
+          </div>
+          <h3 className="text-xl font-bold text-text-primary mb-2">Aucun budget défini</h3>
+          <p className="text-text-secondary max-w-md mx-auto mb-8">
+            Ajoutez vos lignes budgétaires pour commencer le suivi financier de ce projet.
+          </p>
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-medium shadow-sm transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            Ajouter une ligne budgétaire
+          </button>
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow-sm border border-border overflow-hidden">
+          <div className="overflow-x-auto hidden md:block">
+            <table className="w-full text-left border-collapse text-sm">
+              <thead className="bg-surface-dim border-b border-border text-text-secondary font-medium">
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-text-secondary">Aucune ligne budgétaire</td>
+                  <th className="p-4">Ligne Budgétaire</th>
+                  <th className="p-4 text-right">Budget Initial (FCFA)</th>
+                  <th className="p-4 text-right">Cumul Engagé (FCFA)</th>
+                  <th className="p-4 text-right">Cumul Décaissé (FCFA)</th>
+                  <th className="p-4 text-right">Solde Disponible (FCFA)</th>
+                  <th className="p-4 w-48">Taux de Consommation (%)</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {sortedKeys.map(key => {
+                  const groupItems = categories[key]
+                  const groupAlloc = groupItems.reduce((acc, i) => acc + Number(i.initial_allocated_amount), 0)
+                  const groupEngage = groupItems.reduce((acc, i) => acc + Number(i.total_engage), 0)
+                  const groupDecaisse = groupItems.reduce((acc, i) => acc + Number(i.total_decaisse), 0)
+                  const groupSolde = groupAlloc - groupEngage - groupDecaisse
+                  
+                  return (
+                    <React.Fragment key={key}>
+                      <tr className="bg-slate-50 border-b border-border/50 font-bold text-text-primary">
+                        <td className="p-4" colSpan={6}>{key}. Catégorie {key}</td>
+                      </tr>
+                      {groupItems.map((item, idx) => (
+                        <tr key={item.budget_line_id} className={`border-b border-border/30 h-10 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
+                          <td className="p-4 pl-8">{item.code} {item.label}</td>
+                          <td className="p-4 text-right font-mono">{formatCurrency(item.initial_allocated_amount)}</td>
+                          <td className="p-4 text-right font-mono">{formatCurrency(item.total_engage)}</td>
+                          <td className="p-4 text-right font-mono">{formatCurrency(item.total_decaisse)}</td>
+                          <td className="p-4 text-right font-mono">{formatCurrency(item.solde_disponible)}</td>
+                          <td className="p-4">
+                            <div className="flex items-center gap-2">
+                              <div className="w-full bg-surface-dim h-2 rounded-full overflow-hidden">
+                                <div className={`${getAlertBarColor(item.niveau_alerte)} h-full`} style={{ width: `${Math.min(item.taux_consommation * 100, 100)}%` }}></div>
+                              </div>
+                              <span className={`font-mono text-xs w-10 text-right ${item.niveau_alerte === 'rouge' ? 'text-danger' : 'text-text-primary'}`}>
+                                {Math.round(item.taux_consommation * 100)}%
+                              </span>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      <tr className="bg-surface-dim/30 border-b-2 border-border/50 font-medium h-10">
+                        <td className="p-4 text-right">Sous-total Catégorie {key}</td>
+                        <td className="p-4 text-right font-mono">{formatCurrency(groupAlloc)}</td>
+                        <td className="p-4 text-right font-mono">{formatCurrency(groupEngage)}</td>
+                        <td className="p-4 text-right font-mono">{formatCurrency(groupDecaisse)}</td>
+                        <td className="p-4 text-right font-mono">{formatCurrency(groupSolde)}</td>
+                        <td className="p-4 text-right font-mono text-xs pr-6">—</td>
+                      </tr>
+                    </React.Fragment>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
 
-        {/* Mobile Cards */}
-        <div className="md:hidden flex flex-col p-4 gap-4 bg-background-main">
-          {sortedKeys.map(key => {
-            const groupItems = categories[key]
-            return (
-              <div key={key} className="space-y-4">
-                <h3 className="font-bold text-on-surface bg-surface-container-low p-2 rounded-lg">{key}. Catégorie {key}</h3>
-                {groupItems.map(item => (
-                  <div key={item.budget_line_id} className="bg-surface p-4 rounded-xl shadow-sm border border-border">
-                    <h4 className="font-semibold text-on-surface mb-2">{item.code} {item.label}</h4>
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-full bg-surface-dim h-2 rounded-full overflow-hidden">
-                        <div className={`${getAlertBarColor(item.niveau_alerte)} h-full`} style={{ width: `${Math.min(item.taux_consommation * 100, 100)}%` }}></div>
+          {/* Mobile Cards */}
+          <div className="md:hidden flex flex-col p-4 gap-4 bg-background-main">
+            {sortedKeys.map(key => {
+              const groupItems = categories[key]
+              return (
+                <div key={key} className="space-y-4">
+                  <h3 className="font-bold text-on-surface bg-surface-container-low p-2 rounded-lg">{key}. Catégorie {key}</h3>
+                  {groupItems.map(item => (
+                    <div key={item.budget_line_id} className="bg-surface p-4 rounded-xl shadow-sm border border-border">
+                      <h4 className="font-semibold text-on-surface mb-2">{item.code} {item.label}</h4>
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="w-full bg-surface-dim h-2 rounded-full overflow-hidden">
+                          <div className={`${getAlertBarColor(item.niveau_alerte)} h-full`} style={{ width: `${Math.min(item.taux_consommation * 100, 100)}%` }}></div>
+                        </div>
+                        <span className={`font-mono text-xs font-bold ${item.niveau_alerte === 'rouge' ? 'text-danger' : 'text-primary'}`}>
+                          {Math.round(item.taux_consommation * 100)}%
+                        </span>
                       </div>
-                      <span className={`font-mono text-xs font-bold ${item.niveau_alerte === 'rouge' ? 'text-danger' : 'text-primary'}`}>
-                        {Math.round(item.taux_consommation * 100)}%
-                      </span>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-on-surface-variant text-xs">Initial</p>
+                          <p className="font-mono font-medium">{formatCurrency(item.initial_allocated_amount)}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-on-surface-variant text-xs">Solde</p>
+                          <p className="font-mono font-bold text-primary">{formatCurrency(item.solde_disponible)}</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <p className="text-on-surface-variant text-xs">Initial</p>
-                        <p className="font-mono font-medium">{formatCurrency(item.initial_allocated_amount)}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-on-surface-variant text-xs">Solde</p>
-                        <p className="font-mono font-bold text-primary">{formatCurrency(item.solde_disponible)}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )
-          })}
-          {items.length === 0 && (
-            <div className="p-8 text-center text-on-surface-variant bg-surface rounded-xl">
-              Aucune ligne budgétaire.
-            </div>
-          )}
+                  ))}
+                </div>
+              )
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {isModalOpen && (
         <AddBudgetModal 

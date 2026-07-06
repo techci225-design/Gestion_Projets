@@ -68,3 +68,46 @@ export async function createProject(formData: FormData) {
   revalidatePath('/projects')
   return { success: true, projectId: project.id }
 }
+
+export async function createProjectWithBudget(payload: any) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Non authentifié' }
+
+  if (!payload.name || !payload.code || !payload.start_date || !payload.end_date) {
+    return { error: 'Les informations du projet sont incomplètes' }
+  }
+
+  if (!payload.funding_sources || payload.funding_sources.length === 0) {
+    return { error: 'Au moins un bailleur est requis' }
+  }
+
+  if (!payload.budget_lines || payload.budget_lines.length === 0) {
+    return { error: 'Au moins une ligne budgétaire est requise' }
+  }
+
+  let adminClient;
+  try {
+    adminClient = createAdminClient()
+  } catch (err: any) {
+    return { error: 'Erreur de configuration serveur (Clé Admin manquante).' }
+  }
+
+  try {
+    const { data: projectId, error } = await adminClient.rpc('create_project_with_budget', {
+      payload: {
+        ...payload,
+        user_id: user.id
+      }
+    })
+
+    if (error) {
+      return { error: error.message }
+    }
+
+    revalidatePath('/projects')
+    return { success: true, projectId }
+  } catch (err: any) {
+    return { error: err.message || 'Erreur inconnue lors de la création du projet avec budget.' }
+  }
+}
