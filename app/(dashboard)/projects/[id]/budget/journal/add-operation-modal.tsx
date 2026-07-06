@@ -12,6 +12,7 @@ export function AddOperationModal({
 }: { 
   projectId: string
   budgetLines: any[]
+  fundingSources: any[]
   onClose: () => void 
 }) {
   const router = useRouter()
@@ -32,6 +33,7 @@ export function AddOperationModal({
       status: formData.get('status') as any,
       planned_cost: Number(formData.get('planned_cost')) || 0,
       actual_cost: formData.get('actual_cost') ? Number(formData.get('actual_cost')) : undefined,
+      funding_source_id: formData.get('funding_source_id') as string || undefined,
     })
 
     setLoading(false)
@@ -71,6 +73,16 @@ export function AddOperationModal({
               <option value="">Sélectionner une ligne...</option>
               {budgetLines.map(bl => (
                 <option key={bl.id} value={bl.id}>{bl.code} {bl.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-1">Bailleur (Optionnel)</label>
+            <select name="funding_source_id" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-surface">
+              <option value="">Par défaut (lié à la ligne)</option>
+              {fundingSources?.map((fs: any) => (
+                <option key={fs.id} value={fs.id}>{fs.name}</option>
               ))}
             </select>
           </div>

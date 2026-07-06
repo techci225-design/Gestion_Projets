@@ -54,7 +54,8 @@ const operationJournalSchema = z.object({
   phase_wbs: z.string().optional(),
   status: z.enum(['planifie', 'engage', 'decaisse', 'annule']),
   planned_cost: z.number().min(0),
-  actual_cost: z.number().min(0).optional()
+  actual_cost: z.number().min(0).optional(),
+  funding_source_id: z.string().uuid().optional()
 })
 
 export async function createOperation(data: z.infer<typeof operationJournalSchema>) {

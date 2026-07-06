@@ -23,7 +23,7 @@ export interface OperationJournal {
   }
 }
 
-export function JournalClient({ items, projectId, budgetLines }: { items: OperationJournal[], projectId: string, budgetLines: any[] }) {
+export function JournalClient({ items, projectId, budgetLines, fundingSources }: { items: OperationJournal[], projectId: string, budgetLines: any[], fundingSources: any[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const getStatusBadge = (status: string) => {
@@ -138,6 +138,7 @@ export function JournalClient({ items, projectId, budgetLines }: { items: Operat
         <AddOperationModal 
           projectId={projectId}
           budgetLines={budgetLines}
+          fundingSources={fundingSources}
           onClose={() => setIsModalOpen(false)}
         />
       )}

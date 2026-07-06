@@ -28,12 +28,19 @@ export default async function EvmPage({ params }: { params: Promise<{ id: string
     .eq('project_id', id)
     .order('created_at', { ascending: false })
 
+  const { data: snapshots } = await supabase
+    .from('evm_snapshots')
+    .select('*')
+    .eq('project_id', id)
+    .order('control_date', { ascending: true })
+
   return (
     <EvmClient 
       projectId={id}
       project={project}
       summary={summaryData || null}
       indicators={indicators || []}
+      snapshots={snapshots || []}
     />
   )
 }

@@ -18,6 +18,12 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
     .eq('project_id', id)
     .order('code', { ascending: true })
 
+  const { data: fundingSources } = await supabase
+    .from('funding_sources')
+    .select('id, name')
+    .eq('project_id', id)
+    .order('name', { ascending: true })
+
   if (error) {
     return (
       <div className="p-6">
@@ -32,7 +38,7 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="flex-1 p-6 overflow-y-auto">
-      <JournalClient items={items} projectId={id} budgetLines={budgetLines || []} />
+      <JournalClient items={items} projectId={id} budgetLines={budgetLines || []} fundingSources={fundingSources || []} />
     </div>
   )
 }

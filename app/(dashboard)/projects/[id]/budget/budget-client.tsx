@@ -18,7 +18,7 @@ export interface BudgetConsumption {
   niveau_alerte: 'vert' | 'orange' | 'rouge' | 'neutre'
 }
 
-export function BudgetClient({ items, projectId }: { items: BudgetConsumption[], projectId: string }) {
+export function BudgetClient({ items, fundingSources, projectId }: { items: BudgetConsumption[], fundingSources?: any[], projectId: string }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   // Calculate totals
@@ -96,6 +96,36 @@ export function BudgetClient({ items, projectId }: { items: BudgetConsumption[],
           <span>Budget Total: {formatCurrency(totalAllocated)}</span>
         </div>
       </div>
+
+      {/* Funding Sources Section */}
+      {fundingSources && fundingSources.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {fundingSources.map(fs => (
+            <div key={fs.funding_source_id} className="bg-surface rounded-xl p-5 border border-border shadow-sm">
+              <div className="flex justify-between items-start mb-4">
+                <h4 className="font-semibold text-text-primary">{fs.bailleur_name}</h4>
+                <span className="text-xs font-bold px-2 py-1 bg-primary/10 text-primary rounded-full">
+                  {Math.round(Number(fs.taux_utilisation) * 100)}% utilisé
+                </span>
+              </div>
+              <div className="space-y-2 text-sm text-text-secondary">
+                <div className="flex justify-between">
+                  <span>Engagé:</span>
+                  <span className="font-medium text-text-primary">{formatCurrency(Number(fs.total_engage))}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Décaissé:</span>
+                  <span className="font-medium text-text-primary">{formatCurrency(Number(fs.total_decaisse))}</span>
+                </div>
+                <div className="flex justify-between pt-2 border-t border-border mt-2">
+                  <span>Solde restant:</span>
+                  <span className="font-bold text-primary">{formatCurrency(Number(fs.solde_restant))}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Data Table Card */}
       <div className="bg-white rounded-lg shadow-sm border border-border overflow-hidden">

@@ -5,6 +5,7 @@ import { Plus } from 'lucide-react'
 import { updateEvmDate } from '@/lib/actions/evm.actions'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { AddEvmTaskModal } from './add-evm-task-modal'
+import { EvmHistory } from './evm-history'
 
 function AlertBadge({ value }: { value: number }) {
   if (value >= 1) {
@@ -32,12 +33,14 @@ export function EvmClient({
   projectId, 
   project, 
   summary, 
-  indicators 
+  indicators,
+  snapshots
 }: { 
   projectId: string, 
   project: any, 
   summary: any, 
-  indicators: any[] 
+  indicators: any[],
+  snapshots: any[]
 }) {
   const [isPending, startTransition] = useTransition()
   const [controlDate, setControlDate] = useState(project.evm_control_date || new Date().toISOString().split('T')[0])
@@ -189,6 +192,8 @@ export function EvmClient({
           </div>
         )}
       </div>
+
+      <EvmHistory projectId={projectId} snapshots={snapshots} currentSummary={summary} />
 
       <AddEvmTaskModal 
         isOpen={isModalOpen} 
