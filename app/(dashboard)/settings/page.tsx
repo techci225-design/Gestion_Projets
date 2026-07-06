@@ -1,60 +1,43 @@
 import React from 'react'
 import { Header } from '@/components/dashboard/Header'
-import { Settings, User, Bell, Shield } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
+import { SettingsClient, SettingsProfile } from './settings-client'
+import { redirect } from 'next/navigation'
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const supabase = await createClient()
+  
+  // Auth check
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    redirect('/login')
+  }
+
+  // Fetch user profile from DB
+  const { data: profileData, error } = await supabase
+    .from('profiles')
+    .select('id, full_name, email, phone, notification_prefs')
+    .eq('id', user.id)
+    .single()
+
+  if (error || !profileData) {
+    return (
+      <div className="p-6">
+        <Header title="Paramètres" />
+        <div className="mt-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
+          Erreur de chargement du profil : {error?.message || 'Profil introuvable'}
+        </div>
+      </div>
+    )
+  }
+
+  const profile = profileData as SettingsProfile
+
   return (
     <>
       <Header title="Paramètres" />
-      <div className="p-6 max-w-4xl mx-auto space-y-6">
-        <h2 className="text-2xl font-bold tracking-tight text-text-primary">Paramètres du compte</h2>
-        
-        <div className="grid gap-6">
-          <div className="bg-surface rounded-lg shadow-sm border border-border p-6 flex items-start gap-4">
-            <div className="p-3 bg-primary/10 text-primary rounded-lg">
-              <User className="w-6 h-6" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-text-primary mb-1">Profil</h3>
-              <p className="text-sm text-text-secondary mb-4">
-                Gérez vos informations personnelles et votre avatar. (Bientôt disponible)
-              </p>
-              <button disabled className="px-4 py-2 bg-surface-dim text-text-secondary rounded-lg text-sm font-medium cursor-not-allowed">
-                Modifier le profil
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-surface rounded-lg shadow-sm border border-border p-6 flex items-start gap-4">
-            <div className="p-3 bg-success/10 text-success rounded-lg">
-              <Bell className="w-6 h-6" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-text-primary mb-1">Préférences de notification</h3>
-              <p className="text-sm text-text-secondary mb-4">
-                Choisissez comment vous souhaitez être alerté (email, in-app). (Bientôt disponible)
-              </p>
-              <button disabled className="px-4 py-2 bg-surface-dim text-text-secondary rounded-lg text-sm font-medium cursor-not-allowed">
-                Gérer les alertes
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-surface rounded-lg shadow-sm border border-border p-6 flex items-start gap-4">
-            <div className="p-3 bg-warning/10 text-warning rounded-lg">
-              <Shield className="w-6 h-6" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-text-primary mb-1">Sécurité</h3>
-              <p className="text-sm text-text-secondary mb-4">
-                Mettez à jour votre mot de passe et vos paramètres de sécurité. (Bientôt disponible)
-              </p>
-              <button disabled className="px-4 py-2 bg-surface-dim text-text-secondary rounded-lg text-sm font-medium cursor-not-allowed">
-                Sécurité du compte
-              </button>
-            </div>
-          </div>
-        </div>
+      <div className="p-6 max-w-4xl mx-auto">
+        <SettingsClient profile={profile} />
       </div>
     </>
   )
