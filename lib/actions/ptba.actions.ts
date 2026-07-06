@@ -9,14 +9,14 @@ const ptbaSchema = z.object({
   project_id: z.string().uuid(),
   logframe_item_id: z.string().uuid().optional(),
   code: z.string().min(1),
-  title: z.string().min(1),
+  description: z.string().min(1),
   responsible: z.string().optional(),
   fiscal_year: z.number().int().min(2000).optional(),
   q1: z.boolean().default(false),
   q2: z.boolean().default(false),
   q3: z.boolean().default(false),
   q4: z.boolean().default(false),
-  planned_budget: z.number().min(0).default(0)
+  budget_planned: z.number().min(0).default(0)
 })
 
 export async function createPtbaActivity(data: z.infer<typeof ptbaSchema>) {

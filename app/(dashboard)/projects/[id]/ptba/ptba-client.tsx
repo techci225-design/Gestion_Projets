@@ -9,14 +9,14 @@ export interface PtbaActivity {
   id: string
   project_id: string
   code: string
-  title: string
+  description: string
   responsible: string | null
   fiscal_year: number | null
   q1: boolean
   q2: boolean
   q3: boolean
   q4: boolean
-  planned_budget: number
+  budget_planned: number
 }
 
 export function PtbaClient({ items, projectId }: { items: PtbaActivity[], projectId: string }) {
@@ -33,19 +33,19 @@ export function PtbaClient({ items, projectId }: { items: PtbaActivity[], projec
     return true
   })
 
-  const totalBudget = filteredItems.reduce((acc, item) => acc + Number(item.planned_budget), 0)
+  const totalBudget = filteredItems.reduce((acc, item) => acc + Number(item.budget_planned), 0)
 
   const exportCSV = () => {
     const headers = ['Code', 'Activité', 'Responsable', 'Q1', 'Q2', 'Q3', 'Q4', 'Budget Prévu (FCFA)']
     const rows = filteredItems.map(i => [
       i.code,
-      `"${i.title.replace(/"/g, '""')}"`,
+      `"${i.description.replace(/"/g, '""')}"`,
       i.responsible || '',
       i.q1 ? 'Oui' : 'Non',
       i.q2 ? 'Oui' : 'Non',
       i.q3 ? 'Oui' : 'Non',
       i.q4 ? 'Oui' : 'Non',
-      i.planned_budget
+      i.budget_planned
     ])
     const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
     const encodedUri = encodeURI(csvContent)
@@ -121,7 +121,7 @@ export function PtbaClient({ items, projectId }: { items: PtbaActivity[], projec
               {filteredItems.map((item, idx) => (
                 <tr key={item.id} className={`border-b border-border hover:bg-surface transition-colors h-12 ${idx % 2 !== 0 ? 'bg-slate-50' : 'bg-white'}`}>
                   <td className="p-4 font-medium text-primary">{item.code}</td>
-                  <td className="p-4">{item.title}</td>
+                  <td className="p-4">{item.description}</td>
                   <td className="p-4 text-text-secondary">{item.responsible || '—'}</td>
                   <td className="p-4 text-center">
                     {item.q1 && <div className="w-3 h-3 rounded-full bg-primary mx-auto"></div>}
@@ -135,7 +135,7 @@ export function PtbaClient({ items, projectId }: { items: PtbaActivity[], projec
                   <td className="p-4 text-center">
                     {item.q4 && <div className="w-3 h-3 rounded-full bg-primary mx-auto"></div>}
                   </td>
-                  <td className="p-4 text-right font-medium">{formatCurrency(item.planned_budget)}</td>
+                  <td className="p-4 text-right font-medium">{formatCurrency(item.budget_planned)}</td>
                 </tr>
               ))}
               {filteredItems.length === 0 && (

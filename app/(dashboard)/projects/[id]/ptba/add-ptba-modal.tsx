@@ -26,14 +26,14 @@ export function AddPtbaModal({
     const result = await createPtbaActivity({
       project_id: projectId,
       code: formData.get('code') as string,
-      title: formData.get('title') as string,
+      description: formData.get('description') as string,
       responsible: formData.get('responsible') as string || undefined,
       fiscal_year: formData.get('fiscal_year') ? Number(formData.get('fiscal_year')) : undefined,
       q1: formData.get('q1') === 'on',
       q2: formData.get('q2') === 'on',
       q3: formData.get('q3') === 'on',
       q4: formData.get('q4') === 'on',
-      planned_budget: Number(formData.get('planned_budget')) || 0,
+      budget_planned: Number(formData.get('budget_planned')) || 0,
     })
 
     setLoading(false)
@@ -75,17 +75,17 @@ export function AddPtbaModal({
 
           <div>
             <label className="block text-sm font-medium text-text-primary mb-1">Titre de l'activité</label>
-            <textarea required name="title" rows={2} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+            <textarea required name="description" rows={3} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"></textarea>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-text-primary mb-1">Responsable</label>
               <input type="text" name="responsible" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
             <div>
               <label className="block text-sm font-medium text-text-primary mb-1">Budget Prévu (FCFA)</label>
-              <input type="number" min="0" step="1" name="planned_budget" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+              <input type="number" min="0" step="1" name="budget_planned" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
           </div>
 
