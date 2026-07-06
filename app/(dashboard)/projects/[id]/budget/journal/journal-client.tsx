@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Plus, Download } from 'lucide-react'
+import { Plus, Download, History, ClipboardList } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { AddOperationModal } from './add-operation-modal'
 
@@ -28,11 +28,11 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources }:
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'planifie': return 'bg-slate-100 text-slate-600'
+      case 'planifie': return 'bg-gray-100 text-gray-600'
       case 'engage': return 'bg-blue-100 text-blue-700'
       case 'decaisse': return 'bg-green-100 text-green-700'
       case 'annule': return 'bg-red-100 text-red-500 line-through'
-      default: return 'bg-slate-100 text-slate-600'
+      default: return 'bg-gray-100 text-gray-600'
     }
   }
 
@@ -70,14 +70,24 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources }:
       {/* Header */}
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-primary tracking-tight">Journal des opérations</h2>
-        <div className="flex items-center gap-4">
-          <button className="px-4 py-2 bg-surface-dim border border-border rounded-lg text-sm font-medium text-primary flex items-center gap-2 hover:bg-border transition-colors">
-            <Download className="w-4 h-4" />
-            Exporter
-          </button>
+        <div className="flex items-center gap-3">
+          <a 
+            href={`/api/export/excel?module=journal&project_id=${projectId}`}
+            className="p-2 bg-surface-dim border border-border rounded-lg text-text-secondary hover:text-text-primary hover:bg-border transition-colors flex items-center justify-center"
+            title="Exporter en Excel"
+          >
+            <Download className="w-5 h-5" />
+          </a>
+          <a 
+            href={`/projects/${projectId}/audit`}
+            className="p-2 bg-surface-dim border border-border rounded-lg text-text-secondary hover:text-text-primary hover:bg-border transition-colors flex items-center justify-center"
+            title="Historique & Audit"
+          >
+            <History className="w-5 h-5" />
+          </a>
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity"
+            className="px-4 py-2.5 bg-[#0f172a] text-white rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-[#1e293b] transition-colors shadow-sm ml-2"
           >
             <Plus className="w-4 h-4" />
             Nouvelle opération
@@ -85,73 +95,84 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources }:
         </div>
       </div>
 
-      {/* Table Container */}
-      <div className="bg-white rounded-lg shadow-sm border border-border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-sm">
-            <thead className="bg-surface-dim border-b border-border text-text-secondary font-medium">
-              <tr>
-                <th className="p-4 whitespace-nowrap">ID Tâche</th>
-                <th className="p-4">Ligne Budgétaire</th>
-                <th className="p-4">Statut</th>
-                <th className="p-4 text-right">Coût Prévu (FCFA)</th>
-                <th className="p-4 text-right">Coût Réel (FCFA)</th>
-                <th className="p-4 text-right">Reste à Engager (FCFA)</th>
-                <th className="p-4 text-right">Montant Engagé (FCFA)</th>
-                <th className="p-4 text-right">Montant Décaissé (FCFA)</th>
-                <th className="p-4 text-right">Écart (FCFA)</th>
-              </tr>
-            </thead>
-            <tbody className="text-text-primary">
-              {items.map((item, idx) => (
-                <tr key={item.id} className={`border-b border-border/30 h-10 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} ${item.status === 'annule' ? 'opacity-70' : ''}`}>
-                  <td className={`p-4 font-medium text-primary ${item.status === 'annule' ? 'line-through' : ''}`}>
-                    {item.task_code}
-                  </td>
-                  <td className={`p-4 truncate max-w-[200px] ${item.status === 'annule' ? 'line-through' : ''}`}>
-                    {item.budget_lines?.code} {item.budget_lines?.label}
-                  </td>
-                  <td className="p-4">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium ${getStatusBadge(item.status)}`}>
-                      {getStatusLabel(item.status)}
-                    </span>
-                  </td>
-                  <td className={`p-4 text-right font-mono ${item.status === 'annule' ? 'line-through' : ''}`}>
-                    {formatCurrency(item.planned_cost)}
-                  </td>
-                  <td className={`p-4 text-right font-mono ${item.status === 'annule' ? 'line-through' : ''}`}>
-                    {item.actual_cost !== null ? formatCurrency(item.actual_cost) : '—'}
-                  </td>
-                  <td className={`p-4 text-right font-mono ${item.status === 'annule' ? 'line-through' : ''}`}>
-                    {formatCurrency(item.reste_a_engager)}
-                  </td>
-                  <td className={`p-4 text-right font-mono ${item.status === 'annule' ? 'line-through' : ''}`}>
-                    {formatCurrency(item.montant_engage)}
-                  </td>
-                  <td className={`p-4 text-right font-mono ${item.status === 'annule' ? 'line-through' : ''}`}>
-                    {formatCurrency(item.montant_decaisse)}
-                  </td>
-                  <td className={`p-4 text-right font-mono font-medium ${
-                    item.status === 'annule' ? 'text-text-secondary line-through' :
-                    item.ecart_budgetaire > 0 ? 'text-success' :
-                    item.ecart_budgetaire < 0 ? 'text-danger' : 'text-text-secondary'
-                  }`}>
-                    {item.status === 'decaisse' 
-                      ? (item.ecart_budgetaire > 0 ? '+' : '') + formatCurrency(item.ecart_budgetaire) 
-                      : '—'}
-                  </td>
-                </tr>
-              ))}
-              
-              {items.length === 0 && (
-                <tr>
-                  <td colSpan={9} className="p-8 text-center text-text-secondary">Aucune opération trouvée</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      {items.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-16 bg-surface border border-dashed border-border rounded-xl text-center">
+          <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mb-4">
+            <ClipboardList className="w-8 h-8" />
+          </div>
+          <h3 className="text-xl font-bold text-text-primary mb-2">Aucune opération enregistrée</h3>
+          <p className="text-text-secondary max-w-md mx-auto mb-8">
+            Commencez par enregistrer votre première dépense ou engagement sur ce projet.
+          </p>
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 bg-[#0f172a] hover:bg-[#1e293b] text-white px-6 py-3 rounded-lg font-medium shadow-sm transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            Nouvelle opération
+          </button>
         </div>
-      </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow-sm border border-border overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-sm">
+              <thead className="bg-surface-dim border-b border-border text-text-secondary font-medium">
+                <tr>
+                  <th className="p-4 whitespace-nowrap">ID Tâche</th>
+                  <th className="p-4">Ligne Budgétaire</th>
+                  <th className="p-4">Statut</th>
+                  <th className="p-4 text-right whitespace-nowrap">Coût Prévu (FCFA)</th>
+                  <th className="p-4 text-right whitespace-nowrap">Coût Réel (FCFA)</th>
+                  <th className="p-4 text-right whitespace-nowrap">Reste à Engager (FCFA)</th>
+                  <th className="p-4 text-right whitespace-nowrap">Montant Engagé (FCFA)</th>
+                  <th className="p-4 text-right whitespace-nowrap">Montant Décaissé (FCFA)</th>
+                  <th className="p-4 text-right whitespace-nowrap">Écart (FCFA)</th>
+                </tr>
+              </thead>
+              <tbody className="text-text-primary">
+                {items.map((item, idx) => (
+                  <tr key={item.id} className={`border-b border-border/30 h-10 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} ${item.status === 'annule' ? 'opacity-70' : ''}`}>
+                    <td className={`p-4 font-medium text-primary ${item.status === 'annule' ? 'line-through' : ''}`}>
+                      {item.task_code}
+                    </td>
+                    <td className={`p-4 truncate max-w-[200px] ${item.status === 'annule' ? 'line-through' : ''}`}>
+                      {item.budget_lines?.code} {item.budget_lines?.label}
+                    </td>
+                    <td className="p-4">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium ${getStatusBadge(item.status)}`}>
+                        {getStatusLabel(item.status)}
+                      </span>
+                    </td>
+                    <td className={`p-4 text-right font-mono ${item.status === 'annule' ? 'line-through' : ''}`}>
+                      {formatCurrency(item.planned_cost)}
+                    </td>
+                    <td className={`p-4 text-right font-mono ${item.status === 'annule' ? 'line-through text-text-secondary' : ''}`}>
+                      {item.actual_cost !== null && item.status === 'decaisse' ? formatCurrency(item.actual_cost) : '—'}
+                    </td>
+                    <td className={`p-4 text-right font-mono ${item.status === 'annule' ? 'line-through text-text-secondary' : ''}`}>
+                      {item.reste_a_engager > 0 ? formatCurrency(item.reste_a_engager) : '—'}
+                    </td>
+                    <td className={`p-4 text-right font-mono ${item.status === 'annule' ? 'line-through text-text-secondary' : ''}`}>
+                      {item.montant_engage > 0 ? formatCurrency(item.montant_engage) : '—'}
+                    </td>
+                    <td className={`p-4 text-right font-mono ${item.status === 'annule' ? 'line-through text-text-secondary' : ''}`}>
+                      {item.montant_decaisse > 0 ? formatCurrency(item.montant_decaisse) : '—'}
+                    </td>
+                    <td className={`p-4 text-right font-mono font-medium ${
+                      item.status === 'annule' ? 'text-text-secondary line-through' :
+                      item.status === 'decaisse' ? (item.ecart_budgetaire >= 0 ? 'text-green-600' : 'text-red-600') : 'text-text-secondary'
+                    }`}>
+                      {item.status === 'decaisse' 
+                        ? (item.ecart_budgetaire > 0 ? '+' : '') + formatCurrency(item.ecart_budgetaire) 
+                        : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {isModalOpen && (
         <AddOperationModal 
