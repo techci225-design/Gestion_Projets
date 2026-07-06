@@ -35,7 +35,7 @@ export function Sidebar({ userFullName }: SidebarProps) {
     { name: 'Cadre Logique', href: `/projects/${projectId}/cadre-logique`, icon: FolderTree },
     { name: 'PTBA', href: `/projects/${projectId}/ptba`, icon: CalendarDays },
     { name: 'Budget', href: `/projects/${projectId}/budget`, icon: Wallet },
-    { name: 'Journal des opérations', href: `/projects/${projectId}/journal`, icon: Receipt },
+    { name: 'Journal des opérations', href: `/projects/${projectId}/budget/journal`, icon: Receipt },
     { name: 'Suivi EVM (Tâches)', href: `/projects/${projectId}/evm`, icon: TrendingUp },
     { name: 'Passation des Marchés', href: `/projects/${projectId}/marches`, icon: ShoppingCart },
     { name: 'Risques', href: `/projects/${projectId}/risques`, icon: AlertTriangle },
