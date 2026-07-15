@@ -24,7 +24,7 @@ export async function updateProfile(data: { full_name: string, phone?: string })
     return { error: error.message }
   }
 
-  revalidatePath('/settings')
+  revalidatePath('/', 'layout')
   return { success: true }
 }
 
@@ -44,6 +44,6 @@ export async function updateNotificationPrefs(prefs: any) {
     return { error: error.message }
   }
 
-  revalidatePath('/settings')
+  revalidatePath('/', 'layout')
   return { success: true }
 }

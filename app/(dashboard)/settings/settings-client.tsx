@@ -56,6 +56,7 @@ export function SettingsClient({ profile }: { profile: SettingsProfile }) {
       setProfileError(res.error)
     } else {
       setProfileSuccess(true)
+      router.refresh()
       setTimeout(() => setProfileSuccess(false), 3000)
     }
     setProfileLoading(false)

@@ -9,6 +9,7 @@ export interface OperationJournal {
   id: string
   project_id: string
   task_code: string
+  phase_wbs?: string
   status: 'planifie' | 'engage' | 'decaisse' | 'annule'
   planned_cost: number
   actual_cost: number | null
@@ -119,6 +120,7 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources }:
               <thead className="bg-surface-dim border-b border-border text-text-secondary font-medium">
                 <tr>
                   <th className="p-4 whitespace-nowrap">ID Tâche</th>
+                  <th className="p-4 whitespace-nowrap">Phase / WBS</th>
                   <th className="p-4">Ligne Budgétaire</th>
                   <th className="p-4">Statut</th>
                   <th className="p-4 text-right whitespace-nowrap">Coût Prévu (FCFA)</th>
@@ -134,6 +136,9 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources }:
                   <tr key={item.id} className={`border-b border-border/30 h-10 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} ${item.status === 'annule' ? 'opacity-70' : ''}`}>
                     <td className={`p-4 font-medium text-primary ${item.status === 'annule' ? 'line-through' : ''}`}>
                       {item.task_code}
+                    </td>
+                    <td className={`p-4 text-text-secondary ${item.status === 'annule' ? 'line-through' : ''}`}>
+                      {item.phase_wbs || '—'}
                     </td>
                     <td className={`p-4 truncate max-w-[200px] ${item.status === 'annule' ? 'line-through' : ''}`}>
                       {item.budget_lines?.code} {item.budget_lines?.label}
