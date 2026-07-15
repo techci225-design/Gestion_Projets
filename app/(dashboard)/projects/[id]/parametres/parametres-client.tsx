@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useTransition } from 'react'
-import { Plus, Trash2, Wallet, Layers, FileText } from 'lucide-react'
+import { Plus, Trash2, Wallet, Layers, FileText, CheckSquare } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { addFundingSource, deleteFundingSource } from '@/lib/actions/parametres.actions'
 import { AddBudgetModal } from '../budget/add-budget-modal'
@@ -16,7 +16,7 @@ interface ParametresClientProps {
 }
 
 export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTasks, userRole }: ParametresClientProps) {
-  const [activeTab, setActiveTab] = useState<'bailleurs' | 'budget' | 'wbs'>('bailleurs')
+  const [activeTab, setActiveTab] = useState<'bailleurs' | 'budget' | 'wbs' | 'statuts'>('bailleurs')
   
   // Modals state
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false)
@@ -96,6 +96,15 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
           >
             <Layers className="w-5 h-5" />
             Structure WBS (Tâches)
+          </button>
+          <button
+            onClick={() => setActiveTab('statuts')}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left ${
+              activeTab === 'statuts' ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+            }`}
+          >
+            <CheckSquare className="w-5 h-5" />
+            Statuts des Opérations
           </button>
         </div>
 
@@ -263,6 +272,48 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                     )}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: Statuts */}
+          {activeTab === 'statuts' && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              <div className="flex justify-between items-center border-b border-border pb-4">
+                <h3 className="text-xl font-semibold text-text-primary">Statuts des Opérations (Validation Stricte)</h3>
+              </div>
+              <div className="bg-surface-dim p-4 rounded-lg border border-border text-sm text-text-secondary mb-6">
+                Pour garantir l'intégrité des données et éviter les erreurs de saisie, les statuts sont strictement validés et codés en dur dans le système (Base de données et Interface). Il n'est pas possible d'en ajouter de nouveaux afin de ne pas fausser les calculs automatiques.
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-5 bg-white border border-border rounded-lg shadow-sm">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="w-3 h-3 rounded-full bg-slate-300"></span>
+                    <h4 className="font-bold text-text-primary">Planifié</h4>
+                  </div>
+                  <p className="text-sm text-text-secondary">L'opération est budgétée mais aucun engagement formel n'a encore été pris. Ne modifie pas le solde disponible ni les indicateurs d'alerte.</p>
+                </div>
+                <div className="p-5 bg-white border border-border rounded-lg shadow-sm">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="w-3 h-3 rounded-full bg-warning"></span>
+                    <h4 className="font-bold text-text-primary">Engagé</h4>
+                  </div>
+                  <p className="text-sm text-text-secondary">Un contrat ou un bon de commande a été signé. Le montant est déduit du solde disponible (Reste à engager) de la ligne budgétaire.</p>
+                </div>
+                <div className="p-5 bg-white border border-border rounded-lg shadow-sm">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="w-3 h-3 rounded-full bg-success"></span>
+                    <h4 className="font-bold text-text-primary">Décaissé</h4>
+                  </div>
+                  <p className="text-sm text-text-secondary">Le paiement a été effectivement réalisé. Ce statut permet de saisir un "Coût Réel" si le montant final diffère de l'engagement initial.</p>
+                </div>
+                <div className="p-5 bg-white border border-border rounded-lg shadow-sm opacity-70">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="w-3 h-3 rounded-full bg-danger"></span>
+                    <h4 className="font-bold text-text-primary text-danger">Annulé</h4>
+                  </div>
+                  <p className="text-sm text-text-secondary">L'opération est annulée. Ses montants ne sont plus pris en compte dans les calculs de consommation du budget.</p>
+                </div>
               </div>
             </div>
           )}
