@@ -7,6 +7,7 @@ import { GaugeCPISPI } from '@/components/dashboard/GaugeCPISPI'
 import { SCurveChart } from '@/components/dashboard/SCurveChart'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { AlertTriangle } from 'lucide-react'
+import { TopVariancesChart } from '@/components/dashboard/TopVariancesChart'
 
 export default async function ProjectDashboardPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
@@ -113,48 +114,7 @@ export default async function ProjectDashboardPage({ params }: { params: Promise
         </div>
 
         {/* Top 5 Variances */}
-        <div className="bg-surface rounded-lg shadow-sm border border-border overflow-hidden">
-          <div className="px-6 py-4 border-b border-border flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-danger" />
-            <h3 className="font-semibold text-text-primary">Top Foyers de Surconsommation (Top 5)</h3>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-surface-dim text-xs uppercase text-text-secondary font-semibold">
-                <tr>
-                  <th className="px-6 py-3">Code</th>
-                  <th className="px-6 py-3">Description</th>
-                  <th className="px-6 py-3 text-right">Variance (CV)</th>
-                  <th className="px-6 py-3 text-right">CPI</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {topVariances && topVariances.length > 0 ? (
-                  topVariances.map((v) => (
-                    <tr key={v.id} className="hover:bg-surface-dim/50 transition-colors">
-                      <td className="px-6 py-3 font-medium text-text-primary">{v.code}</td>
-                      <td className="px-6 py-3 text-text-secondary">{v.description}</td>
-                      <td className="px-6 py-3 text-right font-medium text-danger">
-                        {formatCurrency(v.cv)}
-                      </td>
-                      <td className="px-6 py-3 text-right">
-                        <span className="bg-danger/10 text-danger px-2 py-0.5 rounded-full text-xs font-semibold">
-                          {Number(v.cpi).toFixed(2)}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-text-secondary">
-                      Aucun écart négatif constaté pour la date sélectionnée.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <TopVariancesChart data={topVariances || []} />
 
       </div>
     </>
