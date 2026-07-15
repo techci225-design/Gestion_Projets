@@ -45,6 +45,7 @@ export function EvmClient({
   const [isPending, startTransition] = useTransition()
   const [controlDate, setControlDate] = useState(project.evm_control_date || new Date().toISOString().split('T')[0])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedResponsable, setSelectedResponsable] = useState('Tous les responsables')
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
 
@@ -59,9 +60,25 @@ export function EvmClient({
   const cpiGlobal = summary?.cpi_global || 1
   const spiGlobal = summary?.spi_global || 1
 
-  const totalPages = Math.ceil(indicators.length / itemsPerPage)
+  const responsables = Array.from(new Set(indicators.map(i => i.responsible).filter(Boolean))) as string[]
+  const filteredIndicators = selectedResponsable === 'Tous les responsables'
+    ? indicators
+    : indicators.filter(i => i.responsible === selectedResponsable)
+
+  let filteredEV = 0
+  let filteredAC = 0
+  let filteredPV = 0
+  filteredIndicators.forEach(i => {
+    filteredEV += Number(i.ev)
+    filteredAC += Number(i.actual_cost)
+    filteredPV += Number(i.pv)
+  })
+  const filteredCPI = filteredAC === 0 ? 1 : filteredEV / filteredAC
+  const filteredSPI = filteredPV === 0 ? 1 : filteredEV / filteredPV
+
+  const totalPages = Math.ceil(filteredIndicators.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
-  const paginatedItems = indicators.slice(startIndex, startIndex + itemsPerPage)
+  const paginatedItems = filteredIndicators.slice(startIndex, startIndex + itemsPerPage)
 
   return (
     <div className="flex flex-col h-full">
@@ -92,6 +109,30 @@ export function EvmClient({
                   className="text-sm bg-surface border border-border rounded-md px-3 py-1.5 text-text-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none cursor-pointer disabled:opacity-50"
                 />
               </div>
+            </div>
+            
+            <div className="h-10 w-px bg-border mx-1"></div>
+            
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-text-secondary mb-1">Responsable :</label>
+              <select
+                value={selectedResponsable}
+                onChange={(e) => {
+                  setSelectedResponsable(e.target.value)
+                  setCurrentPage(1)
+                }}
+                className="text-sm bg-surface border border-border rounded-md px-3 py-1.5 text-text-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none cursor-pointer"
+              >
+                <option value="Tous les responsables">Tous les responsables</option>
+                {responsables.map(r => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
+              {selectedResponsable !== 'Tous les responsables' && (
+                <div className="text-[11px] font-medium text-primary mt-1">
+                  CPI filtré : {filteredCPI.toFixed(2)} | SPI filtré : {filteredSPI.toFixed(2)}
+                </div>
+              )}
             </div>
             <div className="h-10 w-px bg-border mx-1"></div>
             <div className="flex gap-4">
