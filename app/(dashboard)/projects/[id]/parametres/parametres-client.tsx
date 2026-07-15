@@ -38,6 +38,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
       const res = await addFundingSource({
         project_id: projectId,
         name: newBailleur.name,
+        type: 'bailleur',
         amount_committed: Number(newBailleur.amount)
       })
       
@@ -274,7 +275,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
       )}
       
       {isWbsModalOpen && (
-        <AddEvmTaskModal projectId={projectId} onClose={() => setIsWbsModalOpen(false)} />
+        <AddEvmTaskModal projectId={projectId} isOpen={isWbsModalOpen} onClose={() => setIsWbsModalOpen(false)} />
       )}
     </div>
   )
