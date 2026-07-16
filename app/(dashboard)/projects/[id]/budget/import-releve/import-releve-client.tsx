@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { UploadCloud, CheckCircle2, AlertTriangle, ArrowRight, Save, FileUp } from 'lucide-react'
+import { CheckCircle2, ArrowRight, FileUp } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { batchUpdateOperationsFromBank } from '@/lib/actions/budget.actions'
 import { useRouter } from 'next/navigation'

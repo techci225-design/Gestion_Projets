@@ -7,7 +7,7 @@ import { logout } from '@/app/(auth)/login/actions'
 import { 
   BriefcaseBusiness, LayoutGrid, Settings, FolderTree, 
   CalendarDays, Wallet, Receipt, TrendingUp, ShoppingCart, 
-  AlertTriangle, Users, User, Home, MoreHorizontal, ShieldAlert, X, LogOut, Landmark, FileUp
+  AlertTriangle, Users, Home, MoreHorizontal, ShieldAlert, X, LogOut, Landmark, FileUp
 } from 'lucide-react'
 
 interface SidebarProps {
