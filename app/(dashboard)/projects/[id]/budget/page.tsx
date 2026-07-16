@@ -8,6 +8,7 @@ export default async function BudgetPage({ params }: { params: Promise<{ id: str
 
   let budgetData = null
   let fundingData = null
+  let operationsData = null
   let queryError = null
 
   try {
@@ -24,7 +25,15 @@ export default async function BudgetPage({ params }: { params: Promise<{ id: str
       .eq('project_id', id)
     fundingData = resFunding.data
 
-    queryError = res.error || resFunding.error
+    const resOps = await supabase
+      .from('operations_journal')
+      .select('*')
+      .eq('project_id', id)
+      .eq('status', 'decaisse')
+      .order('created_at', { ascending: true })
+    operationsData = resOps.data
+
+    queryError = res.error || resFunding.error || resOps.error
   } catch (err: any) {
     queryError = { message: err.message || 'Erreur de connexion à la base de données' }
   }
@@ -43,7 +52,12 @@ export default async function BudgetPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="flex-1 p-6 overflow-y-auto">
-      <BudgetClient items={items} fundingSources={fundingData || []} projectId={id} />
+      <BudgetClient 
+        items={items} 
+        fundingSources={fundingData || []} 
+        operations={operationsData || []}
+        projectId={id} 
+      />
     </div>
   )
 }

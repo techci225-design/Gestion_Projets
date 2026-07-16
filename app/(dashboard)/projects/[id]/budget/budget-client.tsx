@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Plus, Download, CheckCircle2, WalletCards } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { AddBudgetModal } from './add-budget-modal'
+import { BurnRateChart } from '@/components/dashboard/BurnRateChart'
 import { useSearchParams, useRouter } from 'next/navigation'
 
 export interface BudgetConsumption {
@@ -19,7 +20,7 @@ export interface BudgetConsumption {
   niveau_alerte: 'vert' | 'orange' | 'rouge' | 'neutre'
 }
 
-export function BudgetClient({ items, fundingSources, projectId }: { items: BudgetConsumption[], fundingSources?: any[], projectId: string }) {
+export function BudgetClient({ items, fundingSources, operations, projectId }: { items: BudgetConsumption[], fundingSources?: any[], operations?: any[], projectId: string }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -140,6 +141,11 @@ export function BudgetClient({ items, fundingSources, projectId }: { items: Budg
             </div>
           ))}
         </div>
+      )}
+
+      {/* Burn Rate Chart */}
+      {operations && operations.length > 0 && (
+        <BurnRateChart operations={operations} />
       )}
 
       {/* Empty State or Data Table */}
