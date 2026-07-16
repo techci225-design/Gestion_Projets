@@ -33,7 +33,7 @@ export function Sidebar({ userFullName }: SidebarProps) {
   const projectLinks = [
     { name: 'Tableau de bord', href: `/projects/${projectId}`, icon: TrendingUp },
     { name: 'Paramètres du projet', href: `/projects/${projectId}/parametres`, icon: Settings },
-    { name: 'Cadre Logique', href: `/projects/${projectId}/cadre-logique`, icon: FolderTree },
+    { name: 'Cadre Logique', href: `/projects/${projectId}/logframe`, icon: FolderTree },
     { name: 'PTBA', href: `/projects/${projectId}/ptba`, icon: CalendarDays },
     { name: 'Budget', href: `/projects/${projectId}/budget`, icon: Wallet },
     { name: 'Journal des opérations', href: `/projects/${projectId}/budget/journal`, icon: Receipt },
