@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Plus, X } from 'lucide-react'
-import { createLogframeItem } from '@/lib/actions/logframe.actions'
+import { addLogframeItem } from '@/lib/actions/logframe.actions'
 import { LogframeItem } from './logframe-client'
 import { useRouter } from 'next/navigation'
 
@@ -28,24 +28,24 @@ export function AddLogframeModal({
 
     const formData = new FormData(e.currentTarget)
     
-    const result = await createLogframeItem({
-      project_id: projectId,
-      parent_id: parentId || undefined,
-      level: formData.get('level') as any,
-      intervention_label: formData.get('intervention_label') as string,
-      indicator: formData.get('indicator') as string || undefined,
-      baseline: formData.get('baseline') as string || undefined,
-      target: formData.get('target') as string || undefined,
-      verification_source: formData.get('verification_source') as string || undefined,
-      risks_assumptions: formData.get('risks_assumptions') as string || undefined,
-    })
+    try {
+      await addLogframeItem(projectId, {
+        parent_id: parentId || null,
+        level: formData.get('level') as any,
+        intervention_label: formData.get('intervention_label') as string,
+        indicator: formData.get('indicator') as string || null,
+        baseline: formData.get('baseline') as string || null,
+        target: formData.get('target') as string || null,
+        verification_source: formData.get('verification_source') as string || null,
+        risks_assumptions: formData.get('risks_assumptions') as string || null,
+      })
 
-    setLoading(false)
-    if (result?.error) {
-      setError(result.error)
-    } else {
+      setLoading(false)
       onClose()
       router.refresh()
+    } catch (err: any) {
+      setLoading(false)
+      setError(err.message || 'Une erreur est survenue')
     }
   }
 
