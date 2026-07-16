@@ -81,7 +81,7 @@ export function EvmClient({
   const paginatedItems = filteredIndicators.slice(startIndex, startIndex + itemsPerPage)
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col space-y-6 pb-12">
       {/* Page Header & EVM Summary */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
@@ -154,8 +154,8 @@ export function EvmClient({
       </div>
 
       {/* Data Table */}
-      <div className="bg-white/90 backdrop-blur-sm border border-white/20 shadow-sm rounded-xl overflow-hidden flex-1 flex flex-col">
-        <div className="overflow-x-auto flex-1">
+      <div className="bg-white/90 backdrop-blur-sm border border-white/20 shadow-sm rounded-xl overflow-hidden flex flex-col">
+        <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="bg-surface-dim border-b border-border">
