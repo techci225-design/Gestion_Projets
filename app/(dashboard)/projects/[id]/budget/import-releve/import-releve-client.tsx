@@ -22,7 +22,6 @@ interface MatchResult {
 export function ImportReleveClient({ projectId, operations }: { projectId: string, operations: any[] }) {
   const router = useRouter()
   const [step, setStep] = useState<1 | 2 | 3>(1)
-  const [parsedData, setParsedData] = useState<ParsedRow[]>([])
   const [matches, setMatches] = useState<MatchResult[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [results, setResults] = useState<{ applied: number, ignored: number, errors: number } | null>(null)
@@ -51,7 +50,6 @@ export function ImportReleveClient({ projectId, operations }: { projectId: strin
           })
         }
       }
-      setParsedData(data)
       autoMatch(data)
       setStep(2)
     }
