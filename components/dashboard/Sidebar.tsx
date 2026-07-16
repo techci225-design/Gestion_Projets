@@ -7,7 +7,7 @@ import { logout } from '@/app/(auth)/login/actions'
 import { 
   BriefcaseBusiness, LayoutGrid, Settings, FolderTree, 
   CalendarDays, Wallet, Receipt, TrendingUp, ShoppingCart, 
-  AlertTriangle, Users, User, Home, MoreHorizontal, ShieldAlert, X, LogOut
+  AlertTriangle, Users, User, Home, MoreHorizontal, ShieldAlert, X, LogOut, Landmark, FileUp
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -36,7 +36,9 @@ export function Sidebar({ userFullName }: SidebarProps) {
     { name: 'Cadre Logique', href: `/projects/${projectId}/logframe`, icon: FolderTree },
     { name: 'PTBA', href: `/projects/${projectId}/ptba`, icon: CalendarDays },
     { name: 'Budget', href: `/projects/${projectId}/budget`, icon: Wallet },
+    { name: 'Sources de financement', href: `/projects/${projectId}/budget/bailleurs`, icon: Landmark },
     { name: 'Journal des opérations', href: `/projects/${projectId}/budget/journal`, icon: Receipt },
+    { name: 'Import Relevé', href: `/projects/${projectId}/budget/import-releve`, icon: FileUp },
     { name: 'Suivi EVM (Tâches)', href: `/projects/${projectId}/evm`, icon: TrendingUp },
     { name: 'Passation des Marchés', href: `/projects/${projectId}/marches`, icon: ShoppingCart },
     { name: 'Risques', href: `/projects/${projectId}/risques`, icon: AlertTriangle },

@@ -86,3 +86,40 @@ export async function createOperation(data: z.infer<typeof operationJournalSchem
   revalidatePath(`/projects/${parsed.data.project_id}/budget/journal`)
   return { data: result }
 }
+
+export async function batchUpdateOperationsFromBank(projectId: string, updates: { operationId: string, actualCost: number, newStatus: string }[]) {
+  const supabase = await createClient()
+  
+  // Verify access
+  try {
+    await requireRole(projectId, ['owner', 'comptable'])
+  } catch (error: any) {
+    return { error: error.message }
+  }
+
+  // Update operations in batch
+  const errors = []
+  for (const update of updates) {
+    const { error } = await supabase
+      .from('operations_journal')
+      .update({
+        actual_cost: update.actualCost,
+        status: update.newStatus as any
+      })
+      .eq('id', update.operationId)
+
+    if (error) {
+      errors.push({ id: update.operationId, error: error.message })
+    }
+  }
+
+  if (errors.length > 0) {
+    return { error: 'Certaines mises à jour ont échoué', details: errors }
+  }
+
+  revalidatePath(`/projects/${projectId}/budget`)
+  revalidatePath(`/projects/${projectId}/budget/journal`)
+  revalidatePath(`/projects/${projectId}/budget/bailleurs`)
+  
+  return { success: true }
+}

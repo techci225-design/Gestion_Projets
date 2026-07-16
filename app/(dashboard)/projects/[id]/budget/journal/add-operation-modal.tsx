@@ -109,6 +109,16 @@ export function AddOperationModal({
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-text-primary mb-1">Source de financement (Optionnel)</label>
+            <select name="funding_source_id" className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-surface">
+              <option value="">Liée à la ligne budgétaire</option>
+              {fundingSources.map(fs => (
+                <option key={fs.id} value={fs.id}>{fs.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-text-primary mb-1">Statut *</label>
             <select 
               required 
