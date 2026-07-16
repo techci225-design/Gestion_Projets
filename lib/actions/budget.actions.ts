@@ -13,7 +13,8 @@ const budgetLineSchema = z.object({
   unit_cost: z.number().min(0).optional(),
   initial_allocated_amount: z.number().min(0),
   funding_source_id: z.string().uuid().optional(),
-  counterpart_amount: z.number().min(0).default(0)
+  counterpart_amount: z.number().min(0).default(0),
+  responsible: z.string().optional()
 })
 
 import { requireRole } from './auth.actions'

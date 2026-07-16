@@ -31,6 +31,7 @@ export function AddBudgetModal({
       unit: formData.get('unit') as string || undefined,
       quantity: formData.get('quantity') ? Number(formData.get('quantity')) : undefined,
       unit_cost: formData.get('unit_cost') ? Number(formData.get('unit_cost')) : undefined,
+      responsible: formData.get('responsible') as string || undefined,
       counterpart_amount: 0
     })
 
@@ -71,9 +72,15 @@ export function AddBudgetModal({
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1">Libellé</label>
-            <input required type="text" name="label" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Description de la dépense" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1">Libellé</label>
+              <input required type="text" name="label" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Description de la dépense" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1">Responsable</label>
+              <input type="text" name="responsible" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="ex: Direction Financière" />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

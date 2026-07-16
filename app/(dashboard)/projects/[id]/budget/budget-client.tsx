@@ -12,6 +12,7 @@ export interface BudgetConsumption {
   project_id: string
   code: string
   label: string
+  responsible?: string | null
   initial_allocated_amount: number
   total_engage: number
   total_decaisse: number
@@ -25,6 +26,7 @@ export function BudgetClient({ items, fundingSources, operations, projectId }: {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [showSuccess, setShowSuccess] = useState(false)
+  const [selectedResponsable, setSelectedResponsable] = useState('Tous les responsables')
 
   useEffect(() => {
     if (searchParams.get('new') === 'true') {
@@ -37,16 +39,21 @@ export function BudgetClient({ items, fundingSources, operations, projectId }: {
     }
   }, [searchParams, projectId, router])
 
+  const responsables = Array.from(new Set(items.map(i => i.responsible).filter(Boolean))) as string[]
+  const filteredItems = selectedResponsable === 'Tous les responsables'
+    ? items
+    : items.filter(i => i.responsible === selectedResponsable)
+
   // Calculate totals
-  const totalAllocated = items.reduce((acc, item) => acc + Number(item.initial_allocated_amount), 0)
-  const totalEngage = items.reduce((acc, item) => acc + Number(item.total_engage), 0)
-  const totalDecaisse = items.reduce((acc, item) => acc + Number(item.total_decaisse), 0)
+  const totalAllocated = filteredItems.reduce((acc, item) => acc + Number(item.initial_allocated_amount), 0)
+  const totalEngage = filteredItems.reduce((acc, item) => acc + Number(item.total_engage), 0)
+  const totalDecaisse = filteredItems.reduce((acc, item) => acc + Number(item.total_decaisse), 0)
   const totalConsumed = totalEngage + totalDecaisse
   
   const totalConsumptionRate = totalAllocated > 0 ? (totalConsumed / totalAllocated) * 100 : 0
   
   // Group by category (e.g. "1. Équipements" if code starts with "1.")
-  const categories = items.reduce((acc, item) => {
+  const categories = filteredItems.reduce((acc, item) => {
     const mainCode = item.code.split('.')[0]
     if (!acc[mainCode]) acc[mainCode] = []
     acc[mainCode].push(item)
@@ -82,6 +89,16 @@ export function BudgetClient({ items, fundingSources, operations, projectId }: {
           <p className="text-base text-text-secondary">Suivi détaillé des allocations et décaissements du projet.</p>
         </div>
         <div className="flex gap-4">
+          <select
+            value={selectedResponsable}
+            onChange={(e) => setSelectedResponsable(e.target.value)}
+            className="text-sm bg-surface border border-border rounded-md px-3 py-1.5 text-text-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none cursor-pointer"
+          >
+            <option value="Tous les responsables">Tous les responsables</option>
+            {responsables.map(r => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
           <button className="px-4 py-2 bg-surface-dim border border-border rounded-lg text-sm font-medium text-primary flex items-center gap-2 hover:bg-border transition-colors">
             <Download className="w-4 h-4" />
             Exporter
