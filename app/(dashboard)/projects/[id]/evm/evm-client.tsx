@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, Save } from 'lucide-react'
 import { updateEvmDate } from '@/lib/actions/evm.actions'
+import { createEvmSnapshot } from '@/lib/actions/evm-snapshots.actions'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { AddEvmTaskModal } from './add-evm-task-modal'
 import { EvmHistory } from './evm-history'
@@ -57,6 +58,37 @@ export function EvmClient({
     })
   }
 
+  const [isSaving, setIsSaving] = useState(false)
+  
+  const handleSaveSnapshot = async (overwrite = false) => {
+    if (!summary) return
+    setIsSaving(true)
+    try {
+      const data = {
+        control_date: controlDate,
+        bac_total: summary.bac_total,
+        pv_total: summary.pv_total,
+        ev_total: summary.ev_total,
+        ac_total: summary.ac_total,
+        cpi_global: summary.cpi_global,
+        spi_global: summary.spi_global,
+        eac_global: summary.eac_global,
+      }
+      const res = await createEvmSnapshot(projectId, data, overwrite)
+      if (res.error) {
+        if (res.code === 'CONFLICT') {
+          if (window.confirm('Un arrêté existe déjà pour cette date. Écraser ?')) {
+            await handleSaveSnapshot(true)
+          }
+        } else {
+          alert(res.error)
+        }
+      }
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   const cpiGlobal = summary?.cpi_global || 1
   const spiGlobal = summary?.spi_global || 1
 
@@ -100,7 +132,7 @@ export function EvmClient({
           <div className="bg-white/90 backdrop-blur-sm border border-white/20 shadow-sm p-4 rounded-xl flex items-center gap-6">
             <div className="flex flex-col">
               <label className="text-sm font-medium text-text-secondary mb-1">Arrêté des comptes au :</label>
-              <div className="relative">
+              <div className="flex items-center gap-2">
                 <input 
                   type="date" 
                   value={controlDate}
@@ -108,6 +140,15 @@ export function EvmClient({
                   disabled={isPending}
                   className="text-sm bg-surface border border-border rounded-md px-3 py-1.5 text-text-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none cursor-pointer disabled:opacity-50"
                 />
+                <button
+                  onClick={() => handleSaveSnapshot(false)}
+                  disabled={isSaving || !summary}
+                  className="p-1.5 bg-surface-dim hover:bg-border text-primary border border-border rounded-md transition-colors flex items-center gap-1 text-sm font-medium pr-3 disabled:opacity-50"
+                  title="Sauvegarder cet arrêté"
+                >
+                  <Save className="w-4 h-4" />
+                  <span className="hidden md:inline">Sauvegarder</span>
+                </button>
               </div>
             </div>
             
