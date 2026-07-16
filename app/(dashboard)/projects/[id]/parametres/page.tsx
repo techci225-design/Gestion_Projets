@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { ParametresClient } from './parametres-client'
 
 export const metadata = {
-  title: 'Paramètres du Projet | Smart Budget',
+  title: 'Paramètres du Projet | Gestion de Projets',
   description: 'Le socle de gouvernance du projet'
 }
 
