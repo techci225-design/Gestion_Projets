@@ -1,164 +1,381 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Plus, Download, Filter } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils/format-currency'
-import { AddPtbaModal } from './add-ptba-modal'
+import { useRouter } from 'next/navigation'
+import { LogframeItem } from '@/lib/actions/logframe.actions'
+import { PtbaActivity, addPtbaActivity, updatePtbaActivity, deletePtbaActivity } from '@/lib/actions/ptba.actions'
+import { Plus, Edit2, Trash2, Check, ChevronDown } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
 
-export interface PtbaActivity {
-  id: string
-  project_id: string
-  code: string
-  description: string
-  responsible: string | null
-  fiscal_year: number | null
-  q1: boolean
-  q2: boolean
-  q3: boolean
-  q4: boolean
-  budget_planned: number
+interface PtbaClientProps {
+  projectId: string
+  currentYear: number
+  initialData: PtbaActivity[]
+  logframeActivities: LogframeItem[]
 }
 
-export function PtbaClient({ items, projectId }: { items: PtbaActivity[], projectId: string }) {
-  const [yearFilter, setYearFilter] = useState('all')
-  const [responsibleFilter, setResponsibleFilter] = useState('all')
-  const [isModalOpen, setIsModalOpen] = useState(false)
-
-  const years = Array.from(new Set(items.map(i => i.fiscal_year).filter((y): y is number => y != null))).sort().reverse()
-  const responsibles = Array.from(new Set(items.map(i => i.responsible).filter((r): r is string => r != null))).sort()
-
-  const filteredItems = items.filter(item => {
-    if (yearFilter !== 'all' && String(item.fiscal_year) !== yearFilter) return false
-    if (responsibleFilter !== 'all' && item.responsible !== responsibleFilter) return false
-    return true
+export function PtbaClient({ projectId, currentYear, initialData, logframeActivities }: PtbaClientProps) {
+  const router = useRouter()
+  const [data, setData] = useState<PtbaActivity[]>(initialData)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [editingItem, setEditingItem] = useState<PtbaActivity | null>(null)
+  
+  const [formData, setFormData] = useState({
+    code: '',
+    description: '',
+    logframe_item_id: '',
+    responsible: '',
+    q1: false,
+    q2: false,
+    q3: false,
+    q4: false,
+    budget_allocated: 0
   })
+  
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const totalBudget = filteredItems.reduce((acc, item) => acc + Number(item.budget_planned), 0)
-
-  const exportCSV = () => {
-    const headers = ['Code', 'Activité', 'Responsable', 'Q1', 'Q2', 'Q3', 'Q4', 'Budget Prévu (FCFA)']
-    const rows = filteredItems.map(i => [
-      i.code,
-      `"${i.description.replace(/"/g, '""')}"`,
-      i.responsible || '',
-      i.q1 ? 'Oui' : 'Non',
-      i.q2 ? 'Oui' : 'Non',
-      i.q3 ? 'Oui' : 'Non',
-      i.q4 ? 'Oui' : 'Non',
-      i.budget_planned
-    ])
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
-    const encodedUri = encodeURI(csvContent)
-    const link = document.createElement("a")
-    link.setAttribute("href", encodedUri)
-    link.setAttribute("download", `ptba_${projectId}.csv`)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+  const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    router.push(`/projects/${projectId}/ptba?year=${e.target.value}`)
   }
 
+  const openAddModal = () => {
+    setEditingItem(null)
+    setFormData({
+      code: '',
+      description: '',
+      logframe_item_id: '',
+      responsible: '',
+      q1: false,
+      q2: false,
+      q3: false,
+      q4: false,
+      budget_allocated: 0
+    })
+    setIsDrawerOpen(true)
+  }
+
+  const openEditModal = (item: PtbaActivity) => {
+    setEditingItem(item)
+    setFormData({
+      code: item.code,
+      description: item.description,
+      logframe_item_id: item.logframe_item_id || '',
+      responsible: item.responsible || '',
+      q1: item.q1,
+      q2: item.q2,
+      q3: item.q3,
+      q4: item.q4,
+      budget_allocated: item.budget_allocated
+    })
+    setIsDrawerOpen(true)
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette ligne du PTBA ?')) return
+    
+    try {
+      await deletePtbaActivity(projectId, id)
+      setData(prev => prev.filter(item => item.id !== id))
+    } catch (error) {
+      alert('Erreur lors de la suppression')
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    
+    const payload = {
+      code: formData.code,
+      description: formData.description,
+      logframe_item_id: formData.logframe_item_id || null,
+      responsible: formData.responsible || null,
+      fiscal_year: currentYear,
+      q1: formData.q1,
+      q2: formData.q2,
+      q3: formData.q3,
+      q4: formData.q4,
+      budget_allocated: Number(formData.budget_allocated)
+    }
+
+    try {
+      if (editingItem) {
+        const updated = await updatePtbaActivity(projectId, editingItem.id, payload)
+        setData(prev => prev.map(item => item.id === editingItem.id ? { ...item, ...updated } : item))
+      } else {
+        const created = await addPtbaActivity(projectId, payload)
+        setData(prev => [...prev, created])
+      }
+      setIsDrawerOpen(false)
+    } catch (error) {
+      alert('Erreur lors de l\'enregistrement')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const totalBudget = data.reduce((acc, curr) => acc + Number(curr.budget_allocated), 0)
+
+  // Generate an array of recent years (e.g., current year -2 to +2)
+  const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i)
+
   return (
-    <div className="flex flex-col h-full space-y-6">
-      {/* Filters Bar */}
-      <div className="bg-white rounded-lg p-4 shadow-sm border border-border flex flex-wrap items-end gap-6">
-        <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
-          <label className="text-sm font-medium text-text-secondary">Année Fiscale</label>
-          <select 
-            value={yearFilter} 
-            onChange={(e) => setYearFilter(e.target.value)}
-            className="w-full bg-surface border border-border rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors"
-          >
-            <option value="all">Toutes les années</option>
-            {years.map(y => <option key={y} value={y}>{y}</option>)}
-          </select>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <label htmlFor="year-select" className="text-sm font-medium text-text-secondary">Exercice :</label>
+          <div className="relative">
+            <select
+              id="year-select"
+              value={currentYear}
+              onChange={handleYearChange}
+              className="appearance-none bg-surface border border-border rounded-lg pl-4 pr-10 py-2 text-text-primary focus:outline-none focus:border-blue-500 font-medium"
+            >
+              {years.map(y => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+            <ChevronDown className="w-4 h-4 text-text-secondary absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          </div>
         </div>
-        <div className="flex flex-col gap-1 flex-1 min-w-[200px]">
-          <label className="text-sm font-medium text-text-secondary">Responsable</label>
-          <select 
-            value={responsibleFilter} 
-            onChange={(e) => setResponsibleFilter(e.target.value)}
-            className="w-full bg-surface border border-border rounded-md px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors"
-          >
-            <option value="all">Tous les responsables</option>
-            {responsibles.map(r => <option key={r} value={r}>{r}</option>)}
-          </select>
-        </div>
-        <div className="flex gap-4 ml-auto mt-4 sm:mt-0">
-          <button 
-            onClick={exportCSV}
-            className="bg-surface-dim text-primary py-2 px-4 rounded-md text-sm font-medium border border-border hover:bg-border transition-colors flex items-center gap-2"
-          >
-            <Download className="w-4 h-4" />
-            Exporter CSV
-          </button>
-          <button 
-            onClick={() => setIsModalOpen(true)}
-            className="bg-primary text-white py-2 px-4 rounded-md text-sm font-medium hover:opacity-90 transition-opacity flex items-center gap-2 shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-            Nouvelle activité
-          </button>
-        </div>
+
+        <button
+          onClick={openAddModal}
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
+        >
+          <Plus className="w-4 h-4" />
+          Nouvelle Ligne PTBA
+        </button>
       </div>
 
-      {/* Planning Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-border overflow-hidden">
+      <div className="bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[800px]">
-            <thead>
-              <tr className="bg-surface-dim border-b border-border">
-                <th className="text-xs font-semibold text-text-secondary p-4 whitespace-nowrap">Code</th>
-                <th className="text-xs font-semibold text-text-secondary p-4 w-1/3">Activité</th>
-                <th className="text-xs font-semibold text-text-secondary p-4 whitespace-nowrap">Responsable</th>
-                <th className="text-xs font-semibold text-text-secondary p-4 text-center">Q1</th>
-                <th className="text-xs font-semibold text-text-secondary p-4 text-center">Q2</th>
-                <th className="text-xs font-semibold text-text-secondary p-4 text-center">Q3</th>
-                <th className="text-xs font-semibold text-text-secondary p-4 text-center">Q4</th>
-                <th className="text-xs font-semibold text-text-secondary p-4 text-right whitespace-nowrap">Budget Prévu (FCFA)</th>
+          <table className="w-full text-left">
+            <thead className="bg-background border-b border-border">
+              <tr>
+                <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[10%]">Code</th>
+                <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[30%]">Composante / Activité</th>
+                <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[15%]">Responsable</th>
+                <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider text-center">Q1</th>
+                <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider text-center">Q2</th>
+                <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider text-center">Q3</th>
+                <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider text-center">Q4</th>
+                <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider text-right w-[15%]">Budget Prévu</th>
+                <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider text-right w-[10%]">Actions</th>
               </tr>
             </thead>
-            <tbody className="text-sm text-text-primary">
-              {filteredItems.map((item, idx) => (
-                <tr key={item.id} className={`border-b border-border hover:bg-surface transition-colors h-12 ${idx % 2 !== 0 ? 'bg-slate-50' : 'bg-white'}`}>
-                  <td className="p-4 font-medium text-primary">{item.code}</td>
-                  <td className="p-4">{item.description}</td>
-                  <td className="p-4 text-text-secondary">{item.responsible || '—'}</td>
-                  <td className="p-4 text-center">
-                    {item.q1 && <div className="w-3 h-3 rounded-full bg-primary mx-auto"></div>}
-                  </td>
-                  <td className="p-4 text-center">
-                    {item.q2 && <div className="w-3 h-3 rounded-full bg-primary mx-auto"></div>}
-                  </td>
-                  <td className="p-4 text-center">
-                    {item.q3 && <div className="w-3 h-3 rounded-full bg-primary mx-auto"></div>}
-                  </td>
-                  <td className="p-4 text-center">
-                    {item.q4 && <div className="w-3 h-3 rounded-full bg-primary mx-auto"></div>}
-                  </td>
-                  <td className="p-4 text-right font-medium">{formatCurrency(item.budget_planned)}</td>
-                </tr>
-              ))}
-              {filteredItems.length === 0 && (
+            <tbody>
+              {data.length > 0 ? (
+                data.map((item) => (
+                  <tr key={item.id} className="border-b border-border hover:bg-surface-hover transition-colors">
+                    <td className="p-4 text-sm font-medium text-text-primary align-middle">
+                      {item.code}
+                    </td>
+                    <td className="p-4 text-sm align-middle">
+                      <p className="text-text-primary font-medium">{item.description}</p>
+                      {item.logframe_items?.intervention_label && (
+                        <p className="text-xs text-text-secondary mt-1">Lien: {item.logframe_items.intervention_label}</p>
+                      )}
+                    </td>
+                    <td className="p-4 text-sm text-text-secondary align-middle">
+                      {item.responsible || '—'}
+                    </td>
+                    <td className="p-4 align-middle text-center">
+                      {item.q1 ? <div className="w-6 h-6 rounded bg-green-100 flex items-center justify-center mx-auto text-green-700"><Check className="w-4 h-4"/></div> : <span className="text-border">—</span>}
+                    </td>
+                    <td className="p-4 align-middle text-center">
+                      {item.q2 ? <div className="w-6 h-6 rounded bg-green-100 flex items-center justify-center mx-auto text-green-700"><Check className="w-4 h-4"/></div> : <span className="text-border">—</span>}
+                    </td>
+                    <td className="p-4 align-middle text-center">
+                      {item.q3 ? <div className="w-6 h-6 rounded bg-green-100 flex items-center justify-center mx-auto text-green-700"><Check className="w-4 h-4"/></div> : <span className="text-border">—</span>}
+                    </td>
+                    <td className="p-4 align-middle text-center">
+                      {item.q4 ? <div className="w-6 h-6 rounded bg-green-100 flex items-center justify-center mx-auto text-green-700"><Check className="w-4 h-4"/></div> : <span className="text-border">—</span>}
+                    </td>
+                    <td className="p-4 text-sm text-right font-mono font-medium text-text-primary align-middle">
+                      {formatCurrency(item.budget_allocated)}
+                    </td>
+                    <td className="p-4 text-right align-middle">
+                      <div className="flex items-center justify-end gap-1">
+                        <button onClick={() => openEditModal(item)} className="p-1.5 text-text-secondary hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="Modifier">
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleDelete(item.id)} className="p-1.5 text-text-secondary hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Supprimer">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-text-secondary">Aucune activité trouvée</td>
+                  <td colSpan={9} className="p-8 text-center text-text-secondary">
+                    Aucune ligne au PTBA pour cet exercice.
+                  </td>
                 </tr>
               )}
             </tbody>
-            <tfoot>
-              <tr className="bg-surface-dim border-t-2 border-border h-12">
-                <td className="p-4 text-sm font-semibold text-right" colSpan={7}>Total Général</td>
-                <td className="p-4 text-sm font-semibold text-right text-primary whitespace-nowrap">{formatCurrency(totalBudget)}</td>
-              </tr>
-            </tfoot>
+            {data.length > 0 && (
+              <tfoot className="bg-background border-t-2 border-border font-semibold">
+                <tr>
+                  <td colSpan={7} className="p-4 text-right text-text-primary">
+                    Total Budget PTBA {currentYear} :
+                  </td>
+                  <td className="p-4 text-right font-mono text-text-primary">
+                    {formatCurrency(totalBudget)}
+                  </td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            )}
           </table>
         </div>
       </div>
 
-      {isModalOpen && (
-        <AddPtbaModal 
-          projectId={projectId}
-          onClose={() => setIsModalOpen(false)}
-        />
+      {/* Drawer / Modal */}
+      {isDrawerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-surface w-full max-w-2xl rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-text-primary">
+                {editingItem ? 'Modifier la ligne PTBA' : `Nouvelle ligne PTBA ${currentYear}`}
+              </h3>
+              <button onClick={() => setIsDrawerOpen(false)} className="text-text-secondary hover:text-text-primary p-2">
+                &times;
+              </button>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6 flex-1">
+              
+              {logframeActivities.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">
+                    Lier à une activité du Cadre Logique (Optionnel)
+                  </label>
+                  <select
+                    value={formData.logframe_item_id}
+                    onChange={e => {
+                      const id = e.target.value
+                      const selectedLogframe = logframeActivities.find(l => l.id === id)
+                      setFormData(prev => ({
+                        ...prev,
+                        logframe_item_id: id,
+                        // Auto-fill description if empty
+                        description: prev.description || (selectedLogframe?.intervention_label || '')
+                      }))
+                    }}
+                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
+                  >
+                    <option value="">-- Indépendant --</option>
+                    {logframeActivities.map(l => (
+                      <option key={l.id} value={l.id}>{l.intervention_label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">
+                    Code <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.code}
+                    onChange={e => setFormData({ ...formData, code: e.target.value })}
+                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
+                    placeholder="Ex: 1.1.1"
+                  />
+                </div>
+
+                <div className="col-span-1 md:col-span-2">
+                  <label className="block text-sm font-medium text-text-secondary mb-1">
+                    Composante / Description de l'Activité <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    required
+                    rows={2}
+                    value={formData.description}
+                    onChange={e => setFormData({ ...formData, description: e.target.value })}
+                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
+                    placeholder="Ex: Études topographiques..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">
+                    Responsable
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.responsible}
+                    onChange={e => setFormData({ ...formData, responsible: e.target.value })}
+                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
+                    placeholder="Ex: Direction technique"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">
+                    Budget Prévu (FCFA) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    step="1"
+                    value={formData.budget_allocated || ''}
+                    onChange={e => setFormData({ ...formData, budget_allocated: Number(e.target.value) })}
+                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-3">
+                  Planification Trimestrielle
+                </label>
+                <div className="flex items-center gap-6">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={formData.q1} onChange={e => setFormData({...formData, q1: e.target.checked})} className="w-4 h-4 text-blue-600 rounded border-border focus:ring-blue-500" />
+                    <span className="text-sm font-medium text-text-primary">Q1 (Jan-Mar)</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={formData.q2} onChange={e => setFormData({...formData, q2: e.target.checked})} className="w-4 h-4 text-blue-600 rounded border-border focus:ring-blue-500" />
+                    <span className="text-sm font-medium text-text-primary">Q2 (Avr-Juin)</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={formData.q3} onChange={e => setFormData({...formData, q3: e.target.checked})} className="w-4 h-4 text-blue-600 rounded border-border focus:ring-blue-500" />
+                    <span className="text-sm font-medium text-text-primary">Q3 (Juil-Sep)</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={formData.q4} onChange={e => setFormData({...formData, q4: e.target.checked})} className="w-4 h-4 text-blue-600 rounded border-border focus:ring-blue-500" />
+                    <span className="text-sm font-medium text-text-primary">Q4 (Oct-Déc)</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-border flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsDrawerOpen(false)}
+                  className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary bg-background border border-border rounded-lg hover:bg-surface-hover transition-colors"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   )

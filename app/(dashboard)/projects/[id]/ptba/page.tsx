@@ -1,38 +1,62 @@
-import React from 'react'
 import { createClient } from '@/lib/supabase/server'
-import { Header } from '@/components/dashboard/Header'
-import { PtbaClient, PtbaActivity } from './ptba-client'
+import { redirect } from 'next/navigation'
+import { PtbaClient } from './ptba-client'
+import { getPtbaActivities } from '@/lib/actions/ptba.actions'
+import { getLogframe } from '@/lib/actions/logframe.actions'
 
-export default async function PtbaPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+export const metadata = {
+  title: 'PTBA | Gestion de Projets',
+  description: 'Plan de Travail et de Budget Annuel'
+}
+
+export default async function PtbaPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<{ year?: string }> }) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: ptbaActivities, error } = await supabase
-    .from('ptba_activities')
-    .select('*')
-    .eq('project_id', id)
-    .order('code', { ascending: true })
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <Header title="PTBA — Plan de Travail et Budget Annuel" />
-        <div className="mt-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
-          Erreur de chargement: {error.message}
-        </div>
-      </div>
-    )
+  if (!user) {
+    redirect('/login')
   }
 
-  const items = ptbaActivities as PtbaActivity[]
+  const { id } = await params
+  const { year: yearParam } = await searchParams
+
+  const currentYear = yearParam ? parseInt(yearParam, 10) : new Date().getFullYear()
+
+  // 1. Get project details
+  const { data: project } = await supabase
+    .from('projects')
+    .select('*, project_members!inner(role)')
+    .eq('id', id)
+    .eq('project_members.user_id', user.id)
+    .single()
+
+  if (!project) {
+    redirect('/projects')
+  }
+
+  // 2. Fetch PTBA and Logframe
+  const [ptbaActivities, logframeItems] = await Promise.all([
+    getPtbaActivities(id, currentYear),
+    getLogframe(id)
+  ])
+
+  // Filter logframe to only pass "activities" (or everything, but let's pass all to allow selection)
+  const logframeActivities = logframeItems.filter(item => item.level === 'activite')
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex justify-between items-center px-6 py-4">
-        <Header title="PTBA — Plan de Travail et Budget Annuel" />
-      </div>
-      <div className="flex-1 px-6 pb-6 overflow-y-auto">
-        <PtbaClient items={items} projectId={id} />
+    <div className="flex-1 overflow-auto bg-background">
+      <div className="max-w-7xl mx-auto p-6 md:p-8 space-y-8">
+        <div>
+          <h1 className="text-2xl font-bold text-text-primary">PTBA {currentYear}</h1>
+          <p className="text-text-secondary mt-1">Plan de Travail et de Budget Annuel pour l'exercice {currentYear}.</p>
+        </div>
+
+        <PtbaClient 
+          projectId={id} 
+          currentYear={currentYear} 
+          initialData={ptbaActivities} 
+          logframeActivities={logframeActivities}
+        />
       </div>
     </div>
   )

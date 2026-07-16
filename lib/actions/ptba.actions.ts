@@ -1,38 +1,102 @@
 'use server'
 
-import { z } from 'zod'
-import { createClient } from '../supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { requireRole } from './auth.actions'
+import { LogframeItem } from './logframe.actions'
 
-const ptbaSchema = z.object({
-  project_id: z.string().uuid(),
-  logframe_item_id: z.string().uuid().optional(),
-  code: z.string().min(1),
-  description: z.string().min(1),
-  responsible: z.string().optional(),
-  fiscal_year: z.number().int().min(2000).optional(),
-  q1: z.boolean().default(false),
-  q2: z.boolean().default(false),
-  q3: z.boolean().default(false),
-  q4: z.boolean().default(false),
-  budget_planned: z.number().min(0).default(0)
-})
+export interface PtbaActivity {
+  id: string
+  project_id: string
+  logframe_item_id: string | null
+  code: string
+  description: string
+  responsible: string | null
+  fiscal_year: number
+  q1: boolean
+  q2: boolean
+  q3: boolean
+  q4: boolean
+  budget_allocated: number
+  created_at: string
+  logframe_items?: Pick<LogframeItem, 'intervention_label'>
+}
 
-export async function createPtbaActivity(data: z.infer<typeof ptbaSchema>) {
-  const parsed = ptbaSchema.safeParse(data)
-  if (!parsed.success) return { error: 'Invalid data', details: parsed.error.issues }
+export async function getPtbaActivities(projectId: string, year: number) {
+  const supabase = await createClient()
 
-  try {
-    await requireRole(parsed.data.project_id, ['owner', 'chef_projet'])
-  } catch (error: any) {
-    return { error: error.message }
+  const { data, error } = await supabase
+    .from('ptba_activities')
+    .select('*, logframe_items(intervention_label)')
+    .eq('project_id', projectId)
+    .eq('fiscal_year', year)
+    .order('code', { ascending: true })
+
+  if (error) {
+    console.error('Error fetching PTBA:', error)
+    throw new Error('Failed to fetch PTBA')
   }
 
-  const supabase = await createClient()
-  const { data: result, error } = await supabase.from('ptba_activities').insert(parsed.data).select().single()
+  return data as PtbaActivity[]
+}
 
-  if (error) return { error: error.message }
-  revalidatePath(`/projects/${parsed.data.project_id}/ptba`)
-  return { data: result }
+export async function addPtbaActivity(
+  projectId: string,
+  data: Omit<PtbaActivity, 'id' | 'project_id' | 'created_at' | 'logframe_items'>
+) {
+  const supabase = await createClient()
+
+  const { data: item, error } = await supabase
+    .from('ptba_activities')
+    .insert([{ project_id: projectId, ...data }])
+    .select('*, logframe_items(intervention_label)')
+    .single()
+
+  if (error) {
+    console.error('Error adding PTBA activity:', error)
+    throw new Error('Failed to add PTBA activity')
+  }
+
+  revalidatePath(`/projects/${projectId}/ptba`)
+  return item as PtbaActivity
+}
+
+export async function updatePtbaActivity(
+  projectId: string,
+  id: string,
+  data: Partial<Omit<PtbaActivity, 'id' | 'project_id' | 'created_at' | 'logframe_items'>>
+) {
+  const supabase = await createClient()
+
+  const { data: item, error } = await supabase
+    .from('ptba_activities')
+    .update(data)
+    .eq('id', id)
+    .eq('project_id', projectId)
+    .select('*, logframe_items(intervention_label)')
+    .single()
+
+  if (error) {
+    console.error('Error updating PTBA activity:', error)
+    throw new Error('Failed to update PTBA activity')
+  }
+
+  revalidatePath(`/projects/${projectId}/ptba`)
+  return item as PtbaActivity
+}
+
+export async function deletePtbaActivity(projectId: string, id: string) {
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('ptba_activities')
+    .delete()
+    .eq('id', id)
+    .eq('project_id', projectId)
+
+  if (error) {
+    console.error('Error deleting PTBA activity:', error)
+    throw new Error('Failed to delete PTBA activity')
+  }
+
+  revalidatePath(`/projects/${projectId}/ptba`)
 }
