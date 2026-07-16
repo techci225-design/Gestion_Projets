@@ -7,6 +7,8 @@ import { AlertBadge } from '@/components/ui/AlertBadge'
 import { Plus, Briefcase, Calendar, AlertTriangle, ArrowUpDown, ChevronRight, Activity, DollarSign, Target } from 'lucide-react'
 import { AddProjectModal } from './add-project-modal'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ProjectsPage({ searchParams }: { searchParams: Promise<{ sort?: string, order?: string }> }) {
   const { sort = 'alert', order = 'desc' } = await searchParams
   const supabase = await createClient()
