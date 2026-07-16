@@ -16,7 +16,7 @@ export interface PtbaActivity {
   q2: boolean
   q3: boolean
   q4: boolean
-  budget_allocated: number
+  budget_planned: number
   created_at: string
   logframe_items?: Pick<LogframeItem, 'intervention_label'>
 }

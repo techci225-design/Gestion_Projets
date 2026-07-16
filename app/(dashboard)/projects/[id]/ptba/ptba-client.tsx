@@ -29,7 +29,7 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
     q2: false,
     q3: false,
     q4: false,
-    budget_allocated: 0
+    budget_planned: 0
   })
   
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -49,7 +49,7 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
       q2: false,
       q3: false,
       q4: false,
-      budget_allocated: 0
+      budget_planned: 0
     })
     setIsDrawerOpen(true)
   }
@@ -65,7 +65,7 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
       q2: item.q2,
       q3: item.q3,
       q4: item.q4,
-      budget_allocated: item.budget_allocated
+      budget_planned: item.budget_planned
     })
     setIsDrawerOpen(true)
   }
@@ -95,7 +95,7 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
       q2: formData.q2,
       q3: formData.q3,
       q4: formData.q4,
-      budget_allocated: Number(formData.budget_allocated)
+      budget_planned: Number(formData.budget_planned)
     }
 
     try {
@@ -114,7 +114,7 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
     }
   }
 
-  const totalBudget = data.reduce((acc, curr) => acc + Number(curr.budget_allocated), 0)
+  const totalBudget = data.reduce((acc, curr) => acc + Number(curr.budget_planned), 0)
 
   // Generate an array of recent years (e.g., current year -2 to +2)
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i)
@@ -193,7 +193,7 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
                       {item.q4 ? <div className="w-6 h-6 rounded bg-green-100 flex items-center justify-center mx-auto text-green-700"><Check className="w-4 h-4"/></div> : <span className="text-border">—</span>}
                     </td>
                     <td className="p-4 text-sm text-right font-mono font-medium text-text-primary align-middle">
-                      {formatCurrency(item.budget_allocated)}
+                      {formatCurrency(item.budget_planned)}
                     </td>
                     <td className="p-4 text-right align-middle">
                       <div className="flex items-center justify-end gap-1">
@@ -325,8 +325,8 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
                     required
                     min="0"
                     step="1"
-                    value={formData.budget_allocated || ''}
-                    onChange={e => setFormData({ ...formData, budget_allocated: Number(e.target.value) })}
+                    value={formData.budget_planned || ''}
+                    onChange={e => setFormData({ ...formData, budget_planned: Number(e.target.value) })}
                     className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
                     placeholder="0"
                   />
