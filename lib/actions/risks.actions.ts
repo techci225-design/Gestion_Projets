@@ -1,35 +1,97 @@
 'use server'
 
-import { z } from 'zod'
-import { createClient } from '../supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { requireRole } from './auth.actions'
 
-const riskSchema = z.object({
-  project_id: z.string().uuid(),
-  category: z.string().min(1),
-  description: z.string().min(1),
-  probability: z.number().int().min(1).max(3),
-  impact: z.number().int().min(1).max(3),
-  mitigation_strategy: z.string().optional(),
-  responsible: z.string().optional(),
-  status: z.enum(['ouvert', 'en_cours', 'clos']).default('ouvert')
-})
+export interface RiskItem {
+  id: string
+  project_id: string
+  category: string
+  description: string
+  probability: number
+  impact: number
+  criticality: number
+  mitigation_strategy: string | null
+  responsible: string | null
+  status: 'ouvert' | 'en_cours' | 'clos'
+  created_at: string
+}
 
-export async function createRisk(data: z.infer<typeof riskSchema>) {
-  const parsed = riskSchema.safeParse(data)
-  if (!parsed.success) return { error: 'Invalid data', details: parsed.error.issues }
+export async function getRisks(projectId: string) {
+  const supabase = await createClient()
 
-  try {
-    await requireRole(parsed.data.project_id, ['owner', 'chef_projet', 'consultant'])
-  } catch (error: any) {
-    return { error: error.message }
+  const { data, error } = await supabase
+    .from('risks')
+    .select('*')
+    .eq('project_id', projectId)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching risks:', error)
+    throw new Error('Failed to fetch risks')
   }
 
-  const supabase = await createClient()
-  const { data: result, error } = await supabase.from('risks').insert(parsed.data).select().single()
+  return data as RiskItem[]
+}
 
-  if (error) return { error: error.message }
-  revalidatePath(`/projects/${parsed.data.project_id}/risques`)
-  return { data: result }
+export async function addRisk(
+  projectId: string,
+  data: Omit<RiskItem, 'id' | 'project_id' | 'criticality' | 'created_at'>
+) {
+  const supabase = await createClient()
+
+  const { data: item, error } = await supabase
+    .from('risks')
+    .insert([{ project_id: projectId, ...data }])
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error adding risk:', error)
+    throw new Error('Failed to add risk')
+  }
+
+  revalidatePath(`/projects/${projectId}/risques`)
+  return item as RiskItem
+}
+
+export async function updateRisk(
+  projectId: string,
+  id: string,
+  data: Partial<Omit<RiskItem, 'id' | 'project_id' | 'criticality' | 'created_at'>>
+) {
+  const supabase = await createClient()
+
+  const { data: item, error } = await supabase
+    .from('risks')
+    .update(data)
+    .eq('id', id)
+    .eq('project_id', projectId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating risk:', error)
+    throw new Error('Failed to update risk')
+  }
+
+  revalidatePath(`/projects/${projectId}/risques`)
+  return item as RiskItem
+}
+
+export async function deleteRisk(projectId: string, id: string) {
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('risks')
+    .delete()
+    .eq('id', id)
+    .eq('project_id', projectId)
+
+  if (error) {
+    console.error('Error deleting risk:', error)
+    throw new Error('Failed to delete risk')
+  }
+
+  revalidatePath(`/projects/${projectId}/risques`)
 }
