@@ -66,7 +66,7 @@ export function ImportReleveClient({ projectId, operations }: { projectId: strin
       if (row.debit > 0) {
         const rowWords = row.libelle.toLowerCase().split(/\s+/)
         for (const op of operations) {
-          const opWords = (op.description || '').toLowerCase().split(/\s+/)
+          const opWords = (op.task_code || '').toLowerCase().split(/\s+/)
           let matchCount = 0
           for (const rw of rowWords) {
             if (rw.length > 3 && opWords.some((ow: string) => ow.includes(rw))) {
@@ -213,7 +213,7 @@ export function ImportReleveClient({ projectId, operations }: { projectId: strin
                           >
                             <option value="">-- Ignorer (Aucune correspondance) --</option>
                             {operations.map(op => (
-                              <option key={op.id} value={op.id}>{op.task_code} - {op.description} ({formatCurrency(op.planned_cost)})</option>
+                              <option key={op.id} value={op.id}>{op.task_code} ({formatCurrency(op.planned_cost)})</option>
                             ))}
                           </select>
                         ) : (

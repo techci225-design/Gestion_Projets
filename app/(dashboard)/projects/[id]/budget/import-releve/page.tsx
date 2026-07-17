@@ -24,7 +24,6 @@ export default async function ImportRelevePage({ params }: { params: Promise<{ i
       status, 
       planned_cost, 
       actual_cost, 
-      description,
       budget_line_id
     `)
     .eq('project_id', id)
