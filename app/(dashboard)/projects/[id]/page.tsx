@@ -8,6 +8,7 @@ import { SCurveChart } from '@/components/dashboard/SCurveChart'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { AlertTriangle } from 'lucide-react'
 import { TopVariancesChart } from '@/components/dashboard/TopVariancesChart'
+import { ExportPdfButton } from '@/components/dashboard/ExportPdfButton'
 
 export default async function ProjectDashboardPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
@@ -83,7 +84,10 @@ export default async function ProjectDashboardPage({ params }: { params: Promise
             <h2 className="text-2xl font-bold tracking-tight text-text-primary">Tableau de bord EVM</h2>
             <p className="text-sm text-text-secondary">Analyse de la Valeur Acquise</p>
           </div>
-          <EvmDateSelector projectId={project.id} currentDate={project.evm_control_date} />
+          <div className="flex items-center gap-3">
+            <EvmDateSelector projectId={project.id} currentDate={project.evm_control_date} />
+            <ExportPdfButton projectId={project.id} />
+          </div>
         </div>
 
         {/* Global KPIs */}
