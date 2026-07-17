@@ -92,7 +92,7 @@ export function EvmHistory({ projectId, snapshots, currentSummary }: { projectId
       <div className="bg-surface rounded-xl shadow-sm border border-border p-6">
         <h3 className="text-lg font-bold text-text-primary mb-4">Historique des Arrêtés EVM</h3>
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[800px]">
+          <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-dim border-b border-border">
                 <th className="p-4 text-xs font-medium text-text-secondary w-32">Date d'arrêté</th>

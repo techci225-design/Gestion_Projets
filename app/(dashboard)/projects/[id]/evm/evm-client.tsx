@@ -196,9 +196,9 @@ export function EvmClient({
       </div>
 
       {/* Data Table */}
-      <div className="bg-white/90 backdrop-blur-sm border border-white/20 shadow-sm rounded-xl overflow-hidden flex flex-col">
+      <div className="bg-white/90 backdrop-blur-sm border border-white/20 shadow-sm rounded-xl flex flex-col">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[800px]">
+          <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-dim border-b border-border">
                 <th className="p-4 text-xs font-medium text-text-secondary w-24">Code</th>
