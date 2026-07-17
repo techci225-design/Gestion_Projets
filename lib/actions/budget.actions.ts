@@ -123,3 +123,38 @@ export async function batchUpdateOperationsFromBank(projectId: string, updates: 
   
   return { success: true }
 }
+
+const fundingSourceSchema = z.object({
+  project_id: z.string().uuid(),
+  name: z.string().min(1),
+  type: z.enum(['subvention', 'pret', 'fonds_propres']),
+  amount_committed: z.number().min(0)
+})
+
+export async function createFundingSource(data: z.infer<typeof fundingSourceSchema>) {
+  const parsed = fundingSourceSchema.safeParse(data)
+  if (!parsed.success) {
+    return { error: 'Invalid data', details: parsed.error.issues }
+  }
+
+  try {
+    await requireRole(parsed.data.project_id, ['owner', 'comptable'])
+  } catch (error: any) {
+    return { error: error.message }
+  }
+
+  const supabase = await createClient()
+
+  const { data: result, error } = await supabase
+    .from('funding_sources')
+    .insert(parsed.data)
+    .select()
+    .single()
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath(`/projects/${parsed.data.project_id}/budget/bailleurs`)
+  return { data: result }
+}

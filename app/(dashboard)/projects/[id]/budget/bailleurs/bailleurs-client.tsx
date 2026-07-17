@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { Plus } from 'lucide-react'
 
@@ -30,7 +30,11 @@ function ProgressBar({ percentage }: { percentage: number }) {
   )
 }
 
+import { AddBailleurModal } from './add-bailleur-modal'
+
 export function BailleursClient({ projectId, bailleurs }: { projectId: string, bailleurs: any[] }) {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
   return (
     <div className="flex-1 p-6 overflow-y-auto">
       <div className="flex justify-between items-end mb-6">
@@ -38,7 +42,10 @@ export function BailleursClient({ projectId, bailleurs }: { projectId: string, b
           <h2 className="text-3xl font-bold text-primary mb-1">Sources de financement</h2>
           <p className="text-base text-text-secondary">Suivi des engagements et décaissements par bailleur.</p>
         </div>
-        <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity"
+        >
           <Plus className="w-4 h-4" />
           Nouvelle source
         </button>
@@ -83,6 +90,11 @@ export function BailleursClient({ projectId, bailleurs }: { projectId: string, b
           </table>
         </div>
       </div>
+      <AddBailleurModal 
+        projectId={projectId} 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
     </div>
   )
 }
