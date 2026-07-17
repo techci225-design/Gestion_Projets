@@ -115,21 +115,21 @@ export function EvmClient({
   return (
     <div className="flex flex-col space-y-6 pb-12">
       {/* Page Header & EVM Summary */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div>
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-4">
+        <div className="flex-shrink-0">
           <h1 className="text-2xl font-semibold text-primary mb-1">Suivi de la Valeur Acquise (EVM)</h1>
           <p className="text-sm text-text-secondary">Analyse des performances de coût et de délai</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="bg-primary text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-2"
+            className="bg-primary text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-2 whitespace-nowrap"
           >
             <Plus className="w-4 h-4" />
             Nouvelle tâche
           </button>
           
-          <div className="bg-white/90 backdrop-blur-sm border border-white/20 shadow-sm p-4 rounded-xl flex items-center gap-6">
+          <div className="bg-white/90 backdrop-blur-sm border border-white/20 shadow-sm p-3 md:p-4 rounded-xl flex flex-wrap items-center gap-4 lg:gap-6">
             <div className="flex flex-col">
               <label className="text-sm font-medium text-text-secondary mb-1">Arrêté des comptes au :</label>
               <div className="flex items-center gap-2">
@@ -152,7 +152,7 @@ export function EvmClient({
               </div>
             </div>
             
-            <div className="h-10 w-px bg-border mx-1"></div>
+            <div className="hidden sm:block h-10 w-px bg-border mx-1"></div>
             
             <div className="flex flex-col">
               <label className="text-sm font-medium text-text-secondary mb-1">Responsable :</label>
@@ -175,7 +175,8 @@ export function EvmClient({
                 </div>
               )}
             </div>
-            <div className="h-10 w-px bg-border mx-1"></div>
+            <div className="hidden sm:block h-10 w-px bg-border mx-1"></div>
+            
             <div className="flex gap-4">
               <div className="flex flex-col items-center">
                 <span className="text-xs font-medium text-text-secondary mb-1">CPI Global</span>
