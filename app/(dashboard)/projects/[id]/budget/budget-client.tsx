@@ -21,23 +21,19 @@ export interface BudgetConsumption {
   niveau_alerte: 'vert' | 'orange' | 'rouge' | 'neutre'
 }
 
-export function BudgetClient({ items, fundingSources, operations, projectId }: { items: BudgetConsumption[], fundingSources?: any[], operations?: any[], projectId: string }) {
+export function BudgetClient({ items, fundingSources, operations, projectId, isNewProject }: { items: BudgetConsumption[], fundingSources?: any[], operations?: any[], projectId: string, isNewProject?: boolean }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [showSuccess, setShowSuccess] = useState(false)
+  const [showBanner, setShowBanner] = useState(isNewProject)
   const [selectedResponsable, setSelectedResponsable] = useState('Tous les responsables')
 
   useEffect(() => {
-    if (searchParams.get('new') === 'true') {
-      setShowSuccess(true)
-      const timer = setTimeout(() => {
-        setShowSuccess(false)
-        router.replace(`/projects/${projectId}/budget`)
-      }, 5000)
+    if (showBanner) {
+      const timer = setTimeout(() => setShowBanner(false), 5000)
       return () => clearTimeout(timer)
     }
-  }, [searchParams, projectId, router])
+  }, [showBanner])
 
   const responsables = Array.from(new Set(items.map(i => i.responsible).filter(Boolean))) as string[]
   const filteredItems = selectedResponsable === 'Tous les responsables'
@@ -82,6 +78,12 @@ export function BudgetClient({ items, fundingSources, operations, projectId }: {
 
   return (
     <div className="flex flex-col h-full space-y-6">
+      {showBanner && (
+        <div className="mb-6 p-4 bg-success/10 border border-success/20 text-success-dark rounded-lg flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+          <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+          <p className="text-sm font-medium">Projet créé avec succès. Saisissez vos premières opérations dans le Journal des opérations.</p>
+        </div>
+      )}
       {/* Header Section */}
       <div className="flex justify-between items-end">
         <div>

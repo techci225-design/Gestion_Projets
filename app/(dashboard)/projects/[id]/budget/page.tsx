@@ -2,8 +2,15 @@ import React from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { BudgetClient, BudgetConsumption } from './budget-client'
 
-export default async function BudgetPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function BudgetPage({ 
+  params,
+  searchParams
+}: { 
+  params: Promise<{ id: string }>,
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
   const { id } = await params
+  const { new: isNewProject } = await searchParams
   const supabase = await createClient()
 
   let budgetData = null
@@ -57,6 +64,7 @@ export default async function BudgetPage({ params }: { params: Promise<{ id: str
         fundingSources={fundingData || []} 
         operations={operationsData || []}
         projectId={id} 
+        isNewProject={isNewProject === 'true'}
       />
     </div>
   )
