@@ -18,7 +18,7 @@ export interface SettingsProfile {
   } | null
 }
 
-export function SettingsClient({ profile }: { profile: SettingsProfile }) {
+export function SettingsClient({ profile, isOwner }: { profile: SettingsProfile, isOwner?: boolean }) {
   const router = useRouter()
   const supabase = createClient()
   
@@ -256,6 +256,34 @@ export function SettingsClient({ profile }: { profile: SettingsProfile }) {
         </div>
       </div>
 
+      {/* SECTION OWNER: OUTILS D'ADMINISTRATION */}
+      {isOwner && (
+        <div className="bg-surface rounded-xl shadow-sm border border-border overflow-hidden">
+          <div className="p-4 border-b border-border bg-surface-dim flex items-center gap-2">
+            <Shield className="w-5 h-5 text-primary" />
+            <h3 className="font-bold text-text-primary">Administration (Réservé aux Owners)</h3>
+          </div>
+          <div className="p-6">
+            <p className="text-sm text-text-secondary mb-4">
+              Outils d'administration pour forcer l'exécution de certaines tâches planifiées.
+            </p>
+            <button 
+              onClick={async () => {
+                const { error } = await supabase.functions.invoke('check-alerts')
+                if (error) {
+                  alert('Erreur: ' + error.message)
+                } else {
+                  alert('Vérification des alertes effectuée')
+                }
+              }}
+              className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-primary/90 transition-colors"
+            >
+              <Bell className="w-5 h-5" />
+              Déclencher les alertes maintenant
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

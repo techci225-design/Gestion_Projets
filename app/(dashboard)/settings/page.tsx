@@ -20,6 +20,16 @@ export default async function SettingsPage() {
     .eq('id', user.id)
     .single()
 
+  // Vérifier si owner d'au moins un projet
+  const { data: ownerRole } = await supabase
+    .from('project_members')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('role', 'owner')
+    .limit(1)
+
+  const isOwner = !!(ownerRole && ownerRole.length > 0)
+
   if (error || !profileData) {
     return (
       <div className="p-6">
@@ -37,7 +47,7 @@ export default async function SettingsPage() {
     <>
       <Header title="Paramètres" />
       <div className="p-6 max-w-4xl mx-auto">
-        <SettingsClient profile={profile} />
+        <SettingsClient profile={profile} isOwner={isOwner} />
       </div>
     </>
   )
