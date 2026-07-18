@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
+import { cookies } from 'next/headers'
 
 export async function createProject(formData: FormData) {
   const supabase = await createClient()
@@ -25,6 +26,14 @@ export async function createProject(formData: FormData) {
     return { error: 'Erreur de configuration serveur (Clé Admin manquante ou invalide). Veuillez vérifier la variable SUPABASE_SERVICE_ROLE_KEY sur Vercel.' }
   }
 
+  // Get active organization
+  const cookieStore = await cookies()
+  const activeOrgId = cookieStore.get('active_org_id')?.value
+
+  if (!activeOrgId) {
+    return { error: 'Aucune organisation sélectionnée' }
+  }
+
   // Insert project
   let project;
   try {
@@ -35,7 +44,8 @@ export async function createProject(formData: FormData) {
         code: code || null,
         start_date: startDate || null,
         end_date: endDate || null,
-        created_by: user.id
+        created_by: user.id,
+        organization_id: activeOrgId
       })
       .select()
       .single()

@@ -1,6 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
 import { Header } from '@/components/dashboard/Header'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { AlertBadge } from '@/components/ui/AlertBadge'
@@ -20,10 +21,15 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
     .eq('id', user?.id)
     .single()
 
-  const { data: projects, error: projectsError } = await supabase
-    .from('projects')
-    .select('*')
-    .order('created_at', { ascending: false })
+  const cookieStore = await cookies()
+  const activeOrgId = cookieStore.get('active_org_id')?.value
+
+  let query = supabase.from('projects').select('*')
+  if (activeOrgId) {
+    query = query.eq('organization_id', activeOrgId)
+  }
+
+  const { data: projects, error: projectsError } = await query.order('created_at', { ascending: false })
 
   const projectIds = projects?.map(p => p.id) || []
 
