@@ -111,6 +111,10 @@ export default function RegisterPage() {
         throw signUpError
       }
 
+      if (!data.session) {
+        throw new Error("Un email de confirmation vous a été envoyé. Veuillez cliquer sur le lien pour valider votre compte, puis connectez-vous pour terminer la configuration.")
+      }
+
       // Automatically advance to step 2 without full page reload
       setStep(2)
 
