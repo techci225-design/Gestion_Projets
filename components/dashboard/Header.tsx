@@ -22,9 +22,6 @@ export function Header({ title, userFullName }: HeaderProps) {
         {/* Org Selector */}
         {!isLoading && activeOrganization && organizations.length > 1 && (
           <div className="relative group ml-4 border-l border-border pl-4">
-            <Link href="/admin/organizations" className="mr-4 px-3 py-1.5 bg-red-100 text-red-600 rounded-lg text-xs font-bold uppercase tracking-wider">
-              Admin
-            </Link>
             <button className="flex items-center gap-2 text-sm text-text-secondary hover:text-primary transition-colors">
               <Building2 className="w-4 h-4" />
               <span className="font-medium">{activeOrganization.name}</span>
@@ -44,9 +41,14 @@ export function Header({ title, userFullName }: HeaderProps) {
           </div>
         )}
         {!isLoading && activeOrganization && organizations.length === 1 && (
-          <div className="hidden md:flex items-center gap-2 text-sm text-text-tertiary ml-4 border-l border-border pl-4">
-            <Building2 className="w-4 h-4" />
-            <span>{activeOrganization.name}</span>
+          <div className="hidden md:flex items-center gap-4 ml-4 border-l border-border pl-4">
+            <Link href="/admin/organizations" className="px-3 py-1.5 bg-red-100 text-red-600 rounded-lg text-xs font-bold uppercase tracking-wider">
+              Admin
+            </Link>
+            <div className="flex items-center gap-2 text-sm text-text-tertiary">
+              <Building2 className="w-4 h-4" />
+              <span>{activeOrganization.name}</span>
+            </div>
           </div>
         )}
       </div>
