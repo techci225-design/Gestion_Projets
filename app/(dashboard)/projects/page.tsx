@@ -365,9 +365,18 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
             <div className="space-y-4 pt-6 border-t border-border">
               <h3 className="text-xl font-bold text-text-primary">Détail par projet</h3>
               {projects?.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-12 bg-surface border border-border rounded-lg border-dashed">
-                  <Briefcase className="w-12 h-12 text-text-tertiary mb-4" />
-                  <p className="text-text-secondary">Aucun projet trouvé.</p>
+                <div className="flex flex-col items-center justify-center p-12 text-center bg-surface border border-border rounded-xl shadow-sm my-8">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                    <Briefcase className="w-8 h-8 text-primary" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-text-primary mb-2">Bienvenue sur ProjetPilote !</h2>
+                  <p className="text-text-secondary max-w-md mx-auto mb-8">
+                    Commencez par créer votre premier projet bailleur pour accéder aux fonctionnalités de suivi financier et EVM.
+                  </p>
+                  <AddProjectModal />
+                  <a href="/import-excel" className="text-sm font-medium text-text-secondary hover:text-primary transition-colors mt-6 underline underline-offset-4">
+                    Ou importer depuis un fichier Excel existant
+                  </a>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

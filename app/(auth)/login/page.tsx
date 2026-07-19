@@ -110,6 +110,11 @@ export default function LoginPage() {
         </button>
       </form>
 
+      <div className="mt-6 text-center">
+        <a href="/register" className="text-sm font-medium text-primary hover:underline">
+          Pas encore de compte ? Créer un espace gratuit →
+        </a>
+      </div>
       {/* Footer */}
       <div className="mt-8 pt-6 border-t border-border flex items-center justify-center gap-2 text-text-secondary text-xs">
         <Lock className="w-4 h-4" />

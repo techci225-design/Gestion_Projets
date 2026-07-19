@@ -1,27 +1,64 @@
-import { createClient } from '../supabase/server'
+'use server'
 
-export type ProjectRole = 'owner' | 'chef_projet' | 'comptable' | 'bailleur_lecture' | 'consultant'
+import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { revalidatePath } from 'next/cache'
 
-export async function getUserRole(projectId: string): Promise<ProjectRole | null> {
+export async function createOrganization(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
 
-  const { data, error } = await supabase
-    .from('project_members')
-    .select('role')
-    .eq('project_id', projectId)
-    .eq('user_id', user.id)
+  if (!user) {
+    return { error: 'Non authentifié' }
+  }
+
+  const name = formData.get('name') as string
+  const country = formData.get('country') as string
+  const size = formData.get('size') as string
+
+  if (!name || !country || !size) {
+    return { error: 'Veuillez remplir tous les champs' }
+  }
+
+  let adminClient;
+  try {
+    adminClient = createAdminClient()
+  } catch (err) {
+    return { error: 'Erreur configuration serveur' }
+  }
+
+  // Generate a basic slug
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.floor(Math.random() * 1000)
+
+  // Insert organization
+  const { data: org, error: orgError } = await adminClient
+    .from('organizations')
+    .insert({
+      name,
+      slug,
+      plan: 'trial',
+      max_projects: 3,
+      is_active: true
+    })
+    .select('id')
     .single()
 
-  if (error || !data) return null
-  return data.role as ProjectRole
-}
-
-export async function requireRole(projectId: string, allowedRoles: ProjectRole[]) {
-  const role = await getUserRole(projectId)
-  if (!role || !allowedRoles.includes(role)) {
-    throw new Error('Non autorisé')
+  if (orgError || !org) {
+    return { error: 'Erreur lors de la création de l\'organisation' }
   }
-  return role
+
+  // Insert organization_members (owner)
+  const { error: memberError } = await adminClient
+    .from('organization_members')
+    .insert({
+      organization_id: org.id,
+      user_id: user.id,
+      org_role: 'owner'
+    })
+
+  if (memberError) {
+    return { error: 'Erreur lors de l\'attribution du rôle' }
+  }
+
+  return { success: true }
 }
