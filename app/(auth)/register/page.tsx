@@ -3,9 +3,8 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { BriefcaseBusiness, Lock, Eye, EyeOff, Building2, Users } from 'lucide-react'
+import { BriefcaseBusiness, Lock, Eye, EyeOff } from 'lucide-react'
 import { z } from 'zod'
-import { createOrganizationOnboarding } from '@/lib/actions/onboarding.actions'
 
 const userSchema = z.object({
   firstName: z.string().min(2, 'Le prénom est requis'),
@@ -20,26 +19,6 @@ const userSchema = z.object({
 
 type UserForm = z.infer<typeof userSchema>
 
-const COUNTRIES = [
-  "Côte d'Ivoire",
-  "Sénégal",
-  "Mali",
-  "Burkina Faso",
-  "Cameroun",
-  "Bénin",
-  "Togo",
-  "Niger",
-  "Guinée",
-  "Autre"
-]
-
-const TEAM_SIZES = [
-  "1 - 5 personnes",
-  "6 - 20 personnes",
-  "21 - 50 personnes",
-  "Plus de 50"
-]
-
 export default function RegisterPage() {
   const router = useRouter()
   const supabase = createClient()
@@ -51,7 +30,6 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  // Step 1 State
   const [userForm, setUserForm] = useState<UserForm>({
     firstName: '',
     lastName: '',
@@ -60,13 +38,6 @@ export default function RegisterPage() {
     confirmPassword: ''
   })
   
-  // Step 2 State
-  const [orgForm, setOrgForm] = useState({
-    name: '',
-    country: "Côte d'Ivoire",
-    teamSize: "1 - 5 personnes"
-  })
-
   // Password strength logic
   const getPasswordStrength = (pass: string) => {
     let score = 0
@@ -88,10 +59,8 @@ export default function RegisterPage() {
     setIsPending(true)
 
     try {
-      // Local validation
       userSchema.parse(userForm)
 
-      // Supabase signup
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: userForm.email,
         password: userForm.password,
@@ -111,12 +80,19 @@ export default function RegisterPage() {
         throw signUpError
       }
 
-      if (!data.session) {
-        throw new Error("Un email de confirmation vous a été envoyé. Veuillez cliquer sur le lien pour valider votre compte, puis connectez-vous pour terminer la configuration.")
+      if (data.session) {
+        // Create profile since they are instantly logged in
+        await supabase.from('profiles').upsert({
+          id: data.user!.id,
+          full_name: `${userForm.firstName} ${userForm.lastName}`,
+          email: userForm.email
+        })
+        router.push('/onboarding')
+        router.refresh()
+      } else {
+        // Email confirmation is required
+        setStep(2)
       }
-
-      // Automatically advance to step 2 without full page reload
-      setStep(2)
 
     } catch (err: any) {
       if (err instanceof z.ZodError) {
@@ -124,39 +100,7 @@ export default function RegisterPage() {
       } else {
         setError(err.message || 'Une erreur est survenue.')
       }
-    } finally {
       setIsPending(false)
-    }
-  }
-
-  const handleStep2Submit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setIsPending(true)
-
-    try {
-      if (!orgForm.name.trim()) {
-        throw new Error("Le nom de l'organisation est obligatoire.")
-      }
-
-      const formData = new FormData()
-      formData.append('name', orgForm.name)
-      formData.append('country', orgForm.country)
-      formData.append('team_size', orgForm.teamSize)
-
-      const result = await createOrganizationOnboarding(formData)
-      
-      if (result.error) {
-        throw new Error(result.error)
-      }
-
-      // Success, redirect to projects
-      router.push('/projects')
-      router.refresh()
-
-    } catch (err: any) {
-      setError(err.message || 'Une erreur est survenue.')
-      setIsPending(false) // Only stop pending if error, otherwise keep loading state during redirect
     }
   }
 
@@ -298,75 +242,33 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {/* Step 2: Organization */}
+      {/* Step 2: Email Confirmation (Fallback) */}
       <div className={`transition-all duration-500 ease-in-out ${step === 2 ? 'opacity-100 translate-x-0 relative block' : 'opacity-0 translate-x-full absolute invisible'}`}>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-            <Building2 className="w-5 h-5 text-primary" />
+        <div className="flex flex-col items-center justify-center text-center py-6">
+          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+            <span className="text-3xl">✉️</span>
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-text-primary">Configurez votre espace</h2>
-            <p className="text-sm text-text-secondary">Dernière étape pour accéder à l'application.</p>
+          <h2 className="text-2xl font-bold text-text-primary mb-4">Vérifiez votre email</h2>
+          
+          <div className="bg-surface-dim p-6 rounded-xl border border-border space-y-4 mb-8 text-left max-w-sm">
+            <p className="text-text-secondary text-sm">
+              Un email de confirmation a été envoyé à <strong className="text-text-primary">{userForm.email}</strong>.
+            </p>
+            <p className="text-text-secondary text-sm">
+              Cliquez sur le lien pour activer votre compte.
+            </p>
+            <p className="text-text-secondary text-sm">
+              Une fois confirmé, revenez ici et connectez-vous pour finaliser la création de votre organisation.
+            </p>
           </div>
-        </div>
-        
-        <form onSubmit={handleStep2Submit} className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1">Nom de l'organisation</label>
-            <input
-              type="text"
-              value={orgForm.name}
-              onChange={(e) => setOrgForm({...orgForm, name: e.target.value})}
-              required
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              placeholder="Ex: Cabinet ALPHA Consulting"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1">Pays d'opération</label>
-            <select
-              value={orgForm.country}
-              onChange={(e) => setOrgForm({...orgForm, country: e.target.value})}
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            >
-              {COUNTRIES.map(c => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-2">Taille de l'équipe</label>
-            <div className="grid grid-cols-2 gap-2">
-              {TEAM_SIZES.map(size => (
-                <label 
-                  key={size}
-                  className={`flex flex-col items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${orgForm.teamSize === size ? 'border-primary bg-primary/5 text-primary' : 'border-border text-text-secondary hover:border-primary/50'}`}
-                >
-                  <input
-                    type="radio"
-                    name="teamSize"
-                    value={size}
-                    checked={orgForm.teamSize === size}
-                    onChange={(e) => setOrgForm({...orgForm, teamSize: e.target.value})}
-                    className="sr-only"
-                  />
-                  <Users className="w-5 h-5 mb-1" />
-                  <span className="text-xs font-medium text-center">{size}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
+          
           <button
-            type="submit"
-            disabled={isPending}
-            className="w-full bg-success text-white font-medium py-3 rounded-lg hover:bg-success/90 transition-colors mt-4 text-base flex items-center justify-center gap-2"
+            onClick={() => router.push('/login')}
+            className="text-sm font-medium text-primary hover:underline"
           >
-            {isPending ? 'Configuration...' : 'Accéder à ProjetPilote ✓'}
+            ← Retour à la connexion
           </button>
-        </form>
+        </div>
       </div>
 
     </div>
