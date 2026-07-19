@@ -1,69 +1,164 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { BriefcaseBusiness, CheckCircle2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { createOrganization } from '@/lib/actions/auth.actions'
+import { BriefcaseBusiness, Lock, Eye, EyeOff, Building2, Users } from 'lucide-react'
+import { z } from 'zod'
+import { createOrganizationOnboarding } from '@/lib/actions/onboarding.actions'
+
+const userSchema = z.object({
+  firstName: z.string().min(2, 'Le prénom est requis'),
+  lastName: z.string().min(2, 'Le nom est requis'),
+  email: z.string().email('Adresse email invalide'),
+  password: z.string().min(8, 'Le mot de passe doit contenir au moins 8 caractères'),
+  confirmPassword: z.string()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Les mots de passe ne correspondent pas",
+  path: ["confirmPassword"]
+})
+
+type UserForm = z.infer<typeof userSchema>
+
+const COUNTRIES = [
+  "Côte d'Ivoire",
+  "Sénégal",
+  "Mali",
+  "Burkina Faso",
+  "Cameroun",
+  "Bénin",
+  "Togo",
+  "Niger",
+  "Guinée",
+  "Autre"
+]
+
+const TEAM_SIZES = [
+  "1 - 5 personnes",
+  "6 - 20 personnes",
+  "21 - 50 personnes",
+  "Plus de 50"
+]
 
 export default function RegisterPage() {
   const router = useRouter()
   const supabase = createClient()
+  
   const [step, setStep] = useState<1 | 2>(1)
-  const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const [isPending, setIsPending] = useState(false)
+  
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  const handleUserSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  // Step 1 State
+  const [userForm, setUserForm] = useState<UserForm>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  })
+  
+  // Step 2 State
+  const [orgForm, setOrgForm] = useState({
+    name: '',
+    country: "Côte d'Ivoire",
+    teamSize: "1 - 5 personnes"
+  })
+
+  // Password strength logic
+  const getPasswordStrength = (pass: string) => {
+    let score = 0
+    if (pass.length > 7) score += 25
+    if (pass.match(/[a-z]+/)) score += 25
+    if (pass.match(/[A-Z]+/)) score += 25
+    if (pass.match(/[0-9]+/)) score += 25
+    return score
+  }
+  const passwordScore = getPasswordStrength(userForm.password)
+
+  const handleUserChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserForm({ ...userForm, [e.target.name]: e.target.value })
+  }
+
+  const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    const formData = new FormData(e.currentTarget)
-    const firstName = formData.get('first_name') as string
-    const lastName = formData.get('last_name') as string
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
-    const confirmPassword = formData.get('confirm_password') as string
+    setIsPending(true)
 
-    if (password !== confirmPassword) {
-      setError("Les mots de passe ne correspondent pas")
-      return
-    }
+    try {
+      // Local validation
+      userSchema.parse(userForm)
 
-    startTransition(async () => {
+      // Supabase signup
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
+        email: userForm.email,
+        password: userForm.password,
         options: {
           data: {
-            full_name: `${firstName} ${lastName}`.trim(),
+            full_name: `${userForm.firstName} ${userForm.lastName}`,
+            first_name: userForm.firstName,
+            last_name: userForm.lastName
           }
         }
       })
 
       if (signUpError) {
-        setError(signUpError.message)
-      } else {
-        setStep(2)
+        if (signUpError.message.includes('already registered')) {
+          throw new Error('Un compte existe déjà avec cet email. Connectez-vous →')
+        }
+        throw signUpError
       }
-    })
+
+      // Automatically advance to step 2 without full page reload
+      setStep(2)
+
+    } catch (err: any) {
+      if (err instanceof z.ZodError) {
+        setError(err.errors[0].message)
+      } else {
+        setError(err.message || 'Une erreur est survenue.')
+      }
+    } finally {
+      setIsPending(false)
+    }
   }
 
-  const handleOrgSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleStep2Submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    const formData = new FormData(e.currentTarget)
-    
-    startTransition(async () => {
-      const result = await createOrganization(formData)
-      if (result?.error) {
-        setError(result.error)
-      } else {
-        router.push('/projects')
+    setIsPending(true)
+
+    try {
+      if (!orgForm.name.trim()) {
+        throw new Error("Le nom de l'organisation est obligatoire.")
       }
-    })
+
+      const formData = new FormData()
+      formData.append('name', orgForm.name)
+      formData.append('country', orgForm.country)
+      formData.append('team_size', orgForm.teamSize)
+
+      const result = await createOrganizationOnboarding(formData)
+      
+      if (result.error) {
+        throw new Error(result.error)
+      }
+
+      // Success, redirect to projects
+      router.push('/projects')
+      router.refresh()
+
+    } catch (err: any) {
+      setError(err.message || 'Une erreur est survenue.')
+      setIsPending(false) // Only stop pending if error, otherwise keep loading state during redirect
+    }
   }
 
   return (
-    <div className="bg-surface w-full rounded-lg shadow-sm sm:shadow-lg p-8 max-w-md w-full">
+    <div className="bg-surface w-full rounded-lg shadow-sm sm:shadow-lg p-8 max-w-md mx-auto my-auto relative overflow-hidden">
+      
       {/* Header */}
       <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-2 mb-2 text-primary">
@@ -71,131 +166,205 @@ export default function RegisterPage() {
           <h1 className="text-2xl font-bold tracking-tight">ProjetPilote</h1>
         </div>
         <p className="text-text-secondary text-sm">
-          {step === 1 ? 'Créez votre compte gratuitement' : 'Configurez votre espace de travail'}
+          Pilotage de vos projets bailleurs
         </p>
-      </div>
-
-      {/* Stepper */}
-      <div className="flex items-center justify-center gap-4 mb-8">
-        <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${step >= 1 ? 'bg-primary text-white' : 'bg-surface-dim text-text-secondary'}`}>
-          1
-        </div>
-        <div className={`h-1 w-12 rounded-full ${step === 2 ? 'bg-primary' : 'bg-surface-dim'}`}></div>
-        <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium ${step === 2 ? 'bg-primary text-white' : 'bg-surface-dim text-text-secondary'}`}>
-          2
-        </div>
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="mb-6 bg-danger/10 border border-danger/20 text-danger text-sm p-3 rounded-lg">
-          {error}
+        <div className="mb-6 bg-danger/10 border border-danger/20 text-danger text-sm p-3 rounded-lg flex items-center justify-between">
+          <span>{error}</span>
+          {error.includes('Connectez-vous') && (
+            <a href="/login" className="font-bold underline ml-2 shrink-0">Connexion</a>
+          )}
         </div>
       )}
 
-      {/* Form Step 1: User Account */}
-      {step === 1 && (
-        <form onSubmit={handleUserSubmit} className="space-y-5">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="first_name" className="block text-sm font-medium text-text-primary mb-1">Prénom</label>
-              <input id="first_name" name="first_name" type="text" required
-                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+      {/* Step 1: User Account */}
+      <div className={`transition-all duration-500 ease-in-out ${step === 1 ? 'opacity-100 translate-x-0 relative block' : 'opacity-0 -translate-x-full absolute invisible'}`}>
+        <h2 className="text-xl font-bold text-text-primary mb-6">Créer votre espace ProjetPilote</h2>
+        
+        <form onSubmit={handleStep1Submit} className="space-y-4">
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-text-primary mb-1">Prénom</label>
+              <input
+                type="text"
+                name="firstName"
+                value={userForm.firstName}
+                onChange={handleUserChange}
+                required
+                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+                placeholder="Jean"
               />
             </div>
-            <div>
-              <label htmlFor="last_name" className="block text-sm font-medium text-text-primary mb-1">Nom</label>
-              <input id="last_name" name="last_name" type="text" required
-                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-text-primary mb-1">Nom</label>
+              <input
+                type="text"
+                name="lastName"
+                value={userForm.lastName}
+                onChange={handleUserChange}
+                required
+                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+                placeholder="Dupont"
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-text-primary mb-1">Email professionnel</label>
-            <input id="email" name="email" type="email" required placeholder="nom@institution.org"
-              className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            <label className="block text-sm font-medium text-text-primary mb-1">Email professionnel</label>
+            <input
+              type="email"
+              name="email"
+              value={userForm.email}
+              onChange={handleUserChange}
+              required
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
+              placeholder="jean.dupont@entreprise.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-text-primary mb-1">Mot de passe</label>
-            <input id="password" name="password" type="password" required minLength={8}
-              className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+            <label className="block text-sm font-medium text-text-primary mb-1">Mot de passe</label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                value={userForm.password}
+                onChange={handleUserChange}
+                required
+                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow pr-10"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-tertiary hover:text-text-secondary"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            {/* Password strength bar */}
+            {userForm.password && (
+              <div className="mt-2 flex gap-1 h-1">
+                <div className={`flex-1 rounded-full ${passwordScore >= 25 ? 'bg-danger' : 'bg-border'}`}></div>
+                <div className={`flex-1 rounded-full ${passwordScore >= 50 ? 'bg-warning' : 'bg-border'}`}></div>
+                <div className={`flex-1 rounded-full ${passwordScore >= 75 ? 'bg-success' : 'bg-border'}`}></div>
+                <div className={`flex-1 rounded-full ${passwordScore >= 100 ? 'bg-primary' : 'bg-border'}`}></div>
+              </div>
+            )}
           </div>
 
           <div>
-            <label htmlFor="confirm_password" className="block text-sm font-medium text-text-primary mb-1">Confirmer le mot de passe</label>
-            <input id="confirm_password" name="confirm_password" type="password" required minLength={8}
-              className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+            <label className="block text-sm font-medium text-text-primary mb-1">Confirmer le mot de passe</label>
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                name="confirmPassword"
+                value={userForm.confirmPassword}
+                onChange={handleUserChange}
+                required
+                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow pr-10"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-tertiary hover:text-text-secondary"
+              >
+                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
-          <button type="submit" disabled={isPending}
-            className="w-full bg-primary text-white font-medium py-2.5 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-70"
+          <button
+            type="submit"
+            disabled={isPending}
+            className="w-full bg-primary text-white font-medium py-2.5 rounded-lg hover:bg-primary/90 transition-colors mt-2"
           >
-            {isPending ? 'Création en cours...' : 'Créer mon compte →'}
+            {isPending ? 'Création en cours...' : 'Continuer →'}
           </button>
-          
-          <div className="mt-4 text-center">
-            <a href="/login" className="text-sm font-medium text-text-secondary hover:text-primary">
-              Déjà un compte ? Se connecter
-            </a>
-          </div>
         </form>
-      )}
 
-      {/* Form Step 2: Organization */}
-      {step === 2 && (
-        <form onSubmit={handleOrgSubmit} className="space-y-5">
-          <div className="flex items-center justify-center gap-2 mb-6 text-success bg-success/10 p-3 rounded-lg">
-            <CheckCircle2 className="w-5 h-5" />
-            <span className="text-sm font-medium">Compte créé avec succès !</span>
+        <div className="mt-6 text-center">
+          <a href="/login" className="text-sm font-medium text-primary hover:underline">
+            Déjà un compte ? Se connecter
+          </a>
+        </div>
+      </div>
+
+      {/* Step 2: Organization */}
+      <div className={`transition-all duration-500 ease-in-out ${step === 2 ? 'opacity-100 translate-x-0 relative block' : 'opacity-0 translate-x-full absolute invisible'}`}>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <Building2 className="w-5 h-5 text-primary" />
           </div>
-
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-text-primary mb-1">Nom de l'organisation</label>
-            <input id="name" name="name" type="text" required placeholder="Cabinet ALPHA Consulting"
-              className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            <h2 className="text-xl font-bold text-text-primary">Configurez votre espace</h2>
+            <p className="text-sm text-text-secondary">Dernière étape pour accéder à l'application.</p>
+          </div>
+        </div>
+        
+        <form onSubmit={handleStep2Submit} className="space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-1">Nom de l'organisation</label>
+            <input
+              type="text"
+              value={orgForm.name}
+              onChange={(e) => setOrgForm({...orgForm, name: e.target.value})}
+              required
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              placeholder="Ex: Cabinet ALPHA Consulting"
             />
           </div>
 
           <div>
-            <label htmlFor="country" className="block text-sm font-medium text-text-primary mb-1">Pays</label>
-            <select id="country" name="country" required
-              className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
+            <label className="block text-sm font-medium text-text-primary mb-1">Pays d'opération</label>
+            <select
+              value={orgForm.country}
+              onChange={(e) => setOrgForm({...orgForm, country: e.target.value})}
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             >
-              <option value="CI">Côte d'Ivoire</option>
-              <option value="SN">Sénégal</option>
-              <option value="BF">Burkina Faso</option>
-              <option value="ML">Mali</option>
-              <option value="CM">Cameroun</option>
-              <option value="TG">Togo</option>
-              <option value="BJ">Bénin</option>
-              <option value="OTHER">Autre</option>
+              {COUNTRIES.map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
             </select>
           </div>
 
           <div>
-            <label htmlFor="size" className="block text-sm font-medium text-text-primary mb-1">Taille de l'organisation</label>
-            <select id="size" name="size" required
-              className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary bg-surface"
-            >
-              <option value="1-5">1 - 5 personnes</option>
-              <option value="6-20">6 - 20 personnes</option>
-              <option value="21-50">21 - 50 personnes</option>
-              <option value="+50">+50 personnes</option>
-            </select>
+            <label className="block text-sm font-medium text-text-primary mb-2">Taille de l'équipe</label>
+            <div className="grid grid-cols-2 gap-2">
+              {TEAM_SIZES.map(size => (
+                <label 
+                  key={size}
+                  className={`flex flex-col items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${orgForm.teamSize === size ? 'border-primary bg-primary/5 text-primary' : 'border-border text-text-secondary hover:border-primary/50'}`}
+                >
+                  <input
+                    type="radio"
+                    name="teamSize"
+                    value={size}
+                    checked={orgForm.teamSize === size}
+                    onChange={(e) => setOrgForm({...orgForm, teamSize: e.target.value})}
+                    className="sr-only"
+                  />
+                  <Users className="w-5 h-5 mb-1" />
+                  <span className="text-xs font-medium text-center">{size}</span>
+                </label>
+              ))}
+            </div>
           </div>
 
-          <button type="submit" disabled={isPending}
-            className="w-full bg-primary text-white font-medium py-2.5 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-70 mt-4"
+          <button
+            type="submit"
+            disabled={isPending}
+            className="w-full bg-success text-white font-medium py-3 rounded-lg hover:bg-success/90 transition-colors mt-4 text-base flex items-center justify-center gap-2"
           >
-            {isPending ? 'Configuration en cours...' : 'Accéder à ProjetPilote ✓'}
+            {isPending ? 'Configuration...' : 'Accéder à ProjetPilote ✓'}
           </button>
         </form>
-      )}
+      </div>
+
     </div>
   )
 }

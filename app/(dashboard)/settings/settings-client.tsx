@@ -5,6 +5,8 @@ import { User, Bell, Shield, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { updateProfile, updateNotificationPrefs } from '@/lib/actions/profile.actions'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { useOrganization } from '@/lib/hooks/useOrganization'
+import { Building2 } from 'lucide-react'
 
 export interface SettingsProfile {
   id: string
@@ -21,6 +23,7 @@ export interface SettingsProfile {
 export function SettingsClient({ profile, isOwner }: { profile: SettingsProfile, isOwner?: boolean }) {
   const router = useRouter()
   const supabase = createClient()
+  const { activeOrganization } = useOrganization()
   
   const defaultPrefs = {
     budget_alerts: true,
@@ -157,6 +160,63 @@ export function SettingsClient({ profile, isOwner }: { profile: SettingsProfile,
           </form>
         </div>
       </div>
+
+      {/* SECTION 1.5: MON ORGANISATION (OWNER ONLY) */}
+      {isOwner && activeOrganization && (
+        <div className="bg-surface rounded-xl shadow-sm border border-border overflow-hidden">
+          <div className="p-4 border-b border-border bg-surface-dim flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-primary" />
+              <h3 className="font-bold text-text-primary">Mon organisation</h3>
+            </div>
+            {activeOrganization.plan === 'trial' ? (
+              <span className="px-2.5 py-1 bg-warning/10 text-warning text-xs font-bold uppercase rounded-full tracking-wider">
+                Trial
+              </span>
+            ) : activeOrganization.plan === 'pro' ? (
+              <span className="px-2.5 py-1 bg-success/10 text-success text-xs font-bold uppercase rounded-full tracking-wider">
+                Pro
+              </span>
+            ) : (
+              <span className="px-2.5 py-1 bg-primary/10 text-primary text-xs font-bold uppercase rounded-full tracking-wider">
+                {activeOrganization.plan}
+              </span>
+            )}
+          </div>
+          <div className="p-6">
+            <div className="max-w-lg space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-text-primary mb-1">Nom de l'organisation</label>
+                <input 
+                  type="text" 
+                  value={activeOrganization.name}
+                  disabled
+                  className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-surface-dim text-text-secondary cursor-not-allowed" 
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm font-medium text-text-primary">Limites du plan actuel</span>
+                  <span className="text-sm text-text-secondary font-medium">Max {activeOrganization.max_projects} projets</span>
+                </div>
+                <div className="w-full bg-surface-dim rounded-full h-2 mb-4">
+                  <div className="bg-primary h-2 rounded-full" style={{ width: '10%' }}></div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <a 
+                  href="mailto:tsbcafrique@yahoo.fr?subject=Mise%20%C3%A0%20niveau%20ProjetPilote"
+                  className="inline-flex bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Passer au plan Pro → Contacter TSBC
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* SECTION 2: SÉCURITÉ */}
       <div className="bg-surface rounded-xl shadow-sm border border-border overflow-hidden">

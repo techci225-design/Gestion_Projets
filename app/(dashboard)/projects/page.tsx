@@ -172,6 +172,20 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
           <div className="p-4 bg-danger/10 text-danger rounded-md border border-danger/20">
             Erreur lors du chargement des projets: {projectsError.message}
           </div>
+        ) : projects.length === 0 ? (
+          <div className="bg-surface border border-border rounded-xl shadow-sm p-12 text-center max-w-2xl mx-auto mt-12">
+            <div className="text-4xl mb-4">🎉</div>
+            <h2 className="text-2xl font-bold text-text-primary mb-2">Bienvenue sur ProjetPilote !</h2>
+            <p className="text-text-secondary mb-8">
+              Commencez par créer votre premier projet bailleur ou importez vos données existantes.
+            </p>
+            <div className="flex flex-col gap-4 max-w-xs mx-auto">
+              <AddProjectModal />
+              <button disabled className="text-sm font-medium text-text-tertiary hover:text-text-secondary transition-colors cursor-not-allowed">
+                Importer depuis Excel →
+              </button>
+            </div>
+          </div>
         ) : (
           <>
             {/* 1. BLOC KPIs GLOBAUX */}

@@ -5,6 +5,39 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
 
+export async function checkProjectLimit(orgId: string, adminClient: any) {
+  // Get org max projects
+  const { data: org, error: orgError } = await adminClient
+    .from('organizations')
+    .select('max_projects')
+    .eq('id', orgId)
+    .single()
+
+  if (orgError || !org) {
+    return { error: "Erreur lors de la vérification de l'organisation." }
+  }
+
+  // Get active projects count
+  const { count, error: countError } = await adminClient
+    .from('projects')
+    .select('*', { count: 'exact', head: true })
+    .eq('organization_id', orgId)
+    .neq('status', 'clos')
+
+  if (countError) {
+    return { error: "Erreur lors du comptage des projets." }
+  }
+
+  if (count !== null && count >= org.max_projects) {
+    return { 
+      limitReached: true, 
+      error: `Vous avez atteint la limite de ${org.max_projects} projets actifs de votre plan. Contactez TSBC pour passer au plan supérieur.` 
+    }
+  }
+
+  return { limitReached: false }
+}
+
 export async function createProject(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -44,6 +77,15 @@ export async function createProject(formData: FormData) {
 
   if (!memberData || !['owner', 'admin'].includes(memberData.org_role)) {
     return { error: "Vous n'avez pas les droits (owner/admin) pour créer un projet dans cette organisation." }
+  }
+
+  // Check plan limits
+  const limitCheck = await checkProjectLimit(activeOrgId, adminClient)
+  if (limitCheck.limitReached) {
+    return { error: limitCheck.error, type: 'LIMIT_REACHED' }
+  }
+  if (limitCheck.error) {
+    return { error: limitCheck.error }
   }
 
   // Insert project
@@ -113,6 +155,23 @@ export async function createProjectWithBudget(payload: any) {
     adminClient = createAdminClient()
   } catch (err: any) {
     return { error: 'Erreur de configuration serveur (Clé Admin manquante).' }
+  }
+
+  // Get active organization
+  const cookieStore = await cookies()
+  const activeOrgId = cookieStore.get('active_org_id')?.value
+
+  if (!activeOrgId) {
+    return { error: 'Aucune organisation sélectionnée' }
+  }
+
+  // Check plan limits
+  const limitCheck = await checkProjectLimit(activeOrgId, adminClient)
+  if (limitCheck.limitReached) {
+    return { error: limitCheck.error, type: 'LIMIT_REACHED' }
+  }
+  if (limitCheck.error) {
+    return { error: limitCheck.error }
   }
 
   try {

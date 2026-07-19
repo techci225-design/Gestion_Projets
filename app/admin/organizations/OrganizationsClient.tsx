@@ -13,6 +13,8 @@ export function OrganizationsClient({ orgs }: { orgs: any[] }) {
   // Modals state
   const [planModalOpen, setPlanModalOpen] = useState(false)
   const [selectedOrg, setSelectedOrg] = useState<any>(null)
+  const [selectedPlan, setSelectedPlan] = useState<'trial' | 'pro' | 'institutionnel'>('trial')
+  const [maxProjects, setMaxProjects] = useState(3)
   
   const handleSupportMode = (orgId: string) => {
     Cookies.set('support_org_id', orgId, { expires: 1 }) // 1 day
@@ -29,13 +31,25 @@ export function OrganizationsClient({ orgs }: { orgs: any[] }) {
     e.preventDefault()
     if (!selectedOrg) return
     setIsUpdating(true)
-    const formData = new FormData(e.currentTarget)
-    const plan = formData.get('plan') as 'trial' | 'pro' | 'institutionnel'
-    const maxProjects = parseInt(formData.get('max_projects') as string)
     
-    await updateOrganizationPlan(selectedOrg.id, plan, maxProjects)
+    await updateOrganizationPlan(selectedOrg.id, selectedPlan, maxProjects)
     setIsUpdating(false)
     setPlanModalOpen(false)
+  }
+
+  const openPlanModal = (org: any) => {
+    setSelectedOrg(org)
+    setSelectedPlan(org.plan)
+    setMaxProjects(org.max_projects)
+    setPlanModalOpen(true)
+  }
+
+  const handlePlanChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newPlan = e.target.value as 'trial' | 'pro' | 'institutionnel'
+    setSelectedPlan(newPlan)
+    if (newPlan === 'trial') setMaxProjects(3)
+    if (newPlan === 'pro') setMaxProjects(99)
+    if (newPlan === 'institutionnel') setMaxProjects(999)
   }
 
   return (
@@ -101,7 +115,7 @@ export function OrganizationsClient({ orgs }: { orgs: any[] }) {
                       </button>
                       <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 py-1">
                         <button 
-                          onClick={() => { setSelectedOrg(org); setPlanModalOpen(true); }}
+                          onClick={() => openPlanModal(org)}
                           className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
                         >
                           <Edit className="w-4 h-4 text-gray-400" /> Changer le plan
@@ -135,7 +149,12 @@ export function OrganizationsClient({ orgs }: { orgs: any[] }) {
             <form onSubmit={handlePlanSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nouveau Plan</label>
-                <select name="plan" defaultValue={selectedOrg.plan} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                <select 
+                  name="plan" 
+                  value={selectedPlan}
+                  onChange={handlePlanChange}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                >
                   <option value="trial">Trial</option>
                   <option value="pro">Pro</option>
                   <option value="institutionnel">Institutionnel</option>
@@ -143,7 +162,15 @@ export function OrganizationsClient({ orgs }: { orgs: any[] }) {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Max Projets</label>
-                <input type="number" name="max_projects" defaultValue={selectedOrg.max_projects} required min={1} className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" />
+                <input 
+                  type="number" 
+                  name="max_projects" 
+                  value={maxProjects}
+                  onChange={e => setMaxProjects(parseInt(e.target.value) || 0)}
+                  required 
+                  min={1} 
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" 
+                />
               </div>
               <div className="pt-4 flex justify-end gap-3">
                 <button type="button" onClick={() => setPlanModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">

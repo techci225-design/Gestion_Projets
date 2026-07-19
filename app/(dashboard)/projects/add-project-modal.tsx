@@ -11,6 +11,7 @@ export function AddProjectModal() {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [limitReached, setLimitReached] = useState(false)
   const router = useRouter()
 
   // Step 1: Info
@@ -56,7 +57,12 @@ export function AddProjectModal() {
       
       const res = await createProjectWithBudget(payload)
       if (res.error) {
-        setError(res.error)
+        if (res.type === 'LIMIT_REACHED') {
+          setError(res.error)
+          setLimitReached(true)
+        } else {
+          setError(res.error)
+        }
       } else if (res.success && res.projectId) {
         // Reset state
         setStep(1)
@@ -141,10 +147,38 @@ export function AddProjectModal() {
             </div>
 
             <div className="p-6 overflow-y-auto flex-1 bg-surface-dim/30">
-              {error && (
-                <div className="mb-6 p-3 bg-danger/10 text-danger text-sm rounded border border-danger/20 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4" />
-                  {error}
+              {error && !limitReached && (
+                <div className="mb-6 p-4 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm flex items-start gap-2">
+                  <AlertTriangle className="w-5 h-5 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {limitReached && (
+                <div className="mb-6 p-6 bg-warning/10 border border-warning/20 rounded-xl flex flex-col items-center text-center">
+                  <div className="w-12 h-12 bg-warning/20 rounded-full flex items-center justify-center mb-4">
+                    <AlertTriangle className="w-6 h-6 text-warning" />
+                  </div>
+                  <h3 className="text-lg font-bold text-text-primary mb-2">Limite de projets atteinte</h3>
+                  <p className="text-sm text-text-secondary mb-6">{error}</p>
+                  <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <button 
+                      onClick={() => {
+                        setIsOpen(false)
+                        setLimitReached(false)
+                        setError(null)
+                      }}
+                      className="flex-1 sm:flex-none px-4 py-2 border border-border text-text-primary rounded-lg text-sm font-medium hover:bg-surface-hover transition-colors"
+                    >
+                      Fermer
+                    </button>
+                    <a 
+                      href="mailto:tsbcafrique@yahoo.fr?subject=Mise%20%C3%A0%20niveau%20ProjetPilote"
+                      className="flex-1 sm:flex-none px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors inline-flex items-center justify-center"
+                    >
+                      Contacter TSBC
+                    </a>
+                  </div>
                 </div>
               )}
 
