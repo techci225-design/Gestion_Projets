@@ -18,9 +18,24 @@ ALTER TABLE organizations ALTER COLUMN plan SET NOT NULL;
 ALTER TABLE organizations ALTER COLUMN max_projects SET NOT NULL;
 ALTER TABLE organizations ALTER COLUMN is_active SET NOT NULL;
 
--- 2. Table organization_members
+
+-- 2. SUPPRIMER LES ANCIENNES POLITIQUES AVANT DE MODIFIER LES COLONNES
+-- Cela évite l'erreur 'cannot alter type of a column used in a policy definition'
+DROP POLICY IF EXISTS "lecture_membres" ON projects;
+DROP POLICY IF EXISTS "ecriture_roles_autorises" ON projects;
+DROP POLICY IF EXISTS "lecture_membres_ou_createur" ON projects;
+DROP POLICY IF EXISTS "update_projets" ON projects;
+DROP POLICY IF EXISTS "insert_projets" ON projects;
+DROP POLICY IF EXISTS "delete_projets" ON projects;
+DROP POLICY IF EXISTS "lecture_projets" ON projects;
+
+DROP POLICY IF EXISTS "lecture_organisation_membres" ON organizations;
+
+
+-- 3. Table organization_members
 -- Rename org_id to organization_id as requested
 ALTER TABLE organization_members RENAME COLUMN org_id TO organization_id;
+
 -- Rename role to org_role and convert Enum to Text with check
 ALTER TABLE organization_members ALTER COLUMN role TYPE text;
 ALTER TABLE organization_members RENAME COLUMN role TO org_role;
@@ -31,8 +46,8 @@ ALTER TABLE organization_members ADD COLUMN IF NOT EXISTS joined_at timestamptz 
 -- Update existing admins to 'owner' for the demo organization
 UPDATE organization_members SET org_role = 'owner' WHERE org_role = 'admin';
 
--- 3. RLS Organizations
-DROP POLICY IF EXISTS "lecture_organisation_membres" ON organizations;
+
+-- 4. RLS Organizations (Nouvelles politiques)
 CREATE POLICY "org_lecture_membres" ON organizations FOR SELECT
   USING (EXISTS (
     SELECT 1 FROM organization_members
@@ -47,16 +62,8 @@ CREATE POLICY "org_modif_admin" ON organizations FOR UPDATE
     AND org_role IN ('owner','admin')
   ));
 
--- 4. RLS Projects
--- Supprimer les anciennes policies de tous types
-DROP POLICY IF EXISTS "lecture_membres" ON projects;
-DROP POLICY IF EXISTS "ecriture_roles_autorises" ON projects;
-DROP POLICY IF EXISTS "lecture_membres_ou_createur" ON projects;
-DROP POLICY IF EXISTS "update_projets" ON projects;
-DROP POLICY IF EXISTS "insert_projets" ON projects;
-DROP POLICY IF EXISTS "delete_projets" ON projects;
-DROP POLICY IF EXISTS "lecture_projets" ON projects;
 
+-- 5. RLS Projects (Nouvelles politiques)
 CREATE POLICY "project_lecture_org" ON projects FOR SELECT
   USING (
     organization_id IN (
