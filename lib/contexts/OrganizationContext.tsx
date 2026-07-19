@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Cookies from 'js-cookie'
 import { useRouter } from 'next/navigation'
@@ -8,18 +8,23 @@ import { useRouter } from 'next/navigation'
 export interface Organization {
   id: string
   name: string
+  slug: string
+  logo_url: string | null
+  plan: 'trial' | 'pro' | 'institutionnel'
+  max_projects: number
+  is_active: boolean
   created_at: string
-  role?: string // from organization_members
+  org_role?: 'owner' | 'admin' | 'member'
 }
 
-interface OrganizationContextType {
+export interface OrganizationContextType {
   activeOrganization: Organization | null
   organizations: Organization[]
   setActiveOrganization: (org: Organization) => void
   isLoading: boolean
 }
 
-const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined)
+export const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined)
 
 export function OrganizationProvider({ children }: { children: React.ReactNode }) {
   const [activeOrganization, setActiveOrganizationState] = useState<Organization | null>(null)
@@ -36,14 +41,18 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
         return
       }
 
-      // Fetch organizations the user belongs to
       const { data: orgMembers, error } = await supabase
         .from('organization_members')
         .select(`
-          role,
+          org_role,
           organizations (
             id,
             name,
+            slug,
+            logo_url,
+            plan,
+            max_projects,
+            is_active,
             created_at
           )
         `)
@@ -55,15 +64,12 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
       }
 
       const orgs: Organization[] = orgMembers.map((om: any) => ({
-        id: om.organizations.id,
-        name: om.organizations.name,
-        created_at: om.organizations.created_at,
-        role: om.role
+        ...om.organizations,
+        org_role: om.org_role
       }))
 
       setOrganizations(orgs)
 
-      // Determine active organization
       const savedOrgId = Cookies.get('active_org_id')
       let activeOrg = orgs.find(o => o.id === savedOrgId)
 
@@ -82,7 +88,7 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
   const setActiveOrganization = (org: Organization) => {
     setActiveOrganizationState(org)
     Cookies.set('active_org_id', org.id, { expires: 365 })
-    router.refresh() // Refresh to re-fetch server components with new active_org_id
+    router.refresh()
   }
 
   return (
@@ -90,12 +96,4 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
       {children}
     </OrganizationContext.Provider>
   )
-}
-
-export function useOrganization() {
-  const context = useContext(OrganizationContext)
-  if (context === undefined) {
-    throw new Error('useOrganization must be used within an OrganizationProvider')
-  }
-  return context
 }

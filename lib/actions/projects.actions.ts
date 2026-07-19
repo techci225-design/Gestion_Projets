@@ -34,6 +34,18 @@ export async function createProject(formData: FormData) {
     return { error: 'Aucune organisation sélectionnée' }
   }
 
+  // Check user role in this organization
+  const { data: memberData } = await supabase
+    .from('organization_members')
+    .select('org_role')
+    .eq('user_id', user.id)
+    .eq('organization_id', activeOrgId)
+    .single()
+
+  if (!memberData || !['owner', 'admin'].includes(memberData.org_role)) {
+    return { error: "Vous n'avez pas les droits (owner/admin) pour créer un projet dans cette organisation." }
+  }
+
   // Insert project
   let project;
   try {

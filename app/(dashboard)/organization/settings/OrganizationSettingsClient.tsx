@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Building2, Users, Save, Shield } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { useOrganization } from '@/lib/contexts/OrganizationContext'
+import { useOrganization } from '@/lib/hooks/useOrganization'
 import { useRouter } from 'next/navigation'
 
 export function OrganizationSettingsClient({ adminOrgs }: { adminOrgs: any[] }) {

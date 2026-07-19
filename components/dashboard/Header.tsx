@@ -3,7 +3,7 @@
 import React from 'react'
 import { Bell, Search, Menu, Building2, ChevronDown } from 'lucide-react'
 import { NotificationBell } from './NotificationBell'
-import { useOrganization } from '@/lib/contexts/OrganizationContext'
+import { useOrganization } from '@/lib/hooks/useOrganization'
 
 interface HeaderProps {
   title: string

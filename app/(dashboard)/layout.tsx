@@ -24,6 +24,17 @@ export default async function DashboardLayout({
     .eq('id', user.id)
     .single()
 
+  // Check if user has at least one organization
+  const { data: orgMembers } = await supabase
+    .from('organization_members')
+    .select('organization_id')
+    .eq('user_id', user.id)
+    .limit(1)
+
+  if (!orgMembers || orgMembers.length === 0) {
+    redirect('/onboarding')
+  }
+
   const userFullName = profile?.full_name || user.email || 'Utilisateur'
 
   return (
