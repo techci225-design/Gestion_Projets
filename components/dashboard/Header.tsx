@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { Bell, Search, Menu, Building2, ChevronDown } from 'lucide-react'
+import Link from 'next/link'
 import { NotificationBell } from './NotificationBell'
 import { useOrganization } from '@/lib/hooks/useOrganization'
 
@@ -21,6 +22,9 @@ export function Header({ title, userFullName }: HeaderProps) {
         {/* Org Selector */}
         {!isLoading && activeOrganization && organizations.length > 1 && (
           <div className="relative group ml-4 border-l border-border pl-4">
+            <Link href="/admin/organizations" className="mr-4 px-3 py-1.5 bg-red-100 text-red-600 rounded-lg text-xs font-bold uppercase tracking-wider">
+              Admin
+            </Link>
             <button className="flex items-center gap-2 text-sm text-text-secondary hover:text-primary transition-colors">
               <Building2 className="w-4 h-4" />
               <span className="font-medium">{activeOrganization.name}</span>
