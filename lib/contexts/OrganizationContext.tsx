@@ -22,6 +22,7 @@ export interface OrganizationContextType {
   organizations: Organization[]
   setActiveOrganization: (org: Organization) => void
   isLoading: boolean
+  isSuperAdmin: boolean
 }
 
 export const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined)
@@ -30,6 +31,7 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
   const [activeOrganization, setActiveOrganizationState] = useState<Organization | null>(null)
   const [organizations, setOrganizations] = useState<Organization[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false)
   const supabase = createClient()
   const router = useRouter()
 
@@ -48,7 +50,8 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
         .eq('id', user.id)
         .single()
       
-      const isSuperAdmin = profile?.is_super_admin === true
+      const isSuperAdminStatus = profile?.is_super_admin === true
+      setIsSuperAdmin(isSuperAdminStatus)
 
       const { data: orgMembers, error } = await supabase
         .from('organization_members')
@@ -84,7 +87,7 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
 
       // Handle Support Mode (Impersonation)
       const supportOrgId = Cookies.get('support_org_id')
-      if (isSuperAdmin && supportOrgId) {
+      if (isSuperAdminStatus && supportOrgId) {
         // Fetch the impersonated organization directly
         const { data: supportOrg } = await supabase
           .from('organizations')
@@ -130,7 +133,13 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
   }
 
   return (
-    <OrganizationContext.Provider value={{ activeOrganization, organizations, setActiveOrganization, isLoading }}>
+    <OrganizationContext.Provider value={{
+      activeOrganization,
+      organizations,
+      setActiveOrganization,
+      isLoading,
+      isSuperAdmin
+    }}>
       {Cookies.get('support_org_id') && activeOrganization && (
         <div className="bg-warning text-warning-foreground px-4 py-2 text-sm font-medium flex items-center justify-between sticky top-0 z-50">
           <span>Mode Support — Vous visualisez l'espace de <strong>{activeOrganization.name}</strong></span>
