@@ -12,7 +12,10 @@ export default async function AdminLayout({
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  console.log('[Admin Layout] User:', user?.id)
+
   if (!user) {
+    console.log('[Admin Layout] No user, redirecting to login')
     redirect('/login')
   }
 
@@ -22,7 +25,10 @@ export default async function AdminLayout({
     .eq('id', user.id)
     .single()
 
+  console.log('[Admin Layout] Profile:', profile)
+
   if (!profile?.is_super_admin) {
+    console.log('[Admin Layout] Not super admin, redirecting to projects')
     redirect('/projects')
   }
 
