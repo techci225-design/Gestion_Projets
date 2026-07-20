@@ -12,8 +12,9 @@ envFile.split('\n').forEach(line => {
 
 const supabase = createClient(url, key);
 
-async function checkEvm() {
-  const { data: summary } = await supabase.from('v_evm_project_summary').select('*');
-  console.log(summary);
+async function checkSchema() {
+  const { data, error } = await supabase.rpc('execute_sql', { sql_query: "SELECT tc.table_name, kcu.column_name, rc.delete_rule FROM information_schema.table_constraints tc JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name JOIN information_schema.referential_constraints rc ON tc.constraint_name = rc.constraint_name WHERE kcu.column_name = 'project_id';" });
+  console.log(data, error);
 }
-checkEvm();
+
+checkSchema();

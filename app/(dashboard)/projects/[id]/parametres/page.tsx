@@ -52,6 +52,7 @@ export default async function ParametresPage({ params }: { params: Promise<{ id:
   return (
     <ParametresClient
       projectId={id}
+      project={project}
       fundingSources={fundingSources || []}
       budgetLines={budgetLines || []}
       wbsTasks={wbsTasks || []}
