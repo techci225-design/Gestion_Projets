@@ -7,6 +7,7 @@ import { LogframeItem } from './logframe.actions'
 export interface PtbaActivity {
   id: string
   project_id: string
+  wbs_task_id?: string | null
   logframe_item_id: string | null
   code: string
   description: string
@@ -18,6 +19,8 @@ export interface PtbaActivity {
   q4: boolean
   budget_planned: number
   created_at: string
+  date_start?: string
+  date_end?: string
   logframe_items?: Pick<LogframeItem, 'intervention_label'>
 }
 
@@ -26,7 +29,7 @@ export async function getPtbaActivities(projectId: string, year: number) {
 
   const { data, error } = await supabase
     .from('ptba_activities')
-    .select('*, logframe_items(intervention_label)')
+    .select('*, logframe_items(intervention_label), wbs_tasks(date_start, date_end)')
     .eq('project_id', projectId)
     .eq('fiscal_year', year)
     .order('code', { ascending: true })
@@ -36,7 +39,11 @@ export async function getPtbaActivities(projectId: string, year: number) {
     throw new Error('Failed to fetch PTBA')
   }
 
-  return data as PtbaActivity[]
+  return data.map((d: any) => ({
+    ...d,
+    date_start: d.wbs_tasks?.date_start,
+    date_end: d.wbs_tasks?.date_end
+  })) as PtbaActivity[]
 }
 
 export async function addPtbaActivity(
@@ -44,10 +51,29 @@ export async function addPtbaActivity(
   data: Omit<PtbaActivity, 'id' | 'project_id' | 'created_at' | 'logframe_items'>
 ) {
   const supabase = await createClient()
+  const { date_start, date_end, ...ptbaData } = data;
+  
+  let wbsTaskId = data.wbs_task_id;
+
+  // Créer la tâche globale WBS si on a les dates (synchronisation)
+  if (!wbsTaskId && date_start && date_end) {
+    const { data: wbsTask, error: wbsError } = await supabase.from('wbs_tasks').insert({
+      project_id: projectId,
+      code: data.code,
+      description: data.description,
+      responsible: data.responsible,
+      date_start,
+      date_end,
+      budget_allocated: data.budget_planned
+    }).select('id').single();
+    
+    if (wbsError) throw new Error('Failed to create WBS task: ' + wbsError.message);
+    wbsTaskId = wbsTask.id;
+  }
 
   const { data: item, error } = await supabase
     .from('ptba_activities')
-    .insert([{ project_id: projectId, ...data }])
+    .insert([{ project_id: projectId, wbs_task_id: wbsTaskId, ...ptbaData }])
     .select('*, logframe_items(intervention_label)')
     .single()
 
@@ -66,10 +92,23 @@ export async function updatePtbaActivity(
   data: Partial<Omit<PtbaActivity, 'id' | 'project_id' | 'created_at' | 'logframe_items'>>
 ) {
   const supabase = await createClient()
+  const { date_start, date_end, ...ptbaData } = data;
+
+  // Si on a un wbs_task_id, on met aussi à jour la tâche WBS
+  if (ptbaData.wbs_task_id && (date_start || date_end || ptbaData.budget_planned !== undefined)) {
+    await supabase.from('wbs_tasks').update({
+      ...(date_start && { date_start }),
+      ...(date_end && { date_end }),
+      ...(ptbaData.budget_planned !== undefined && { budget_allocated: ptbaData.budget_planned }),
+      ...(ptbaData.code && { code: ptbaData.code }),
+      ...(ptbaData.description && { description: ptbaData.description }),
+      ...(ptbaData.responsible !== undefined && { responsible: ptbaData.responsible })
+    }).eq('id', ptbaData.wbs_task_id);
+  }
 
   const { data: item, error } = await supabase
     .from('ptba_activities')
-    .update(data)
+    .update(ptbaData)
     .eq('id', id)
     .eq('project_id', projectId)
     .select('*, logframe_items(intervention_label)')

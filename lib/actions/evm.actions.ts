@@ -64,6 +64,19 @@ export async function createEvmTask(data: z.infer<typeof evmTaskSchema>) {
     return { error: error.message }
   }
 
+  // Créer l'entrée PTBA correspondante pour l'année de début
+  const startYear = new Date(parsed.data.date_start).getFullYear()
+  await supabase.from('ptba_activities').insert({
+    project_id: parsed.data.project_id,
+    wbs_task_id: result.id,
+    code: parsed.data.code,
+    description: parsed.data.description,
+    responsible: parsed.data.responsible,
+    fiscal_year: startYear,
+    budget_planned: parsed.data.budget_allocated,
+    q1: false, q2: false, q3: false, q4: false
+  });
+
   revalidatePath(`/projects/${parsed.data.project_id}/evm`)
   return { data: result }
 }

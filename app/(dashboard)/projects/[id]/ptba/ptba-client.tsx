@@ -6,6 +6,7 @@ import { LogframeItem } from '@/lib/actions/logframe.actions'
 import { PtbaActivity, addPtbaActivity, updatePtbaActivity, deletePtbaActivity } from '@/lib/actions/ptba.actions'
 import { Plus, Edit2, Trash2, Check, ChevronDown } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
+import { ImportTasksButton } from '@/components/dashboard/ImportTasksButton'
 
 interface PtbaClientProps {
   projectId: string
@@ -29,6 +30,8 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
     q2: false,
     q3: false,
     q4: false,
+    date_start: `${currentYear}-01-01`,
+    date_end: `${currentYear}-12-31`,
     budget_planned: 0
   })
   
@@ -49,6 +52,8 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
       q2: false,
       q3: false,
       q4: false,
+      date_start: `${currentYear}-01-01`,
+      date_end: `${currentYear}-12-31`,
       budget_planned: 0
     })
     setIsDrawerOpen(true)
@@ -65,6 +70,8 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
       q2: item.q2,
       q3: item.q3,
       q4: item.q4,
+      date_start: item.date_start || `${currentYear}-01-01`,
+      date_end: item.date_end || `${currentYear}-12-31`,
       budget_planned: item.budget_planned
     })
     setIsDrawerOpen(true)
@@ -95,6 +102,8 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
       q2: formData.q2,
       q3: formData.q3,
       q4: formData.q4,
+      date_start: formData.date_start,
+      date_end: formData.date_end,
       budget_planned: Number(formData.budget_planned)
     }
 
@@ -139,13 +148,16 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
           </div>
         </div>
 
-        <button
-          onClick={openAddModal}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          Nouvelle Ligne PTBA
-        </button>
+        <div className="flex items-center gap-2">
+          <ImportTasksButton projectId={projectId} />
+          <button
+            onClick={openAddModal}
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            Nouvelle Ligne PTBA
+          </button>
+        </div>
       </div>
 
       <div className="bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
@@ -313,6 +325,32 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
                     onChange={e => setFormData({ ...formData, responsible: e.target.value })}
                     className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
                     placeholder="Ex: Direction technique"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">
+                    Date de début <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={formData.date_start}
+                    onChange={e => setFormData({ ...formData, date_start: e.target.value })}
+                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-1">
+                    Date de fin <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={formData.date_end}
+                    onChange={e => setFormData({ ...formData, date_end: e.target.value })}
+                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
                   />
                 </div>
 

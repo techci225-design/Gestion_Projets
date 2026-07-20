@@ -231,3 +231,75 @@ export async function importProjectFromExcel(data: {
     return { error: error.message || "Une erreur est survenue lors de l'import." };
   }
 }
+
+export async function importTasksToExistingProject(projectId: string, tasksData: any[]) {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: 'Non authentifié' };
+  }
+
+  try {
+    await requireRole(projectId, ['owner', 'chef_projet']);
+
+    const wbsTasks = tasksData.map(row => {
+      const parseDate = (dateStr: string) => {
+        if (!dateStr) return null;
+        if (typeof dateStr === 'number') {
+          return new Date(Math.round((dateStr - 25569) * 86400 * 1000)).toISOString().split('T')[0];
+        }
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+          return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+        return new Date(dateStr).toISOString().split('T')[0];
+      };
+
+      return {
+        project_id: projectId,
+        code: String(row["Code Tâche"] || '').trim(),
+        description: String(row["Description"] || '').trim(),
+        responsible: row["Responsable"] ? String(row["Responsable"]).trim() : null,
+        date_start: parseDate(row["Date Début (JJ/MM/AAAA)"]),
+        date_end: parseDate(row["Date Fin (JJ/MM/AAAA)"]),
+        budget_allocated: Number(row["Budget Alloué (FCFA)"]) || 0
+      };
+    });
+
+    const validTasks = wbsTasks.filter(t => t.code && t.description && t.date_start && t.date_end);
+
+    if (validTasks.length > 0) {
+      const { data: insertedTasks, error: tasksError } = await supabase
+        .from('wbs_tasks')
+        .insert(validTasks)
+        .select();
+
+      if (tasksError) {
+        throw new Error(`Erreur insertion des tâches: ${tasksError.message}`);
+      }
+
+      if (insertedTasks && insertedTasks.length > 0) {
+        const ptbaActivities = insertedTasks.map(t => ({
+           project_id: projectId,
+           wbs_task_id: t.id,
+           code: t.code,
+           description: t.description,
+           responsible: t.responsible,
+           fiscal_year: new Date(t.date_start).getFullYear(),
+           budget_planned: t.budget_allocated,
+           q1: false, q2: false, q3: false, q4: false
+        }));
+        
+        await supabase.from('ptba_activities').insert(ptbaActivities);
+      }
+    }
+    
+    revalidatePath(`/projects/${projectId}`);
+    return { success: true };
+  } catch (error: any) {
+    console.error("importTasksToExistingProject:", error);
+    return { error: error.message || "Une erreur est survenue lors de l'import." };
+  }
+}
+

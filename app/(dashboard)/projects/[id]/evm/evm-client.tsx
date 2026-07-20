@@ -7,6 +7,7 @@ import { createEvmSnapshot } from '@/lib/actions/evm-snapshots.actions'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { AddEvmTaskModal } from './add-evm-task-modal'
 import { EvmHistory } from './evm-history'
+import { ImportTasksButton } from '@/components/dashboard/ImportTasksButton'
 
 function AlertBadge({ value }: { value: number }) {
   if (value >= 1) {
@@ -121,6 +122,7 @@ export function EvmClient({
           <p className="text-sm text-text-secondary">Analyse des performances de coût et de délai</p>
         </div>
         <div className="flex flex-wrap items-center gap-4">
+          <ImportTasksButton projectId={projectId} />
           <button 
             onClick={() => setIsModalOpen(true)}
             className="bg-primary text-white py-2 px-4 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-2 whitespace-nowrap"
