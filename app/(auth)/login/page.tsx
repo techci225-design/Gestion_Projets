@@ -53,7 +53,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-white/10 backdrop-blur-md border border-white/20 w-full rounded-2xl shadow-2xl p-8 sm:p-10 relative overflow-hidden">
+    <div className="bg-white/10 backdrop-blur-md border border-white/20 w-full rounded-2xl shadow-2xl p-6 sm:p-10 relative overflow-hidden mx-auto">
       
       {/* Decorative gradient blob */}
       <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
