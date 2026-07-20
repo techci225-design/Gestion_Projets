@@ -1,11 +1,31 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, MoreVertical } from 'lucide-react'
+import { Plus, MoreVertical, Edit2, Trash2 } from 'lucide-react'
 import { InviteMemberModal } from './invite-member-modal'
+import { removeMember, updateMemberRole } from '@/lib/actions/members.actions'
 
 export function MembresClient({ projectId, members, allProfiles }: { projectId: string, members: any[], allProfiles: any[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
+  const [isUpdating, setIsUpdating] = useState(false)
+
+  const handleRemove = async (userId: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir retirer ce membre du projet ?')) return
+    setIsUpdating(true)
+    const res = await removeMember(projectId, userId)
+    setIsUpdating(false)
+    setActiveDropdown(null)
+    if (res?.error) alert(res.error)
+  }
+
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    setIsUpdating(true)
+    const res = await updateMemberRole(projectId, userId, newRole)
+    setIsUpdating(false)
+    setActiveDropdown(null)
+    if (res?.error) alert(res.error)
+  }
 
   const getRoleBadge = (role: string) => {
     switch(role) {
@@ -79,10 +99,41 @@ export function MembresClient({ projectId, members, allProfiles }: { projectId: 
                     <td className="p-4 text-text-secondary">
                       {m.added_at ? new Date(m.added_at).toLocaleDateString('fr-FR') : 'Date inconnue'}
                     </td>
-                    <td className="p-4 text-right">
-                      <button className="p-2 text-text-secondary hover:bg-surface-dim rounded-full transition-colors">
+                    <td className="p-4 text-right relative">
+                      <button 
+                        onClick={() => setActiveDropdown(activeDropdown === m.id ? null : m.id)}
+                        disabled={isUpdating}
+                        className="p-2 text-text-secondary hover:bg-surface-dim rounded-full transition-colors disabled:opacity-50"
+                      >
                         <MoreVertical className="w-4 h-4" />
                       </button>
+                      
+                      {activeDropdown === m.id && (
+                        <>
+                          <div 
+                            className="fixed inset-0 z-10" 
+                            onClick={() => setActiveDropdown(null)}
+                          />
+                          <div className="absolute right-8 top-12 w-48 bg-white rounded-lg shadow-lg border border-border py-1 z-20 text-left">
+                            <div className="px-4 py-2 text-xs font-semibold text-text-secondary uppercase">Changer le rôle</div>
+                            <button onClick={() => handleRoleChange(m.user_id, 'owner')} className="w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-dim">Propriétaire</button>
+                            <button onClick={() => handleRoleChange(m.user_id, 'chef_projet')} className="w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-dim">Chef de Projet</button>
+                            <button onClick={() => handleRoleChange(m.user_id, 'comptable')} className="w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-dim">Comptable</button>
+                            <button onClick={() => handleRoleChange(m.user_id, 'consultant')} className="w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-dim">Consultant</button>
+                            <button onClick={() => handleRoleChange(m.user_id, 'bailleur_lecture')} className="w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-dim">Bailleur (Lecture)</button>
+                            
+                            <div className="h-px bg-border my-1" />
+                            
+                            <button 
+                              onClick={() => handleRemove(m.user_id)}
+                              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              Retirer du projet
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </td>
                   </tr>
                 )
