@@ -1,10 +1,10 @@
 'use client'
 
 import React, { useState } from 'react'
-import { MoreVertical, Shield, Play, Pause, Edit, ArrowRight } from 'lucide-react'
+import { MoreVertical, Shield, Play, Pause, Edit, ArrowRight, Trash2, AlertTriangle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Cookies from 'js-cookie'
-import { updateOrganizationPlan, toggleOrganizationStatus } from '@/lib/actions/admin.actions'
+import { updateOrganizationPlan, toggleOrganizationStatus, deleteOrganization } from '@/lib/actions/admin.actions'
 
 export function OrganizationsClient({ orgs }: { orgs: any[] }) {
   const router = useRouter()
@@ -15,6 +15,9 @@ export function OrganizationsClient({ orgs }: { orgs: any[] }) {
   const [selectedOrg, setSelectedOrg] = useState<any>(null)
   const [selectedPlan, setSelectedPlan] = useState<'trial' | 'pro' | 'institutionnel'>('trial')
   const [maxProjects, setMaxProjects] = useState(3)
+  
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
   
   const handleSupportMode = (orgId: string) => {
     Cookies.set('support_org_id', orgId, { expires: 1 }) // 1 day
@@ -50,6 +53,26 @@ export function OrganizationsClient({ orgs }: { orgs: any[] }) {
     if (newPlan === 'trial') setMaxProjects(3)
     if (newPlan === 'pro') setMaxProjects(99)
     if (newPlan === 'institutionnel') setMaxProjects(999)
+  }
+
+  const confirmDelete = (org: any) => {
+    setSelectedOrg(org)
+    setDeleteError('')
+    setDeleteModalOpen(true)
+  }
+
+  const handleDelete = async () => {
+    if (!selectedOrg) return
+    setIsUpdating(true)
+    setDeleteError('')
+    
+    const res = await deleteOrganization(selectedOrg.id)
+    if (res?.error) {
+      setDeleteError(res.error)
+    } else {
+      setDeleteModalOpen(false)
+    }
+    setIsUpdating(false)
   }
 
   return (
@@ -123,10 +146,18 @@ export function OrganizationsClient({ orgs }: { orgs: any[] }) {
                         <button 
                           onClick={() => handleToggleStatus(org.id, org.is_active)}
                           disabled={isUpdating}
-                          className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-danger"
+                          className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
                         >
                           {org.is_active ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                           {org.is_active ? 'Suspendre' : 'Réactiver'}
+                        </button>
+                        <div className="border-t border-gray-100 my-1"></div>
+                        <button 
+                          onClick={() => confirmDelete(org)}
+                          disabled={isUpdating}
+                          className="w-full text-left px-4 py-2 text-sm hover:bg-danger/5 flex items-center gap-2 text-danger"
+                        >
+                          <Trash2 className="w-4 h-4" /> Supprimer
                         </button>
                       </div>
                     </div>
@@ -137,6 +168,51 @@ export function OrganizationsClient({ orgs }: { orgs: any[] }) {
           </tbody>
         </table>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && selectedOrg && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full shadow-2xl overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-danger/10 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5 text-danger" />
+              </div>
+              <h3 className="font-bold text-gray-900">Supprimer l'organisation</h3>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-gray-600 text-sm">
+                Êtes-vous sûr de vouloir supprimer l'organisation <span className="font-bold">{selectedOrg.name}</span> ? Cette action est irréversible.
+              </p>
+              
+              {deleteError && (
+                <div className="p-3 bg-danger/10 text-danger text-sm rounded-lg flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+                  <p>{deleteError}</p>
+                </div>
+              )}
+              
+              <div className="flex justify-end gap-3 pt-2">
+                <button 
+                  type="button" 
+                  onClick={() => setDeleteModalOpen(false)}
+                  disabled={isUpdating}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Annuler
+                </button>
+                <button 
+                  type="button" 
+                  onClick={handleDelete}
+                  disabled={isUpdating}
+                  className="px-4 py-2 text-sm font-medium text-white bg-danger rounded-lg hover:bg-danger/90 disabled:opacity-50 flex items-center gap-2"
+                >
+                  {isUpdating ? 'Suppression...' : 'Oui, supprimer'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Plan Update Modal */}
       {planModalOpen && selectedOrg && (

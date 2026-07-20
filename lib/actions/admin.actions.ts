@@ -47,3 +47,22 @@ export async function toggleOrganizationStatus(orgId: string, isActive: boolean)
   revalidatePath('/admin/organizations')
   return { success: true }
 }
+
+export async function deleteOrganization(orgId: string) {
+  const isSuperAdmin = await checkSuperAdmin()
+  if (!isSuperAdmin) return { error: 'Accès non autorisé' }
+
+  const adminClient = createAdminClient()
+  const { error } = await adminClient
+    .from('organizations')
+    .delete()
+    .eq('id', orgId)
+
+  if (error) {
+    console.error('Erreur lors de la suppression de l\'organisation:', error)
+    // Sometimes cascading constraints might block deletion if we didn't setup ON DELETE CASCADE
+    return { error: 'Erreur lors de la suppression. Assurez-vous de vider les projets de cette organisation d\'abord.' }
+  }
+  revalidatePath('/admin/organizations')
+  return { success: true }
+}
