@@ -181,7 +181,7 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
                 <h3 className="font-semibold text-on-surface">Plus de modules</h3>
                 <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 rounded-full hover:bg-surface-container"><X className="w-5 h-5 text-on-surface-variant"/></button>
              </div>
-             <div className="grid grid-cols-3 gap-4 p-4 max-h-[60vh] overflow-y-auto">
+             <div className="grid grid-cols-3 gap-4 p-4 max-h-[50vh] overflow-y-auto">
                {projectLinks.filter(pl => !mobileTabs.find(mt => mt.name === pl.name)).map(link => {
                  const LinkIcon = link.icon
                  return (
@@ -191,6 +191,22 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
                   </Link>
                  )
                })}
+             </div>
+             
+             {/* Mobile User Profile & Logout */}
+             <div className="p-4 border-t border-border flex items-center justify-between bg-surface-dim">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold uppercase shrink-0">
+                    {userFullName.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0 pr-2">
+                    <p className="text-sm font-semibold text-text-primary truncate">{userFullName}</p>
+                    <Link href="/settings" onClick={() => setIsMobileMenuOpen(false)} className="text-xs text-text-secondary hover:text-primary transition-colors truncate block">Mon Profil</Link>
+                  </div>
+                </div>
+                <button onClick={handleLogout} className="p-2.5 text-danger hover:bg-danger/10 rounded-lg transition-colors shrink-0">
+                  <LogOut className="w-5 h-5" />
+                </button>
              </div>
           </div>
         </div>
