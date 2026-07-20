@@ -138,3 +138,88 @@ export async function executeImport(projectId: string, formData: FormData, mappi
     return { error: error.message }
   }
 }
+
+// Nouvelle action selon le Plan d'Implémentation pour créer un projet depuis Excel
+export async function importProjectFromExcel(data: {
+  projectName: string;
+  projectCode: string;
+  tasksData: any[];
+}) {
+  const supabase = await createClient();
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return { error: "Non authentifié" };
+  }
+
+  try {
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .insert({
+        name: data.projectName,
+        code: data.projectCode,
+        created_by: user.id
+      })
+      .select('id')
+      .single();
+
+    if (projectError) throw new Error(`Erreur création projet: ${projectError.message}`);
+
+    const projectId = project.id;
+
+    const { error: memberError } = await supabase
+      .from('project_members')
+      .insert({
+        project_id: projectId,
+        user_id: user.id,
+        role: 'owner'
+      });
+
+    if (memberError) {
+      await supabase.from('projects').delete().eq('id', projectId);
+      throw new Error(`Erreur assignation membre: ${memberError.message}`);
+    }
+
+    const wbsTasks = data.tasksData.map(row => {
+      const parseDate = (dateStr: string) => {
+        if (!dateStr) return null;
+        if (typeof dateStr === 'number') {
+          return new Date(Math.round((dateStr - 25569) * 86400 * 1000)).toISOString().split('T')[0];
+        }
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+          return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+        return new Date(dateStr).toISOString().split('T')[0];
+      };
+
+      return {
+        project_id: projectId,
+        code: String(row["Code Tâche"] || '').trim(),
+        description: String(row["Description"] || '').trim(),
+        responsible: row["Responsable"] ? String(row["Responsable"]).trim() : null,
+        date_start: parseDate(row["Date Début (JJ/MM/AAAA)"]),
+        date_end: parseDate(row["Date Fin (JJ/MM/AAAA)"]),
+        budget_allocated: Number(row["Budget Alloué (FCFA)"]) || 0
+      };
+    });
+
+    const validTasks = wbsTasks.filter(t => t.code && t.description && t.date_start && t.date_end);
+
+    if (validTasks.length > 0) {
+      const { error: tasksError } = await supabase
+        .from('wbs_tasks')
+        .insert(validTasks);
+
+      if (tasksError) {
+        await supabase.from('projects').delete().eq('id', projectId);
+        throw new Error(`Erreur insertion des tâches: ${tasksError.message}`);
+      }
+    }
+
+    return { success: true, projectId };
+  } catch (error: any) {
+    console.error("importProjectFromExcel:", error);
+    return { error: error.message || "Une erreur est survenue lors de l'import." };
+  }
+}

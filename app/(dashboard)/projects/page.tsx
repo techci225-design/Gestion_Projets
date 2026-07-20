@@ -181,9 +181,9 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
             </p>
             <div className="flex flex-col gap-4 max-w-xs mx-auto">
               <AddProjectModal />
-              <button disabled className="text-sm font-medium text-text-tertiary hover:text-text-secondary transition-colors cursor-not-allowed">
+              <Link href="/projects/import" className="text-sm font-medium text-text-tertiary hover:text-primary transition-colors inline-flex justify-center items-center">
                 Importer depuis Excel →
-              </button>
+              </Link>
             </div>
           </div>
         ) : (
