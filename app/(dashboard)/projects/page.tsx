@@ -22,11 +22,30 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
     .single()
 
   const cookieStore = await cookies()
-  const activeOrgId = cookieStore.get('active_org_id')?.value
+  const activeOrgIdCookie = cookieStore.get('active_org_id')?.value
+  const supportOrgIdCookie = cookieStore.get('support_org_id')?.value
+
+  let effectiveOrgId = supportOrgIdCookie || activeOrgIdCookie
+
+  // S'il n'y a pas de cookie, on récupère la première organisation de l'utilisateur pour éviter de tout afficher
+  if (!effectiveOrgId) {
+    const { data: memberOrgs } = await supabase
+      .from('organization_members')
+      .select('organization_id')
+      .eq('user_id', user?.id)
+      .limit(1)
+    
+    if (memberOrgs && memberOrgs.length > 0) {
+      effectiveOrgId = memberOrgs[0].organization_id
+    }
+  }
 
   let query = supabase.from('projects').select('*')
-  if (activeOrgId) {
-    query = query.eq('organization_id', activeOrgId)
+  if (effectiveOrgId) {
+    query = query.eq('organization_id', effectiveOrgId)
+  } else {
+    // Sécurité: Si l'utilisateur n'a aucune organisation, on ne retourne rien plutôt que tout la base (super admin)
+    query = query.eq('id', '00000000-0000-0000-0000-000000000000')
   }
 
   const { data: projects, error: projectsError } = await query.order('created_at', { ascending: false })
