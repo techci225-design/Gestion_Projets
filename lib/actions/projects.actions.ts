@@ -321,16 +321,35 @@ export async function deleteProject(projectId: string) {
     return { error: "Vous n'avez pas les droits pour supprimer ce projet." }
   }
 
-  // Update status to 'clos' or soft-delete (using status = 'clos' as archive)
-  // Or hard delete if requested. Since user approved the plan but didn't answer, 
-  // I will do a hard delete via adminClient. Supabase usually cascades.
+  // First, check if there are tasks or budgets
+  const { count: tasksCount } = await adminClient
+    .from('tasks')
+    .select('*', { count: 'exact', head: true })
+    .eq('project_id', projectId)
+
+  const { count: budgetCount } = await adminClient
+    .from('budget_lines')
+    .select('*', { count: 'exact', head: true })
+    .eq('project_id', projectId)
+
+  if ((tasksCount && tasksCount > 0) || (budgetCount && budgetCount > 0)) {
+    return { error: "Impossible de supprimer le projet car il contient des tâches ou un budget. Veuillez les supprimer d'abord, ou archivez le projet en le passant au statut 'Clos'." }
+  }
+
+  // If no tasks/budget, we can safely delete the related minor entities first
+  await adminClient.from('project_members').delete().eq('project_id', projectId)
+  await adminClient.from('funding_sources').delete().eq('project_id', projectId)
+  await adminClient.from('risks').delete().eq('project_id', projectId)
+
+  // Now delete the project itself
   const { error } = await adminClient
     .from('projects')
     .delete()
     .eq('id', projectId)
 
   if (error) {
-    return { error: "Impossible de supprimer le projet car il contient des données liées (tâches, budget). Veuillez le vider d'abord, ou contactez le support." }
+    console.error('Delete project error:', error)
+    return { error: "Erreur technique lors de la suppression. Des données liées existent peut-être encore." }
   }
 
   revalidatePath('/projects')
