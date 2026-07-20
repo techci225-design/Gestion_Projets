@@ -49,15 +49,15 @@ export function ExportPdfButton({ projectId }: ExportPdfButtonProps) {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 w-full sm:w-auto">
       {error && <span className="text-sm text-danger animate-in fade-in slide-in-from-right-2">{error}</span>}
       <button 
         onClick={handleExport}
         disabled={loading}
-        className="flex items-center gap-2 bg-surface border border-border hover:bg-surface-hover text-text-primary px-4 py-2 rounded-md font-medium text-sm transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex justify-center items-center gap-2 bg-surface border border-border hover:bg-surface-hover text-text-primary px-4 py-2 rounded-md font-medium text-sm transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
       >
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-        {loading ? 'Génération...' : '📄 Exporter le rapport (PDF)'}
+        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4 flex-shrink-0" />}
+        <span className="whitespace-nowrap">{loading ? 'Génération...' : '📄 Exporter le rapport (PDF)'}</span>
       </button>
     </div>
   )

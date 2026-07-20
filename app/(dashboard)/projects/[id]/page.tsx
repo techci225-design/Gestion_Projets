@@ -79,12 +79,12 @@ export default async function ProjectDashboardPage({ params }: { params: Promise
       <div className="p-6 max-w-7xl mx-auto space-y-6">
         
         {/* Top Bar: Title & Controls */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-text-primary">Tableau de bord EVM</h2>
             <p className="text-sm text-text-secondary">Analyse de la Valeur Acquise</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
             <EvmDateSelector projectId={project.id} currentDate={project.evm_control_date} />
             <ExportPdfButton projectId={project.id} />
           </div>
