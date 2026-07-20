@@ -165,6 +165,20 @@ export async function createProjectWithBudget(payload: any) {
     return { error: 'Aucune organisation sélectionnée' }
   }
 
+  const supabase = await createClient()
+
+  // SÉCURITÉ CRITIQUE : Vérifier que l'utilisateur appartient bien à l'organisation (owner ou admin)
+  const { data: memberData } = await supabase
+    .from('organization_members')
+    .select('org_role')
+    .eq('user_id', user.id)
+    .eq('organization_id', activeOrgId)
+    .single()
+
+  if (!memberData || !['owner', 'admin'].includes(memberData.org_role)) {
+    return { error: "Vous n'avez pas les droits (owner/admin) pour créer un projet dans cette organisation." }
+  }
+
   // Check plan limits
   const limitCheck = await checkProjectLimit(activeOrgId, adminClient)
   if (limitCheck.limitReached) {
