@@ -340,6 +340,7 @@ export async function deleteProject(projectId: string) {
   await adminClient.from('project_members').delete().eq('project_id', projectId)
   await adminClient.from('funding_sources').delete().eq('project_id', projectId)
   await adminClient.from('risks').delete().eq('project_id', projectId)
+  await adminClient.from('audit_log').delete().eq('project_id', projectId)
 
   // Now delete the project itself
   const { error } = await adminClient
@@ -349,7 +350,7 @@ export async function deleteProject(projectId: string) {
 
   if (error) {
     console.error('Delete project error:', error)
-    return { error: "Erreur technique lors de la suppression. Des données liées existent peut-être encore." }
+    return { error: `Erreur technique lors de la suppression. Des données liées existent peut-être encore. Details: ${error.message || JSON.stringify(error)}` }
   }
 
   revalidatePath('/projects')

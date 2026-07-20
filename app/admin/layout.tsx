@@ -2,7 +2,8 @@ import React from 'react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Building2, Users, BarChart3, LogOut, ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
+import { AdminSidebarNav } from './AdminSidebarNav'
 
 export default async function AdminLayout({
   children,
@@ -44,20 +45,7 @@ export default async function AdminLayout({
             <span className="font-bold text-lg tracking-tight">TSBC Admin</span>
           </div>
 
-          <nav className="space-y-1">
-            <Link href="/admin/organizations" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/10 text-white font-medium">
-              <Building2 className="w-5 h-5" />
-              Organisations
-            </Link>
-            <Link href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-colors">
-              <Users className="w-5 h-5" />
-              Utilisateurs
-            </Link>
-            <Link href="#" className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-colors">
-              <BarChart3 className="w-5 h-5" />
-              Statistiques
-            </Link>
-          </nav>
+          <AdminSidebarNav />
         </div>
         
         <div className="mt-auto p-4">
