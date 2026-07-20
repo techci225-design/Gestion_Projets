@@ -12,9 +12,11 @@ import {
 
 interface SidebarProps {
   userFullName: string
+  orgName?: string
+  isOrgAdmin?: boolean
 }
 
-export function Sidebar({ userFullName }: SidebarProps) {
+export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = false }: SidebarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
@@ -58,9 +60,18 @@ export function Sidebar({ userFullName }: SidebarProps) {
     <>
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-60 bg-surface border-r border-border h-full fixed left-0 top-0 z-10">
-        <div className="p-4 flex items-center gap-2 text-primary border-b border-border/50">
-          <BriefcaseBusiness className="w-6 h-6" />
-          <Link href="/projects" className="text-xl font-bold tracking-tight">ProjetPilote</Link>
+        <div className="p-4 flex flex-col gap-1 border-b border-border/50">
+          <div className="flex items-center gap-2 text-primary">
+            <BriefcaseBusiness className="w-6 h-6" />
+            <Link href="/projects" className="text-xl font-bold tracking-tight truncate">{orgName}</Link>
+          </div>
+          {isOrgAdmin && (
+            <div className="mt-1">
+              <span className="inline-block px-2 py-0.5 bg-primary/10 text-primary rounded text-[10px] font-bold uppercase tracking-wider">
+                Admin
+              </span>
+            </div>
+          )}
         </div>
 
         <nav className="flex-1 overflow-y-auto p-4 space-y-6">

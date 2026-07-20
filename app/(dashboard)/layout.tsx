@@ -35,12 +35,32 @@ export default async function DashboardLayout({
     redirect('/onboarding')
   }
 
+  const primaryOrgId = orgMembers[0].organization_id
+
+  // Fetch organization name
+  const { data: orgData } = await supabase
+    .from('organizations')
+    .select('name')
+    .eq('id', primaryOrgId)
+    .single()
+
+  // Fetch role
+  const { data: roleData } = await supabase
+    .from('organization_members')
+    .select('org_role')
+    .eq('organization_id', primaryOrgId)
+    .eq('user_id', user.id)
+    .single()
+
+  const orgName = orgData?.name || 'Mon Organisation'
+  const isOrgAdmin = roleData?.org_role === 'owner' || roleData?.org_role === 'admin'
+
   const userFullName = profile?.full_name || user.email || 'Utilisateur'
 
   return (
     <OrganizationProvider>
       <div className="min-h-screen bg-surface-dim md:pl-60 pb-16 md:pb-0">
-        <Sidebar userFullName={userFullName} />
+        <Sidebar userFullName={userFullName} orgName={orgName} isOrgAdmin={isOrgAdmin} />
         
         {/* We don't render Header here because title varies per page. 
             Pages will include <Header title="..." /> themselves, or we can use a client context. 

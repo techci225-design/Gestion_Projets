@@ -8,8 +8,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "ProjetPilote",
-  description: "Pilotage de vos projets bailleurs",
+  title: 'ProjetPilote — Pilotage de projets bailleurs',
+  description: 'Plateforme de gestion de projets de développement financés par des bailleurs de fonds. Moteur EVM, suivi budgétaire, rapport institutionnel.',
+  keywords: 'gestion projet, bailleur, EVM, FCFA, Afrique, consultant',
   manifest: "/manifest.json",
 };
 
