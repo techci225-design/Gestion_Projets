@@ -35,9 +35,15 @@ export function OrganizationsClient({ orgs }: { orgs: any[] }) {
     if (!selectedOrg) return
     setIsUpdating(true)
     
-    await updateOrganizationPlan(selectedOrg.id, selectedPlan, maxProjects)
+    const res = await updateOrganizationPlan(selectedOrg.id, selectedPlan, maxProjects)
     setIsUpdating(false)
     setPlanModalOpen(false)
+    
+    if (res?.success) {
+      alert(`Plan mis à jour pour ${selectedOrg.name}`)
+    } else if (res?.error) {
+      alert(res.error)
+    }
   }
 
   const openPlanModal = (org: any) => {

@@ -11,7 +11,7 @@ export function AdminSidebarNav() {
   const links = [
     { name: 'Organisations', href: '/admin/organizations', icon: Building2 },
     { name: 'Utilisateurs', href: '/admin/users', icon: Users },
-    { name: 'Statistiques', href: '/admin/statistics', icon: BarChart3 },
+    { name: 'Statistiques', href: '/admin/stats', icon: BarChart3 },
   ]
 
   return (
