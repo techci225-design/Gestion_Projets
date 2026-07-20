@@ -45,15 +45,15 @@ export function UsersClient({ users }: { users: any[] }) {
     }
   }
 
-  const handleViewProjects = (orgName: string) => {
-    // We navigate to organizations page for now, or just filter this table
-    if (orgName) {
-      setOrgFilter(orgName)
+  const handleViewProjects = (orgId: string) => {
+    if (orgId) {
+      document.cookie = `support_org_id=${orgId}; path=/; max-age=86400`
+      router.push('/projects')
     }
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col min-w-0">
       <div className="p-4 border-b border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/50">
         <div className="relative w-full sm:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -82,13 +82,13 @@ export function UsersClient({ users }: { users: any[] }) {
         <table className="w-full text-left text-sm text-gray-600">
           <thead className="bg-gray-50 text-gray-900 border-b border-gray-200">
             <tr>
-              <th className="px-6 py-4 font-semibold w-16"></th>
-              <th className="px-6 py-4 font-semibold">Utilisateur</th>
-              <th className="px-6 py-4 font-semibold">Organisation</th>
-              <th className="px-6 py-4 font-semibold">Rôle</th>
-              <th className="px-6 py-4 font-semibold text-center">Projets</th>
-              <th className="px-6 py-4 font-semibold">Inscrit le</th>
-              <th className="px-6 py-4 font-semibold text-right">Actions</th>
+              <th className="px-3 py-3 font-semibold w-12"></th>
+              <th className="px-3 py-3 font-semibold">Utilisateur</th>
+              <th className="px-3 py-3 font-semibold">Organisation</th>
+              <th className="px-3 py-3 font-semibold">Rôle</th>
+              <th className="px-3 py-3 font-semibold text-center">Projets</th>
+              <th className="px-3 py-3 font-semibold">Inscrit le</th>
+              <th className="px-3 py-3 font-semibold text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -103,20 +103,20 @@ export function UsersClient({ users }: { users: any[] }) {
               
               return (
                 <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold">
+                  <td className="px-3 py-3">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">
                       {initials}
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="font-medium text-gray-900">{user.full_name || 'Sans nom'}</div>
-                    <div className="text-xs text-gray-400">{user.email}</div>
+                  <td className="px-3 py-3">
+                    <div className="font-medium text-gray-900 truncate max-w-[150px]">{user.full_name || 'Sans nom'}</div>
+                    <div className="text-xs text-gray-400 truncate max-w-[150px]">{user.email}</div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-3 py-3">
                     {user.organization_name ? (
                       <div>
-                        <div className="font-medium text-gray-900">{user.organization_name}</div>
-                        <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        <div className="font-medium text-gray-900 truncate max-w-[120px]">{user.organization_name}</div>
+                        <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase whitespace-nowrap ${
                           user.organization_plan === 'trial' ? 'bg-orange-50 text-orange-700' :
                           user.organization_plan === 'pro' ? 'bg-blue-50 text-blue-700' :
                           'bg-purple-50 text-purple-700'
@@ -128,32 +128,32 @@ export function UsersClient({ users }: { users: any[] }) {
                       <span className="text-gray-400 italic">Aucune</span>
                     )}
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-3 py-3">
                     {user.org_role ? (
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${
+                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase whitespace-nowrap border ${
                         user.org_role === 'owner' ? 'bg-green-50 text-green-700 border-green-200' :
                         user.org_role === 'admin' ? 'bg-blue-50 text-blue-700 border-blue-200' :
                         'bg-gray-50 text-gray-700 border-gray-200'
                       }`}>
-                        {user.org_role.toUpperCase()}
+                        {user.org_role}
                       </span>
                     ) : '-'}
                   </td>
-                  <td className="px-6 py-4 text-center font-medium text-gray-900">
+                  <td className="px-3 py-3 text-center font-medium text-gray-900">
                     {user.nb_projects || 0}
                   </td>
-                  <td className="px-6 py-4 text-gray-500">
+                  <td className="px-3 py-3 text-gray-500 whitespace-nowrap text-xs">
                     {new Date(user.created_at).toLocaleDateString('fr-FR')}
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-3 py-3 text-right">
                     <div className="flex items-center justify-end gap-2 relative group">
                       <button className="p-1.5 text-gray-400 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors">
                         <MoreVertical className="w-4 h-4" />
                       </button>
                       <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 py-1">
-                        {user.organization_name && (
+                        {user.organization_id && (
                           <button 
-                            onClick={() => handleViewProjects(user.organization_name)}
+                            onClick={() => handleViewProjects(user.organization_id)}
                             className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700"
                           >
                             <ExternalLink className="w-4 h-4 text-gray-400" /> Voir ses projets
