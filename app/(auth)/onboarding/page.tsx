@@ -47,15 +47,16 @@ export default function OnboardingPage() {
         throw new Error("Le nom de l'organisation est obligatoire.")
       }
 
-      const formData = new FormData()
-      formData.append('name', orgForm.name)
-      formData.append('country', orgForm.country)
-      formData.append('team_size', orgForm.teamSize)
-
-      const result = await createOrganizationOnboarding(formData)
+      const result = await createOrganizationOnboarding({
+        name: orgForm.name,
+        country: orgForm.country,
+        teamSize: orgForm.teamSize
+      })
       
       if (result.error) {
-        throw new Error(result.error)
+        setError(result.error)
+        setIsPending(false)
+        return
       }
 
       // Success, redirect to projects
@@ -64,7 +65,7 @@ export default function OnboardingPage() {
 
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue.')
-      setIsPending(false) // Only stop pending if error, otherwise keep loading state during redirect
+      setIsPending(false)
     }
   }
 
