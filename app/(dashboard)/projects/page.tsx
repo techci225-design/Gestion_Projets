@@ -128,9 +128,9 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
     
     const bac = summary?.bac_total || 0
     const ac = summary?.ac_total || 0
-    const cpi = summary?.cpi_global || 1
-    const spi = summary?.spi_global || 1
-    const vac = summary?.vac_global || 0
+    const cpi = summary?.cpi_global ?? 1
+    const spi = summary?.spi_global ?? 1
+    const vac = summary?.vac_global ?? 0
 
     const alertReasons = []
     if (cpi < 0.9) alertReasons.push(`CPI = ${cpi.toFixed(2)} (Dépassement budgétaire)`)
