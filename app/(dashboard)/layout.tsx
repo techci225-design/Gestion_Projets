@@ -27,7 +27,7 @@ export default async function DashboardLayout({
     .eq('id', user.id)
     .single()
 
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   const supportOrgId = cookieStore.get('support_org_id')?.value
 
   let activeOrgId = supportOrgId && profile?.is_super_admin ? supportOrgId : null
