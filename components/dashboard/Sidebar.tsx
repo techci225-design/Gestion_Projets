@@ -50,9 +50,9 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
 
   const mobileTabs = [
     { name: 'Accueil', href: '/projects', icon: Home },
-    { name: 'Budget', href: projectId ? `/projects/${projectId}/budget` : '/projects', icon: Wallet },
-    { name: 'EVM', href: projectId ? `/projects/${projectId}/evm` : '/projects', icon: TrendingUp },
-    { name: 'Risques', href: projectId ? `/projects/${projectId}/risques` : '/projects', icon: AlertTriangle },
+    { name: 'Budget', href: projectId ? `/projects/${projectId}/budget` : '#', icon: Wallet, disabled: !projectId },
+    { name: 'EVM', href: projectId ? `/projects/${projectId}/evm` : '#', icon: TrendingUp, disabled: !projectId },
+    { name: 'Risques', href: projectId ? `/projects/${projectId}/risques` : '#', icon: AlertTriangle, disabled: !projectId },
     { name: 'Plus', href: '#', icon: MoreHorizontal },
   ]
 
@@ -139,7 +139,7 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
       </aside>
 
       {/* Mobile Bottom Tab Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full bg-surface border-t border-border flex items-center justify-around pb-safe z-20">
+      <nav className="md:hidden fixed bottom-0 left-0 w-full bg-surface border-t border-border flex items-center justify-around pb-safe z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         {mobileTabs.map((tab) => {
           const Icon = tab.icon
           const isActive = pathname === tab.href
@@ -154,6 +154,19 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
                 <Icon className="w-5 h-5 mb-1" />
                 <span className="text-[10px] font-medium">{tab.name}</span>
               </button>
+            )
+          }
+
+          if (tab.disabled) {
+            return (
+              <div
+                key={tab.name}
+                className="flex flex-col items-center p-3 flex-1 transition-colors text-text-secondary/30 cursor-not-allowed"
+                onClick={() => alert("Veuillez d'abord sélectionner un projet pour accéder à ce module.")}
+              >
+                <Icon className="w-5 h-5 mb-1" />
+                <span className="text-[10px] font-medium">{tab.name}</span>
+              </div>
             )
           }
 
@@ -181,17 +194,24 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
                 <h3 className="font-semibold text-on-surface">Plus de modules</h3>
                 <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 rounded-full hover:bg-surface-container"><X className="w-5 h-5 text-on-surface-variant"/></button>
              </div>
-             <div className="grid grid-cols-3 gap-4 p-4 max-h-[50vh] overflow-y-auto">
-               {projectLinks.filter(pl => !mobileTabs.find(mt => mt.name === pl.name)).map(link => {
-                 const LinkIcon = link.icon
-                 return (
-                  <Link key={link.name} href={link.href} onClick={() => setIsMobileMenuOpen(false)} className="flex flex-col items-center p-4 rounded-xl bg-surface-container-low border border-border text-on-surface hover:border-primary transition-colors">
-                    <LinkIcon className="w-6 h-6 mb-2 text-primary" />
-                    <span className="text-[10px] text-center font-medium">{link.name}</span>
-                  </Link>
-                 )
-               })}
-             </div>
+             {projectId ? (
+               <div className="grid grid-cols-3 gap-4 p-4 max-h-[50vh] overflow-y-auto">
+                 {projectLinks.filter(pl => !mobileTabs.find(mt => mt.name === pl.name)).map(link => {
+                   const LinkIcon = link.icon
+                   return (
+                    <Link key={link.name} href={link.href} onClick={() => setIsMobileMenuOpen(false)} className="flex flex-col items-center p-4 rounded-xl bg-surface-container-low border border-border text-on-surface hover:border-primary transition-colors">
+                      <LinkIcon className="w-6 h-6 mb-2 text-primary" />
+                      <span className="text-[10px] text-center font-medium">{link.name}</span>
+                    </Link>
+                   )
+                 })}
+               </div>
+             ) : (
+               <div className="p-8 text-center text-text-secondary flex flex-col items-center justify-center min-h-[30vh]">
+                 <BriefcaseBusiness className="w-12 h-12 mb-4 opacity-20" />
+                 <p className="text-sm font-medium">Veuillez d'abord sélectionner un projet pour voir plus de modules.</p>
+               </div>
+             )}
              
              {/* Mobile User Profile & Logout */}
              <div className="p-4 border-t border-border flex items-center justify-between bg-surface-dim">
