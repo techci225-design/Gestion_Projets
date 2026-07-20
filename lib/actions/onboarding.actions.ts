@@ -35,17 +35,18 @@ export async function createOrganizationOnboarding(data: {
     .replace(/^-|-$/g, '')
     + '-' + Date.now().toString(36);
 
+  const orgId = crypto.randomUUID();
+
   // Créer l'organisation
-  const { data: org, error: orgError } = await supabase
+  const { error: orgError } = await supabase
     .from('organizations')
     .insert({
+      id: orgId,
       name: data.name,
       slug,
       plan: 'trial',
       max_projects: 3
-    })
-    .select()
-    .single();
+    });
 
   if (orgError) {
     console.error('Erreur création organisation:', orgError);
@@ -56,7 +57,7 @@ export async function createOrganizationOnboarding(data: {
   const { error: memberError } = await supabase
     .from('organization_members')
     .insert({
-      organization_id: org.id,
+      organization_id: orgId,
       user_id: user.id,
       org_role: 'owner',
     });
@@ -64,18 +65,18 @@ export async function createOrganizationOnboarding(data: {
   if (memberError) {
     console.error('Erreur ajout membre:', memberError);
     // Nettoyer l'organisation créée si l'ajout du membre échoue
-    await supabase.from('organizations').delete().eq('id', org.id);
+    await supabase.from('organizations').delete().eq('id', orgId);
     return { error: `Impossible de configurer l'organisation: ${memberError.message}` };
   }
 
   // Set active organization cookie
   const cookieStore = await cookies()
-  cookieStore.set('active_org_id', org.id, {
+  cookieStore.set('active_org_id', orgId, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 30 // 30 days
   })
 
-  return { success: true, organizationId: org.id };
+  return { success: true, organizationId: orgId };
 }
