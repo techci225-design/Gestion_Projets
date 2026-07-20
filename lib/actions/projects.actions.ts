@@ -165,8 +165,6 @@ export async function createProjectWithBudget(payload: any) {
     return { error: 'Aucune organisation sélectionnée' }
   }
 
-  const supabase = await createClient()
-
   // SÉCURITÉ CRITIQUE : Vérifier que l'utilisateur appartient bien à l'organisation (owner ou admin)
   const { data: memberData } = await supabase
     .from('organization_members')
