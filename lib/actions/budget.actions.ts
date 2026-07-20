@@ -55,10 +55,16 @@ export async function deleteBudgetLine(projectId: string, budgetLineId: string) 
     return { error: error.message }
   }
 
-  const supabase = await createClient()
+  let adminClient;
+  try {
+    const { createAdminClient } = await import('../supabase/admin')
+    adminClient = createAdminClient()
+  } catch (err: any) {
+    return { error: 'Erreur serveur (Clé Admin)' }
+  }
 
   // Verify it doesn't have operations (or let the DB constraint handle it)
-  const { error } = await supabase
+  const { error } = await adminClient
     .from('budget_lines')
     .delete()
     .eq('id', budgetLineId)
