@@ -129,7 +129,7 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-text-primary truncate">{userFullName}</p>
-              <Link href="/profile" className="text-xs text-text-secondary hover:text-primary transition-colors">Mon Profil</Link>
+              <Link href="/settings" className="text-xs text-text-secondary hover:text-primary transition-colors">Mon Profil</Link>
             </div>
           </div>
           <button onClick={handleLogout} className="p-2 text-text-secondary hover:text-danger hover:bg-danger/10 rounded-lg transition-colors">
