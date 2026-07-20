@@ -77,6 +77,9 @@ export default function RegisterPage() {
         if (signUpError.message.includes('already registered')) {
           throw new Error('Un compte existe déjà avec cet email. Connectez-vous →')
         }
+        if (signUpError.message.toLowerCase().includes('disabled') || signUpError.message.toLowerCase().includes('désactivées') || signUpError.message.toLowerCase().includes('not allowed')) {
+          throw new Error('SIGNUPS_DISABLED')
+        }
         throw signUpError
       }
 
@@ -119,14 +122,22 @@ export default function RegisterPage() {
       </div>
 
       {/* Error Message */}
-      {error && (
+      {error === 'SIGNUPS_DISABLED' ? (
+        <div className="mb-6 bg-danger/10 border border-danger/20 text-danger text-sm p-4 rounded-lg flex flex-col gap-3">
+          <p className="font-semibold">Les inscriptions sont temporairement suspendues.</p>
+          <p>Contactez TSBC pour créer votre accès :<br/>tsbcafrique@yahoo.fr / +225 07 07 36 30 20</p>
+          <a href="mailto:tsbcafrique@yahoo.fr" className="bg-danger text-white text-center py-2 rounded-md hover:bg-danger/90 font-medium transition-colors">
+            Contacter TSBC
+          </a>
+        </div>
+      ) : error ? (
         <div className="mb-6 bg-danger/10 border border-danger/20 text-danger text-sm p-3 rounded-lg flex items-center justify-between">
           <span>{error}</span>
           {error.includes('Connectez-vous') && (
             <a href="/login" className="font-bold underline ml-2 shrink-0">Connexion</a>
           )}
         </div>
-      )}
+      ) : null}
 
       {/* Step 1: User Account */}
       <div className={`transition-all duration-500 ease-in-out ${step === 1 ? 'opacity-100 translate-x-0 relative block' : 'opacity-0 -translate-x-full absolute invisible'}`}>
