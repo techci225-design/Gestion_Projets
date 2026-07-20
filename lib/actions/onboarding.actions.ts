@@ -21,6 +21,13 @@ export async function createOrganizationOnboarding(data: {
   
   console.log('createOrganizationOnboarding par:', user.id);
 
+  // S'assurer que le profil existe (cas où la confirmation email a différé sa création)
+  await supabase.from('profiles').upsert({
+    id: user.id,
+    full_name: user.user_metadata.full_name || user.email,
+    email: user.email
+  });
+
   // Générer un slug unique depuis le nom
   const slug = data.name
     .toLowerCase()
