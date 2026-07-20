@@ -27,7 +27,21 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
 
   let effectiveOrgId = supportOrgIdCookie || activeOrgIdCookie
 
-  // S'il n'y a pas de cookie, on récupère la première organisation de l'utilisateur pour éviter de tout afficher
+  // VERIFICATION: Ensure the user is actually a member of the requested org (unless in explicit support mode)
+  if (effectiveOrgId && !supportOrgIdCookie) {
+    const { data: membership } = await supabase
+      .from('organization_members')
+      .select('organization_id')
+      .eq('user_id', user?.id)
+      .eq('organization_id', effectiveOrgId)
+      .single()
+      
+    if (!membership) {
+      effectiveOrgId = undefined // Invalide, on force le repli
+    }
+  }
+
+  // S'il n'y a pas de cookie (ou s'il était invalide), on récupère la première organisation de l'utilisateur
   if (!effectiveOrgId) {
     const { data: memberOrgs } = await supabase
       .from('organization_members')
