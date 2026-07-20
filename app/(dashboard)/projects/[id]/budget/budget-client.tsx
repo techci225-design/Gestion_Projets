@@ -1,11 +1,12 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Plus, Download, CheckCircle2, WalletCards } from 'lucide-react'
+import { Plus, Download, CheckCircle2, WalletCards, Trash2, AlertTriangle } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { AddBudgetModal } from './add-budget-modal'
 import { BurnRateChart } from '@/components/dashboard/BurnRateChart'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { deleteBudgetLine } from '@/lib/actions/budget.actions'
 
 export interface BudgetConsumption {
   budget_line_id: string
@@ -27,6 +28,17 @@ export function BudgetClient({ items, fundingSources, operations, projectId, isN
   const router = useRouter()
   const [showBanner, setShowBanner] = useState(isNewProject)
   const [selectedResponsable, setSelectedResponsable] = useState('Tous les responsables')
+  const [isDeleting, setIsDeleting] = useState<string | null>(null)
+  
+  const handleDelete = async (budgetId: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette ligne budgétaire ?')) return
+    setIsDeleting(budgetId)
+    const res = await deleteBudgetLine(projectId, budgetId)
+    setIsDeleting(null)
+    if (res?.error) {
+      alert(res.error)
+    }
+  }
 
   useEffect(() => {
     if (showBanner) {
@@ -197,6 +209,7 @@ export function BudgetClient({ items, fundingSources, operations, projectId, isN
                   <th className="p-4 text-right">Cumul Décaissé (FCFA)</th>
                   <th className="p-4 text-right">Solde Disponible (FCFA)</th>
                   <th className="p-4 w-48">Taux de Consommation (%)</th>
+                  <th className="p-4 w-12"></th>
                 </tr>
               </thead>
               <tbody>
@@ -210,7 +223,7 @@ export function BudgetClient({ items, fundingSources, operations, projectId, isN
                   return (
                     <React.Fragment key={key}>
                       <tr className="bg-slate-50 border-b border-border/50 font-bold text-text-primary">
-                        <td className="p-4" colSpan={6}>{key}. Catégorie {key}</td>
+                        <td className="p-4" colSpan={7}>{key}. Catégorie {key}</td>
                       </tr>
                       {groupItems.map((item, idx) => (
                         <tr key={item.budget_line_id} className={`border-b border-border/30 h-10 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
@@ -229,6 +242,16 @@ export function BudgetClient({ items, fundingSources, operations, projectId, isN
                               </span>
                             </div>
                           </td>
+                          <td className="p-4 text-right">
+                            <button 
+                              onClick={() => handleDelete(item.budget_line_id)}
+                              disabled={isDeleting === item.budget_line_id}
+                              className="p-1.5 text-danger hover:bg-danger/10 rounded-lg transition-colors disabled:opacity-50"
+                              title="Supprimer la ligne"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </td>
                         </tr>
                       ))}
                       <tr className="bg-surface-dim/30 border-b-2 border-border/50 font-medium h-10">
@@ -238,6 +261,7 @@ export function BudgetClient({ items, fundingSources, operations, projectId, isN
                         <td className="p-4 text-right font-mono">{formatCurrency(groupDecaisse)}</td>
                         <td className="p-4 text-right font-mono">{formatCurrency(groupSolde)}</td>
                         <td className="p-4 text-right font-mono text-xs pr-6">—</td>
+                        <td className="p-4"></td>
                       </tr>
                     </React.Fragment>
                   )

@@ -48,6 +48,30 @@ export async function createBudgetLine(data: z.infer<typeof budgetLineSchema>) {
   return { data: result }
 }
 
+export async function deleteBudgetLine(projectId: string, budgetLineId: string) {
+  try {
+    await requireRole(projectId, ['owner', 'comptable'])
+  } catch (error: any) {
+    return { error: error.message }
+  }
+
+  const supabase = await createClient()
+
+  // Verify it doesn't have operations (or let the DB constraint handle it)
+  const { error } = await supabase
+    .from('budget_lines')
+    .delete()
+    .eq('id', budgetLineId)
+    .eq('project_id', projectId) // Extra security
+
+  if (error) {
+    return { error: "Impossible de supprimer cette ligne car elle contient déjà des opérations, ou une erreur technique est survenue." }
+  }
+
+  revalidatePath(`/projects/${projectId}/budget`)
+  return { success: true }
+}
+
 const operationJournalSchema = z.object({
   project_id: z.string().uuid(),
   budget_line_id: z.string().uuid(),
