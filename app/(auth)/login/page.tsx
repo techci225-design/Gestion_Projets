@@ -53,15 +53,23 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-surface w-full rounded-lg shadow-sm sm:shadow-lg p-8">
+    <div className="bg-white/10 backdrop-blur-md border border-white/20 w-full rounded-2xl shadow-2xl p-8 sm:p-10 relative overflow-hidden">
       
+      {/* Decorative gradient blob */}
+      <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+      <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+
       {/* Header */}
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-center gap-2 mb-2 text-primary">
-          <BriefcaseBusiness className="w-8 h-8" />
-          <h1 className="text-2xl font-bold tracking-tight">ProjetPilote</h1>
+      <div className="text-center mb-10 relative z-10">
+        <div className="flex items-center justify-center gap-3 mb-3 text-white">
+          <div className="p-3 bg-white/10 rounded-xl backdrop-blur-sm border border-white/20 shadow-inner">
+            <BriefcaseBusiness className="w-8 h-8" />
+          </div>
+          <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-white/80">
+            Smart-Project-Manager
+          </h1>
         </div>
-        <p className="text-text-secondary text-sm">
+        <p className="text-white/70 text-sm font-medium tracking-wide">
           Pilotage de vos projets bailleurs
         </p>
       </div>
@@ -99,43 +107,46 @@ export default function LoginPage() {
       ) : null}
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
         <div>
           <label 
             htmlFor="email" 
-            className="block text-sm font-medium text-text-primary mb-1"
+            className="block text-sm font-semibold text-white/90 mb-2"
           >
-            Adresse email professionnel
+            Adresse email professionnelle
           </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            placeholder="nom@institution.org"
-            className="w-full px-4 py-2 border border-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-          />
+          <div className="relative group">
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              placeholder="nom@institution.org"
+              className="w-full px-5 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-transparent transition-all backdrop-blur-sm group-hover:bg-white/10"
+            />
+          </div>
         </div>
 
         <div>
           <label 
             htmlFor="password" 
-            className="block text-sm font-medium text-text-primary mb-1"
+            className="block text-sm font-semibold text-white/90 mb-2"
           >
             Mot de passe
           </label>
-          <div className="relative">
+          <div className="relative group">
             <input
               id="password"
               name="password"
               type={showPassword ? 'text' : 'password'}
               required
-              className="w-full px-4 py-2 border border-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors pr-10"
+              placeholder="••••••••••••"
+              className="w-full px-5 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-transparent transition-all backdrop-blur-sm pr-12 group-hover:bg-white/10"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary transition-colors"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors p-1"
               aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
             >
               {showPassword ? (
@@ -145,8 +156,8 @@ export default function LoginPage() {
               )}
             </button>
           </div>
-          <div className="flex justify-end mt-2">
-            <a href="#" className="text-sm font-medium text-primary hover:underline">
+          <div className="flex justify-end mt-3">
+            <a href="#" className="text-sm font-medium text-white/70 hover:text-white hover:underline transition-colors">
               Mot de passe oublié ?
             </a>
           </div>
@@ -155,19 +166,30 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full bg-primary text-white font-medium py-2.5 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white py-3.5 rounded-xl font-bold text-base transition-all shadow-lg hover:shadow-blue-500/25 active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          {isPending ? 'Connexion...' : 'Se connecter'}
+          {isPending ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Connexion en cours...
+            </>
+          ) : (
+            <>
+              <Lock className="w-5 h-5" />
+              Se connecter
+            </>
+          )}
         </button>
-      </form>
 
-      {/* Footer link */}
-      <div className="mt-8 text-center text-sm">
-        <span className="text-text-secondary">Pas encore de compte ? </span>
-        <a href="/register" className="font-medium text-primary hover:underline">
-          Créer un compte
-        </a>
-      </div>
+        <div className="text-center mt-8">
+          <p className="text-sm text-white/70">
+            Pas encore de compte ?{' '}
+            <a href="#" className="font-semibold text-white hover:underline transition-all">
+              Créer un compte
+            </a>
+          </p>
+        </div>
+      </form>
     </div>
   )
 }
