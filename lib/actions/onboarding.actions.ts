@@ -64,8 +64,7 @@ export async function createOrganizationOnboarding(formData: FormData) {
       name,
       slug: uniqueSlug,
       plan: 'trial',
-      max_projects: 3,
-      created_by: user.id
+      max_projects: 3
     })
     .select()
     .single()
@@ -86,17 +85,6 @@ export async function createOrganizationOnboarding(formData: FormData) {
   if (memberError) {
     return { error: 'Erreur lors de l\'ajout du membre' }
   }
-
-  // Create welcome notification
-  await adminClient
-    .from('notifications')
-    .insert({
-      organization_id: org.id,
-      title: 'Bienvenue sur ProjetPilote !',
-      message: 'Votre espace de travail a été créé avec succès. Commencez par créer votre premier projet.',
-      type: 'system',
-      created_by: user.id
-    })
 
   // Set active organization cookie
   const cookieStore = await cookies()
