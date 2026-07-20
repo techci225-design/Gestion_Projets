@@ -178,7 +178,8 @@ export async function createProjectWithBudget(payload: any) {
     const { data: projectId, error } = await adminClient.rpc('create_project_with_budget', {
       payload: {
         ...payload,
-        user_id: user.id
+        user_id: user.id,
+        organization_id: activeOrgId
       }
     })
 

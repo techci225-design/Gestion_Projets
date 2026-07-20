@@ -152,13 +152,21 @@ export async function importProjectFromExcel(data: {
     return { error: "Non authentifié" };
   }
 
+  const cookieStore = await cookies();
+  const activeOrgId = cookieStore.get('active_org_id')?.value;
+
+  if (!activeOrgId) {
+    return { error: 'Aucune organisation sélectionnée' };
+  }
+
   try {
     const { data: project, error: projectError } = await supabase
       .from('projects')
       .insert({
         name: data.projectName,
         code: data.projectCode,
-        created_by: user.id
+        created_by: user.id,
+        organization_id: activeOrgId
       })
       .select('id')
       .single();
