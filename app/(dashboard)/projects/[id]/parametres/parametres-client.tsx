@@ -97,7 +97,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
   }
 
   return (
-    <div className="flex flex-col h-full space-y-6">
+    <div className="flex flex-col space-y-6 min-h-[500px]">
       <div className="flex justify-between items-end">
         <div>
           <h2 className="text-3xl font-bold text-primary mb-1">Paramètres du Projet</h2>
@@ -105,7 +105,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-border overflow-hidden flex flex-col md:flex-row h-full">
+      <div className="bg-white rounded-lg shadow-sm border border-border overflow-hidden flex flex-col md:flex-row">
         
         {/* Sidebar Nav */}
         <div className="w-full md:w-64 bg-surface-dim border-b md:border-b-0 md:border-r border-border p-4 flex flex-col gap-2">
