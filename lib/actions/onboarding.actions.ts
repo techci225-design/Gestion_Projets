@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { cookies } from 'next/headers'
 
 export async function createOrganizationOnboarding(data: {
@@ -12,6 +13,7 @@ export async function createOrganizationOnboarding(data: {
   console.log('Données reçues:', data);
 
   const supabase = await createClient(); // lib/supabase/server.ts
+  const adminClient = createAdminClient();
   
   // Vérifier que l'utilisateur est authentifié
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -21,12 +23,18 @@ export async function createOrganizationOnboarding(data: {
   
   console.log('createOrganizationOnboarding par:', user.id);
 
-  // S'assurer que le profil existe (cas où la confirmation email a différé sa création)
-  await supabase.from('profiles').upsert({
+  // S'assurer que le profil existe avec adminClient pour ignorer le RLS
+  const { error: profileError } = await adminClient.from('profiles').upsert({
     id: user.id,
-    full_name: user.user_metadata.full_name || user.email,
+    full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Utilisateur',
     email: user.email
   });
+
+  if (profileError) {
+    console.error('Erreur création profil:', profileError);
+    return { error: `Impossible de créer le profil: ${profileError.message}` };
+  }
+
 
   // Générer un slug unique depuis le nom
   const slug = data.name
