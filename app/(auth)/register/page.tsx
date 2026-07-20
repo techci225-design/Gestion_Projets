@@ -75,10 +75,13 @@ export default function RegisterPage() {
 
       if (signUpError) {
         if (signUpError.message.includes('already registered')) {
-          throw new Error('Un compte existe déjà avec cet email. Connectez-vous →')
+          throw new Error('Un compte existe déjà avec cet email. Connectez-vous ou réinitialisez votre mot de passe.')
         }
         if (signUpError.message.toLowerCase().includes('disabled') || signUpError.message.toLowerCase().includes('désactivées') || signUpError.message.toLowerCase().includes('not allowed')) {
           throw new Error('SIGNUPS_DISABLED')
+        }
+        if (signUpError.message.toLowerCase().includes('6 characters')) {
+          throw new Error('Le mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre.')
         }
         throw signUpError
       }
