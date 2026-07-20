@@ -70,15 +70,46 @@ export async function getUserRole(projectId: string): Promise<ProjectRole | null
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data, error } = await supabase
+  // 1. Direct project role
+  const { data } = await supabase
     .from('project_members')
     .select('role')
     .eq('project_id', projectId)
     .eq('user_id', user.id)
     .single()
 
-  if (error || !data) return null
-  return data.role as ProjectRole
+  if (data) return data.role as ProjectRole
+
+  // 2. Check Super Admin
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('is_super_admin')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.is_super_admin) return 'owner'
+
+  // 3. Check Organization Admin/Owner
+  const { data: project } = await supabase
+    .from('projects')
+    .select('organization_id')
+    .eq('id', projectId)
+    .single()
+
+  if (project?.organization_id) {
+    const { data: orgMember } = await supabase
+      .from('organization_members')
+      .select('org_role')
+      .eq('organization_id', project.organization_id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (orgMember && ['owner', 'admin'].includes(orgMember.org_role)) {
+      return 'owner'
+    }
+  }
+
+  return null
 }
 
 export async function requireRole(projectId: string, allowedRoles: ProjectRole[]) {
