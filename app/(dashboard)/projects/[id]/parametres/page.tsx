@@ -20,9 +20,8 @@ export default async function ParametresPage({ params }: { params: Promise<{ id:
   // 1. Get project details and role
   const { data: project } = await supabase
     .from('projects')
-    .select('*, project_members!inner(role)')
+    .select('*')
     .eq('id', id)
-    .eq('project_members.user_id', user.id)
     .single()
 
   if (!project) {
@@ -56,7 +55,7 @@ export default async function ParametresPage({ params }: { params: Promise<{ id:
       fundingSources={fundingSources || []}
       budgetLines={budgetLines || []}
       wbsTasks={wbsTasks || []}
-      userRole={project.project_members[0]?.role}
+      userRole={undefined}
     />
   )
 }

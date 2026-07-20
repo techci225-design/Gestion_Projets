@@ -21,9 +21,8 @@ export default async function RisksPage({ params }: { params: Promise<{ id: stri
   // 1. Get project details
   const { data: project } = await supabase
     .from('projects')
-    .select('*, project_members!inner(role)')
+    .select('*')
     .eq('id', id)
-    .eq('project_members.user_id', user.id)
     .single()
 
   if (!project) {

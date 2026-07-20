@@ -21,9 +21,8 @@ export default async function LogframePage({ params }: { params: Promise<{ id: s
   // 1. Get project details and role
   const { data: project } = await supabase
     .from('projects')
-    .select('*, project_members!inner(role)')
+    .select('*')
     .eq('id', id)
-    .eq('project_members.user_id', user.id)
     .single()
 
   if (!project) {
