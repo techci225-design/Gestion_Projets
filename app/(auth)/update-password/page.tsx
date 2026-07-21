@@ -24,7 +24,7 @@ export default function UpdatePasswordPage() {
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code)
         if (error) {
-          setMessage({ text: 'Lien invalide ou expiré. Veuillez refaire une demande.', type: 'error' })
+          setMessage({ text: `Erreur (Code): ${error.message}. Demandez un nouveau lien.`, type: 'error' })
           return
         }
         // Remove code from URL so it's not reused
@@ -39,9 +39,11 @@ export default function UpdatePasswordPage() {
         setTimeout(async () => {
           const { data: { session: delayedSession } } = await supabase.auth.getSession()
           if (!delayedSession) {
-            setMessage({ text: 'Lien invalide ou expiré. Veuillez refaire une demande.', type: 'error' })
+            // Log hash to see if it's an implicit flow that failed
+            console.log("Hash:", window.location.hash, "Search:", window.location.search)
+            setMessage({ text: 'Lien invalide ou expiré (Session non trouvée). Demandez un nouveau lien.', type: 'error' })
           }
-        }, 1000)
+        }, 2000)
       }
     }
     checkSession()
