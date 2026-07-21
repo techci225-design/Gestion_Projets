@@ -45,8 +45,30 @@ export async function sendInvitation(payload: {
     }
   }
 
-  // Insert invitation
-  const { data: invitation, error: insertError } = await supabase
+  // Initialize adminClient early to bypass RLS for inserting the invitation
+  let adminClient;
+  try {
+    adminClient = createAdminClient();
+  } catch (err: any) {
+    return { error: 'Erreur configuration adminClient pour l\'insertion.' };
+  }
+
+  // Permission check: To invite a project member, the user must be a chef_projet or owner.
+  // To invite an organization owner, the user must be an organization owner.
+  if (payload.role === 'Propriétaire' || payload.role === 'owner') {
+     const { data: orgMember } = await supabase.from('organization_members').select('role').eq('organization_id', payload.organization_id).eq('user_id', user.id).single();
+     if (!orgMember || orgMember.role !== 'owner') {
+        return { error: 'Seul un propriétaire d\'organisation peut inviter un autre propriétaire.' };
+     }
+  } else if (payload.project_id) {
+     const { data: projMember } = await supabase.from('project_members').select('role').eq('project_id', payload.project_id).eq('user_id', user.id).single();
+     if (!projMember || (projMember.role !== 'chef_projet' && projMember.role !== 'owner')) {
+        return { error: 'Vous devez être chef de projet ou propriétaire pour inviter des membres.' };
+     }
+  }
+
+  // Insert invitation via adminClient to bypass restrictive RLS policies
+  const { data: invitation, error: insertError } = await adminClient
     .from('invitations')
     .insert({
       organization_id: payload.organization_id,
@@ -60,17 +82,10 @@ export async function sendInvitation(payload: {
 
   if (insertError) {
     console.error('Insert invitation error:', insertError)
-    // Could be a duplicate pending invite, RLS, etc.
-    return { error: 'Impossible de créer l\'invitation. Vérifiez vos droits ou si une invitation est déjà en cours.' }
+    return { error: 'Impossible de créer l\'invitation. Vérifiez si une invitation est déjà en cours.' }
   }
 
-  // Admin client for sending the email via Supabase Auth
-  let adminClient
-  try {
-    adminClient = createAdminClient()
-  } catch (err: any) {
-    return { error: 'Erreur configuration adminClient pour l\'envoi email.' }
-  }
+  // adminClient is already initialized above
 
   const token = invitation.token
 
