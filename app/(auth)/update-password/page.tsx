@@ -17,20 +17,8 @@ export default function UpdatePasswordPage() {
 
   useEffect(() => {
     const checkSession = async () => {
-      // Handle PKCE flow: if there's a code in the URL, exchange it for a session
-      const url = new URL(window.location.href)
-      const code = url.searchParams.get('code')
-      
-      if (code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code)
-        if (error) {
-          setMessage({ text: `Erreur (Code): ${error.message}. Demandez un nouveau lien.`, type: 'error' })
-          return
-        }
-        // Remove code from URL so it's not reused
-        window.history.replaceState({}, document.title, window.location.pathname)
-        return
-      }
+      // The API route /api/auth/callback already exchanged the PKCE code.
+      // We just need to check if the session exists.
 
       // Fallback for implicit flow (hash fragment) or if already logged in
       const { data: { session } } = await supabase.auth.getSession()
