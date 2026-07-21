@@ -32,13 +32,47 @@ export default function LandingPage() {
           </div>
           <div className="lg:col-span-5 relative hidden md:block">
             <div className="bg-white p-2 rounded-2xl shadow-2xl transform rotate-2 hover:rotate-0 transition-transform duration-500">
-              <div className="aspect-[4/3] bg-slate-100 rounded-xl overflow-hidden relative border border-slate-200 flex items-center justify-center">
-                {/* Fallback visual if no image */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 p-8 text-center">
-                  <Activity className="w-16 h-16 mb-4 text-indigo-400 opacity-50" />
-                  <div className="w-3/4 h-4 bg-slate-200 rounded mb-2"></div>
-                  <div className="w-1/2 h-4 bg-slate-200 rounded mb-6"></div>
-                  <div className="w-full h-32 bg-indigo-50 rounded-lg border border-indigo-100"></div>
+              <div className="aspect-[4/3] bg-slate-50 rounded-xl overflow-hidden relative border border-slate-200 flex">
+                {/* Sidebar Mockup */}
+                <div className="w-1/4 bg-[#0A1628] p-3 flex flex-col gap-3 border-r border-slate-200">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-5 h-5 bg-green-500 rounded-md"></div>
+                    <div className="h-3 bg-slate-100 rounded w-16"></div>
+                  </div>
+                  <div className="h-3 bg-indigo-500 rounded w-full opacity-90"></div>
+                  <div className="h-3 bg-slate-800 rounded w-5/6"></div>
+                  <div className="h-3 bg-slate-800 rounded w-4/6"></div>
+                  <div className="h-3 bg-slate-800 rounded w-full"></div>
+                </div>
+                {/* Main Content Mockup */}
+                <div className="flex-1 p-4 flex flex-col gap-3">
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="h-4 bg-slate-300 rounded w-1/3"></div>
+                    <div className="w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-[10px] font-bold">F</div>
+                  </div>
+                  {/* KPI Cards */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white border border-slate-100 p-3 rounded-lg shadow-sm">
+                      <div className="h-2 bg-slate-200 rounded w-1/2 mb-3"></div>
+                      <div className="h-5 bg-green-500 rounded w-3/4"></div>
+                    </div>
+                    <div className="bg-white border border-slate-100 p-3 rounded-lg shadow-sm">
+                      <div className="h-2 bg-slate-200 rounded w-1/2 mb-3"></div>
+                      <div className="h-5 bg-indigo-500 rounded w-2/3"></div>
+                    </div>
+                  </div>
+                  {/* Chart Mockup */}
+                  <div className="flex-1 bg-white border border-slate-100 rounded-lg shadow-sm p-3 relative overflow-hidden flex flex-col">
+                    <div className="h-2 bg-slate-200 rounded w-1/4 mb-auto"></div>
+                    <div className="w-full flex items-end justify-between gap-1.5 h-24 mt-2">
+                      <div className="w-full bg-indigo-100 hover:bg-indigo-200 rounded-t-sm h-[30%] transition-colors"></div>
+                      <div className="w-full bg-indigo-200 hover:bg-indigo-300 rounded-t-sm h-[45%] transition-colors"></div>
+                      <div className="w-full bg-indigo-300 hover:bg-indigo-400 rounded-t-sm h-[65%] transition-colors"></div>
+                      <div className="w-full bg-indigo-400 hover:bg-indigo-500 rounded-t-sm h-[50%] transition-colors"></div>
+                      <div className="w-full bg-indigo-500 hover:bg-indigo-600 rounded-t-sm h-[85%] transition-colors"></div>
+                      <div className="w-full bg-indigo-600 hover:bg-indigo-700 rounded-t-sm h-[100%] transition-colors"></div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -132,14 +166,88 @@ export default function LandingPage() {
           <div className="relative mx-auto max-w-5xl">
             <div className="bg-slate-100 rounded-2xl p-2 md:p-4 shadow-2xl border border-slate-200">
               <div className="aspect-[16/9] bg-white rounded-xl overflow-hidden border border-slate-200 flex flex-col">
-                 <div className="h-10 bg-slate-50 border-b flex items-center px-4 gap-2">
+                 <div className="h-10 bg-slate-100 border-b border-slate-200 flex items-center px-4 gap-2">
                     <div className="w-3 h-3 rounded-full bg-red-400"></div>
                     <div className="w-3 h-3 rounded-full bg-amber-400"></div>
                     <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                    <div className="mx-auto h-4 w-48 bg-white rounded-md border border-slate-200 shadow-sm flex items-center justify-center">
+                      <div className="w-24 h-1.5 bg-slate-200 rounded-full"></div>
+                    </div>
                  </div>
-                 <div className="flex-1 flex items-center justify-center bg-slate-50 text-slate-400 flex-col gap-4">
-                    <Activity className="w-20 h-20 text-indigo-200" />
-                    <p className="font-medium text-lg">Aperçu du Moteur EVM et des Courbes en S</p>
+                 
+                 <div className="flex-1 flex overflow-hidden">
+                    {/* App Sidebar */}
+                    <div className="w-48 bg-[#0A1628] border-r border-slate-200 p-4 flex flex-col gap-4 hidden sm:flex">
+                       <div className="flex items-center gap-2 mb-4">
+                         <div className="w-6 h-6 bg-green-500 rounded-md"></div>
+                         <div className="h-4 bg-white opacity-90 rounded w-24"></div>
+                       </div>
+                       <div className="h-8 bg-indigo-600 rounded-md w-full opacity-90"></div>
+                       <div className="h-8 bg-white/5 hover:bg-white/10 rounded-md w-full border border-white/5 transition-colors"></div>
+                       <div className="h-8 bg-white/5 hover:bg-white/10 rounded-md w-full border border-white/5 transition-colors"></div>
+                       <div className="h-8 bg-white/5 hover:bg-white/10 rounded-md w-full border border-white/5 transition-colors"></div>
+                    </div>
+                    
+                    {/* App Main */}
+                    <div className="flex-1 bg-slate-50 p-4 sm:p-6 flex flex-col gap-6 overflow-hidden">
+                       <div className="flex justify-between items-center">
+                         <div>
+                           <div className="h-6 bg-slate-800 rounded w-48 sm:w-64 mb-2"></div>
+                           <div className="h-4 bg-slate-400 rounded w-32 sm:w-96 hidden sm:block"></div>
+                         </div>
+                         <div className="h-9 w-28 bg-indigo-600 rounded-lg shadow-sm"></div>
+                       </div>
+                       
+                       {/* KPI Grid */}
+                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                          {[
+                            {color: 'bg-blue-600', w: 'w-24', t: 'Budget (BAC)'}, 
+                            {color: 'bg-emerald-500', w: 'w-16', t: 'Valeur Acquise (EV)'}, 
+                            {color: 'bg-indigo-500', w: 'w-20', t: 'Coût Réel (AC)'}, 
+                            {color: 'bg-purple-600', w: 'w-28', t: 'Valeur Planifiée (PV)'}
+                          ].map((c, i) => (
+                            <div key={i} className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                               <div className="text-[10px] sm:text-xs text-slate-500 font-medium mb-2">{c.t}</div>
+                               <div className={`h-5 sm:h-6 ${c.color} rounded ${c.w}`}></div>
+                            </div>
+                          ))}
+                       </div>
+
+                       {/* S-Curve Chart Mockup */}
+                       <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-100 p-4 sm:p-6 relative min-h-[150px]">
+                          <div className="flex items-center gap-4 mb-4 sm:mb-6">
+                            <div className="h-4 bg-slate-800 rounded w-32 sm:w-48"></div>
+                            <div className="flex gap-3 ml-auto">
+                              <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-slate-400"></div><div className="h-2 w-8 bg-slate-200 rounded hidden sm:block"></div></div>
+                              <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-green-500"></div><div className="h-2 w-8 bg-slate-200 rounded hidden sm:block"></div></div>
+                              <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-red-500"></div><div className="h-2 w-8 bg-slate-200 rounded hidden sm:block"></div></div>
+                            </div>
+                          </div>
+                          
+                          {/* Chart Grid */}
+                          <div className="absolute inset-0 top-14 sm:top-16 left-6 right-6 bottom-8 border-l border-b border-slate-200">
+                             <div className="w-full h-1/4 border-t border-slate-100 border-dashed"></div>
+                             <div className="w-full h-1/4 border-t border-slate-100 border-dashed"></div>
+                             <div className="w-full h-1/4 border-t border-slate-100 border-dashed"></div>
+                             <div className="w-full h-1/4 border-t border-slate-100 border-dashed"></div>
+                             
+                             {/* S-Curve SVG */}
+                             <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
+                                {/* PV Curve (Planned) */}
+                                <path d="M 0 100 C 30 95, 50 10, 100 0" fill="none" stroke="#94a3b8" strokeWidth="2" strokeDasharray="4 4" />
+                                {/* EV Curve (Earned) */}
+                                <path d="M 0 100 C 25 95, 45 40, 65 30" fill="none" stroke="#10b981" strokeWidth="3" className="drop-shadow-sm" />
+                                {/* AC Curve (Actual) */}
+                                <path d="M 0 100 C 20 95, 40 50, 65 20" fill="none" stroke="#ef4444" strokeWidth="3" className="drop-shadow-sm" />
+                             </svg>
+                             
+                             {/* Current period marker */}
+                             <div className="absolute top-0 bottom-0 left-[65%] border-l-2 border-indigo-500 border-dashed">
+                               <div className="absolute -top-3 -translate-x-1/2 bg-indigo-500 text-white text-[9px] px-1.5 py-0.5 rounded">Aujourd'hui</div>
+                             </div>
+                          </div>
+                       </div>
+                    </div>
                  </div>
               </div>
             </div>
