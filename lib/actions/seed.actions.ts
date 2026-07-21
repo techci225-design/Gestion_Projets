@@ -31,6 +31,18 @@ export async function seedDemoProject(organizationId: string) {
 
   const projectId = project.id
 
+  // Add the user as owner of the project to satisfy RLS for subsequent inserts
+  const { error: memberError } = await supabase.from('project_members').insert({
+    project_id: projectId,
+    user_id: user.id,
+    role: 'owner'
+  })
+
+  if (memberError) {
+    console.error('Demo project member error:', memberError)
+    return { error: 'Erreur lors de la création du membre du projet.' }
+  }
+
   // 2. Add Funding Sources
   const { data: badSource, error: badError } = await supabase
     .from('funding_sources')

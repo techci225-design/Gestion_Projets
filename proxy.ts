@@ -1,5 +1,5 @@
+import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
 
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -31,23 +31,29 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/register') &&
-    !request.nextUrl.pathname.startsWith('/auth')
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
+  const url = request.nextUrl
+  
+  const isDashboard = url.pathname.startsWith('/projects') || 
+                      url.pathname.startsWith('/organization') || 
+                      url.pathname.startsWith('/settings') || 
+                      url.pathname === '/onboarding'
+                      
+  const isAdmin = url.pathname.startsWith('/admin')
+
+  // Redirection logiques
+  if (isDashboard && !user) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // If user is signed in and the current path is /login, redirect the user to /projects
-  if (user && request.nextUrl.pathname.startsWith('/login')) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/projects'
-    return NextResponse.redirect(url)
+  if (isAdmin) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+    // Check if super admin
+    const { data: profile } = await supabase.from('profiles').select('is_super_admin').eq('id', user.id).single()
+    if (!profile?.is_super_admin) {
+      return NextResponse.redirect(new URL('/projects', request.url))
+    }
   }
 
   return supabaseResponse
@@ -57,11 +63,12 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
+     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
+     * - public files
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
