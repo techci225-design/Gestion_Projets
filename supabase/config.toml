@@ -415,3 +415,7 @@ enabled = true
 
 [functions.check-alerts]
 verify_jwt = false
+
+[functions.weekly-report]
+verify_jwt = false
+schedule = "0 7 * * 1"

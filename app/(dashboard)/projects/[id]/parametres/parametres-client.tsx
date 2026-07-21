@@ -42,8 +42,11 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
     start_date: project?.start_date || '',
     end_date: project?.end_date || '',
     description: project?.description || '',
-    status: project?.status || 'actif'
+    status: project?.status || 'actif',
+    evm_control_date: project?.evm_control_date ? new Date(project.evm_control_date).toISOString().split('T')[0] : ''
   })
+
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
 
   const handleUpdateGeneral = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -64,6 +67,16 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
     } else {
       router.push('/projects')
     }
+  }
+
+  const handleArchiveProject = async () => {
+    if (!confirm('Voulez-vous vraiment archiver ce projet ? Il passera en statut "Clos".')) return;
+    setGeneralError('')
+    startTransition(async () => {
+      const res = await updateProject(projectId, { ...formData, status: 'clos' })
+      if (res?.error) setGeneralError(res.error)
+      else setFormData({ ...formData, status: 'clos' })
+    })
   }
 
   const canEdit = ['owner', 'comptable', 'chef_projet'].includes(userRole) || userRole === undefined
@@ -212,7 +225,26 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                       required
                     />
                   </div>
-                  <div className="space-y-2 md:col-span-2">
+                  <div className="space-y-2 md:col-span-2 border-t border-border pt-4 mt-2">
+                    <h4 className="font-medium text-text-primary text-sm flex items-center gap-2">
+                      <Settings className="w-4 h-4 text-primary" /> Paramètres EVM
+                    </h4>
+                    <p className="text-xs text-text-secondary mb-2">La date d'arrêté sert de point de référence temporel pour calculer la Valeur Planifiée (PV) au prorata.</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-text-primary">Date d'arrêté des comptes (EVM)</label>
+                        <input 
+                          type="date" 
+                          value={formData.evm_control_date}
+                          onChange={e => setFormData({...formData, evm_control_date: e.target.value})}
+                          disabled={isPending}
+                          className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:border-primary disabled:opacity-50"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2 md:col-span-2 border-t border-border pt-4">
                     <label className="block text-sm font-medium text-text-primary">Statut</label>
                     <select 
                       value={formData.status}
@@ -255,10 +287,26 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                   <p className="text-sm text-text-secondary mt-1">Actions irréversibles concernant ce projet.</p>
                 </div>
                 
-                <div className="bg-danger/5 border border-danger/20 rounded-xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="bg-warning/10 border border-warning/20 rounded-xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                   <div>
+                    <h4 className="font-bold text-warning-dark">Archiver le projet</h4>
+                    <p className="text-sm text-warning-dark/80 mt-1 max-w-xl">
+                      Le projet passera en statut "Clos". Il n'apparaîtra plus dans les rapports actifs et ne générera plus d'alertes.
+                    </p>
+                  </div>
+                  <button 
+                    onClick={handleArchiveProject}
+                    disabled={isPending || formData.status === 'clos'}
+                    className="px-4 py-2 bg-warning text-white rounded-lg text-sm font-medium hover:bg-warning/90 transition-colors disabled:opacity-50 whitespace-nowrap"
+                  >
+                    {formData.status === 'clos' ? 'Déjà archivé' : 'Archiver ce projet'}
+                  </button>
+                </div>
+
+                <div className="bg-danger/5 border border-danger/20 rounded-xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div className="flex-1">
                     <h4 className="font-bold text-text-primary">Supprimer le projet</h4>
-                    <p className="text-sm text-text-secondary mt-1 max-w-xl">Cette action est définitive. Toutes les données associées (tâches, budget, documents) seront perdues si la suppression est forcée, ou conservées si le projet est simplement archivé (clos).</p>
+                    <p className="text-sm text-text-secondary mt-1 max-w-xl">Cette action est définitive. Toutes les données associées (tâches, budget, documents) doivent d'abord être supprimées.</p>
                   </div>
                   
                   {!showDeleteConfirm ? (
@@ -269,21 +317,33 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                       Supprimer ce projet
                     </button>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <button 
-                        onClick={() => setShowDeleteConfirm(false)}
-                        disabled={isDeleting}
-                        className="px-4 py-2 bg-surface border border-border text-text-secondary rounded-lg text-sm font-medium hover:bg-surface-hover transition-colors disabled:opacity-50"
-                      >
-                        Annuler
-                      </button>
-                      <button 
-                        onClick={handleDeleteProject}
-                        disabled={isDeleting}
-                        className="px-4 py-2 bg-danger text-white rounded-lg text-sm font-medium hover:bg-danger/90 transition-colors disabled:opacity-50 flex items-center gap-2"
-                      >
-                        {isDeleting ? 'Suppression...' : 'Oui, supprimer définitivement'}
-                      </button>
+                    <div className="flex flex-col items-end gap-3 w-full max-w-xs">
+                      <div className="w-full">
+                        <label className="block text-xs font-medium text-danger mb-1">Tapez <strong>{project?.name}</strong> pour confirmer</label>
+                        <input
+                          type="text"
+                          value={deleteConfirmText}
+                          onChange={e => setDeleteConfirmText(e.target.value)}
+                          placeholder="Nom du projet"
+                          className="w-full px-3 py-2 bg-white border border-danger/30 rounded-lg text-sm focus:outline-none focus:border-danger focus:ring-1 focus:ring-danger"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}
+                          disabled={isDeleting}
+                          className="px-4 py-2 bg-surface border border-border text-text-secondary rounded-lg text-sm font-medium hover:bg-surface-hover transition-colors disabled:opacity-50"
+                        >
+                          Annuler
+                        </button>
+                        <button 
+                          onClick={handleDeleteProject}
+                          disabled={isDeleting || deleteConfirmText !== project?.name}
+                          className="px-4 py-2 bg-danger text-white rounded-lg text-sm font-medium hover:bg-danger/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                        >
+                          {isDeleting ? 'Suppression...' : 'Supprimer'}
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

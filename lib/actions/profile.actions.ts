@@ -28,16 +28,18 @@ export async function updateProfile(data: { full_name: string, phone?: string })
   return { success: true }
 }
 
-export async function updateNotificationPrefs(prefs: any) {
+export async function updateNotificationPrefs(prefs: {
+  notif_email_alerts?: boolean;
+  notif_email_weekly?: boolean;
+  notif_push_critical?: boolean;
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Non authentifié' }
 
   const { error } = await supabase
     .from('profiles')
-    .update({
-      notification_prefs: prefs
-    })
+    .update(prefs)
     .eq('id', user.id)
 
   if (error) {

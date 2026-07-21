@@ -214,6 +214,7 @@ export async function updateProject(projectId: string, payload: {
   end_date: string
   description?: string
   status: string
+  evm_control_date?: string
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -257,6 +258,12 @@ export async function updateProject(projectId: string, payload: {
     return { error: "Vous n'avez pas les droits pour modifier ce projet." }
   }
 
+  const { data: currentProject } = await adminClient
+    .from('projects')
+    .select('status, name')
+    .eq('id', projectId)
+    .single()
+
   const { error } = await adminClient
     .from('projects')
     .update({
@@ -265,12 +272,45 @@ export async function updateProject(projectId: string, payload: {
       start_date: payload.start_date,
       end_date: payload.end_date,
       description: payload.description,
-      status: payload.status
+      status: payload.status,
+      evm_control_date: payload.evm_control_date
     })
     .eq('id', projectId)
 
   if (error) {
     return { error: error.message }
+  }
+
+  // Si le projet est passé en statut clos, envoyer un email
+  if (currentProject && currentProject.status !== 'clos' && payload.status === 'clos') {
+    const { data: ownerData } = await adminClient
+      .from('project_members')
+      .select('user_id')
+      .eq('project_id', projectId)
+      .eq('role', 'owner')
+      .limit(1)
+
+    if (ownerData && ownerData.length > 0) {
+      const { data: userData } = await adminClient.auth.admin.getUserById(ownerData[0].user_id)
+      const toEmail = userData?.user?.email
+      const RESEND_API_KEY = process.env.RESEND_API_KEY
+      
+      if (toEmail && RESEND_API_KEY) {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${RESEND_API_KEY}`,
+          },
+          body: JSON.stringify({
+            from: 'ProjetPilote <notifications@projetpilote.com>',
+            to: [toEmail],
+            subject: `📦 Projet Archivé : ${payload.name}`,
+            html: `<p>Bonjour,</p><p>Le projet <strong>${payload.name}</strong> a été archivé avec succès.</p>`,
+          }),
+        }).catch(console.error)
+      }
+    }
   }
 
   revalidatePath('/projects')
@@ -336,6 +376,19 @@ export async function deleteProject(projectId: string) {
     return { error: "Impossible de supprimer le projet car il contient des tâches ou un budget. Veuillez les supprimer d'abord, ou archivez le projet en le passant au statut 'Clos'." }
   }
 
+  // Get project name and owner before deletion
+  const { data: projectData } = await adminClient.from('projects').select('name').eq('id', projectId).single()
+  const projectName = projectData?.name || 'Projet inconnu'
+
+  const { data: ownerData } = await adminClient
+    .from('project_members')
+    .select('user_id')
+    .eq('project_id', projectId)
+    .eq('role', 'owner')
+    .limit(1)
+  
+  const ownerId = ownerData?.[0]?.user_id
+
   // If no tasks/budget, we can safely delete the related minor entities first
   await adminClient.from('project_members').delete().eq('project_id', projectId)
   await adminClient.from('funding_sources').delete().eq('project_id', projectId)
@@ -351,6 +404,28 @@ export async function deleteProject(projectId: string) {
   if (error) {
     console.error('Delete project error:', error)
     return { error: `Erreur technique lors de la suppression. Des données liées existent peut-être encore. Details: ${error.message || JSON.stringify(error)}` }
+  }
+
+  // Send email
+  if (ownerId) {
+    const { data: userData } = await adminClient.auth.admin.getUserById(ownerId)
+    const toEmail = userData?.user?.email
+    const RESEND_API_KEY = process.env.RESEND_API_KEY
+    if (toEmail && RESEND_API_KEY) {
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${RESEND_API_KEY}`,
+        },
+        body: JSON.stringify({
+          from: 'ProjetPilote <notifications@projetpilote.com>',
+          to: [toEmail],
+          subject: `🗑️ Projet Supprimé : ${projectName}`,
+          html: `<p>Bonjour,</p><p>Le projet <strong>${projectName}</strong> a été définitivement supprimé.</p>`,
+        }),
+      }).catch(console.error)
+    }
   }
 
   revalidatePath('/projects')

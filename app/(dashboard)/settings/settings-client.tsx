@@ -13,11 +13,9 @@ export interface SettingsProfile {
   full_name: string
   email: string
   phone: string | null
-  notification_prefs: {
-    budget_alerts?: boolean
-    market_deadlines?: boolean
-    critical_risks?: boolean
-  } | null
+  notif_email_alerts: boolean | null
+  notif_email_weekly: boolean | null
+  notif_push_critical: boolean | null
 }
 
 export function SettingsClient({ profile, isOwner }: { profile: SettingsProfile, isOwner?: boolean }) {
@@ -26,10 +24,9 @@ export function SettingsClient({ profile, isOwner }: { profile: SettingsProfile,
   const { activeOrganization } = useOrganization()
   
   const defaultPrefs = {
-    budget_alerts: true,
-    market_deadlines: true,
-    critical_risks: true,
-    ...profile.notification_prefs
+    notif_email_alerts: profile.notif_email_alerts ?? true,
+    notif_email_weekly: profile.notif_email_weekly ?? true,
+    notif_push_critical: profile.notif_push_critical ?? true,
   }
 
   // State for Profile Form
@@ -269,9 +266,9 @@ export function SettingsClient({ profile, isOwner }: { profile: SettingsProfile,
             </p>
 
             {[
-              { id: 'budget_alerts', label: 'Alertes budgétaires', desc: 'Seuils 80% et 100%' },
-              { id: 'market_deadlines', label: 'Échéances marchés', desc: '< 15 jours' },
-              { id: 'critical_risks', label: 'Risques critiques', desc: 'Criticité = 9' }
+              { id: 'notif_email_alerts', label: 'Alertes par email (Instantané)', desc: 'Dépassement de budget, risques critiques' },
+              { id: 'notif_email_weekly', label: 'Rapport hebdomadaire', desc: 'Résumé des projets et échéances' },
+              { id: 'notif_push_critical', label: 'Notifications Push (UI)', desc: 'Alertes urgentes sur le tableau de bord' }
             ].map((item) => (
               <div key={item.id} className="flex items-center justify-between">
                 <div>

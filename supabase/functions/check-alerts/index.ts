@@ -19,6 +19,8 @@ Deno.serve(async (req) => {
 
     let notificationsCreated = 0
 
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+
     // Fonction utilitaire pour éviter les doublons dans les dernières 24h
     const notifyMembers = async (
       projectId: string, 
@@ -26,7 +28,8 @@ Deno.serve(async (req) => {
       title: string, 
       body: string, 
       link: string, 
-      roles: string[]
+      roles: string[],
+      projectName: string
     ) => {
       // Vérifier si une notification similaire existe déjà dans les 24h
       const { data: existingNotif } = await supabase
@@ -60,6 +63,55 @@ Deno.serve(async (req) => {
 
         const { error } = await supabase.from('notifications').insert(notificationsToInsert)
         if (!error) notificationsCreated += notificationsToInsert.length
+
+        // Envoi d'emails
+        for (const m of members) {
+          // Check preferences
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name, notif_email_alerts')
+            .eq('id', m.user_id)
+            .single()
+
+          // If preference is explicitly false, skip email
+          if (profile && profile.notif_email_alerts === false) continue;
+
+          const firstName = profile?.full_name ? profile.full_name.split(' ')[0] : 'Utilisateur'
+
+          const { data: userData } = await supabase.auth.admin.getUserById(m.user_id)
+          const toEmail = userData?.user?.email
+
+          if (toEmail) {
+            const emailHtml = `
+              <div style="font-family: sans-serif; color: #1E3A5F; line-height: 1.5;">
+                <p>Bonjour ${firstName},</p>
+                <p>${body}</p>
+                <p>Action recommandée : Connectez-vous pour vérifier cette alerte.</p>
+                <p>Accédez au tableau de bord :<br/>
+                <a href="https://gestion-projets-e3uj.vercel.app${link}" style="color: #16A34A; font-weight: bold;">Voir le projet</a></p>
+                <p>ProjetPilote — TSBC<br/>tsbcafrique@yahoo.fr</p>
+              </div>
+            `
+            
+            if (RESEND_API_KEY) {
+              await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${RESEND_API_KEY}`,
+                },
+                body: JSON.stringify({
+                  from: 'ProjetPilote <alerts@projetpilote.com>',
+                  to: [toEmail],
+                  subject: `${title} — ${projectName}`,
+                  html: emailHtml,
+                }),
+              }).catch(e => console.error("Email send error", e))
+            } else {
+              console.log(`[Email Log] To: ${toEmail}, Subject: ${title} — ${projectName}`)
+            }
+          }
+        }
       }
     }
 
@@ -83,7 +135,8 @@ Deno.serve(async (req) => {
               'Budget dépassé',
               `La ligne budgétaire "${b.name}" a dépassé 100% de consommation.`,
               `/projects/${pid}/budget`,
-              ['owner', 'chef_projet', 'comptable']
+              ['owner', 'chef_projet', 'comptable'],
+              project.name
             )
           } else if (b.taux_consommation >= 0.8) {
             await notifyMembers(
@@ -92,7 +145,8 @@ Deno.serve(async (req) => {
               'Alerte budget (80%)',
               `La ligne budgétaire "${b.name}" a atteint ${Math.round(b.taux_consommation * 100)}% de consommation.`,
               `/projects/${pid}/budget`,
-              ['owner', 'chef_projet', 'comptable']
+              ['owner', 'chef_projet', 'comptable'],
+              project.name
             )
           }
         }
@@ -121,7 +175,8 @@ Deno.serve(async (req) => {
               'Échéance de marché dépassée',
               `Le marché "${m.description}" a une échéance dépassée.`,
               `/projects/${pid}/marches`,
-              ['owner', 'chef_projet']
+              ['owner', 'chef_projet'],
+              project.name
             )
           }
           // Echéance proche (dans les 15 jours)
@@ -133,7 +188,8 @@ Deno.serve(async (req) => {
               'Échéance de marché proche',
               `Le marché "${m.description}" arrive à échéance dans moins de 15 jours.`,
               `/projects/${pid}/marches`,
-              ['owner', 'chef_projet']
+              ['owner', 'chef_projet'],
+              project.name
             )
           }
         }
@@ -155,7 +211,8 @@ Deno.serve(async (req) => {
             'Risque Critique Détecté',
             `Le risque "${r.title}" est classé critique (9/9).`,
             `/projects/${pid}/risques`,
-            ['owner', 'chef_projet']
+            ['owner', 'chef_projet'],
+            project.name
           )
         }
       }
@@ -175,7 +232,8 @@ Deno.serve(async (req) => {
             'Alerte EVM : Coût',
             `L'indice de performance des coûts (CPI) est à ${Number(evm.cpi_global).toFixed(2)}. Un dépassement de budget est probable.`,
             `/projects/${pid}/evm`,
-            ['owner', 'chef_projet']
+            ['owner', 'chef_projet'],
+            project.name
           )
         }
         if (evm.spi_global !== null && evm.spi_global < 0.90) {
@@ -185,7 +243,8 @@ Deno.serve(async (req) => {
             'Alerte EVM : Délai',
             `L'indice de performance des délais (SPI) est à ${Number(evm.spi_global).toFixed(2)}. Un retard est probable.`,
             `/projects/${pid}/evm`,
-            ['owner', 'chef_projet']
+            ['owner', 'chef_projet'],
+            project.name
           )
         }
       }
