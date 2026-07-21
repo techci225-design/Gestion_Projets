@@ -191,6 +191,17 @@ Deno.serve(async (req) => {
       }
     }
 
+    // 2. Nettoyage des invitations expirées
+    const { error: expireError } = await supabase
+      .from('invitations')
+      .update({ status: 'expired' })
+      .eq('status', 'pending')
+      .lt('expires_at', new Date().toISOString())
+
+    if (expireError) {
+      console.error('Erreur expiration invitations:', expireError)
+    }
+
     return new Response(JSON.stringify({ success: true, notificationsCreated }), {
       headers: { 'Content-Type': 'application/json' },
     })

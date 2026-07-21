@@ -2,10 +2,10 @@
 
 import { useState } from 'react'
 import { Plus, MoreVertical, Edit2, Trash2 } from 'lucide-react'
-import { InviteMemberModal } from './invite-member-modal'
 import { removeMember, updateMemberRole } from '@/lib/actions/members.actions'
+import { cancelInvitation, sendInvitation } from '@/lib/actions/invitations.actions'
 
-export function MembresClient({ projectId, members, allProfiles }: { projectId: string, members: any[], allProfiles: any[] }) {
+export function MembresClient({ projectId, organizationId, members, pendingInvitations }: { projectId: string, organizationId: string, members: any[], pendingInvitations: any[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
@@ -25,6 +25,27 @@ export function MembresClient({ projectId, members, allProfiles }: { projectId: 
     setIsUpdating(false)
     setActiveDropdown(null)
     if (res?.error) alert(res.error)
+  }
+
+  const handleCancelInvitation = async (invId: string) => {
+    if (!confirm('Voulez-vous vraiment annuler cette invitation ?')) return
+    setIsUpdating(true)
+    const res = await cancelInvitation(invId)
+    setIsUpdating(false)
+    if (res?.error) alert(res.error)
+  }
+
+  const handleResendInvitation = async (invitation: any) => {
+    setIsUpdating(true)
+    const res = await sendInvitation({
+      project_id: projectId,
+      organization_id: organizationId,
+      email: invitation.invited_email,
+      role: invitation.invited_role
+    })
+    setIsUpdating(false)
+    if (res?.error) alert(res.error)
+    else alert('Invitation renvoyée avec succès !')
   }
 
   const getRoleBadge = (role: string) => {
@@ -140,7 +161,9 @@ export function MembresClient({ projectId, members, allProfiles }: { projectId: 
               })}
               {members.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="p-8 text-center text-text-secondary">Aucun membre enregistré</td>
+                  <td colSpan={4} className="p-8 text-center text-text-secondary border-b border-border">
+                    Aucun membre dans ce projet.
+                  </td>
                 </tr>
               )}
             </tbody>
@@ -148,7 +171,73 @@ export function MembresClient({ projectId, members, allProfiles }: { projectId: 
         </div>
       </div>
 
-      <InviteMemberModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} projectId={projectId} allProfiles={allProfiles} />
+      {pendingInvitations && pendingInvitations.length > 0 && (
+        <div className="mt-8 bg-surface-container-lowest rounded-xl shadow-sm border border-border flex flex-col overflow-hidden">
+          <div className="p-4 border-b border-border bg-surface-dim">
+            <h2 className="text-lg font-semibold text-text-primary">Invitations en attente</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[800px]">
+              <thead>
+                <tr className="bg-surface-dim border-b border-border">
+                  <th className="p-4 text-xs font-semibold text-text-secondary">Email invité</th>
+                  <th className="p-4 text-xs font-semibold text-text-secondary">Rôle</th>
+                  <th className="p-4 text-xs font-semibold text-text-secondary">Invité par</th>
+                  <th className="p-4 text-xs font-semibold text-text-secondary">Date d'envoi</th>
+                  <th className="p-4 text-xs font-semibold text-text-secondary">Expire le</th>
+                  <th className="p-4 text-xs font-semibold text-text-secondary text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm">
+                {pendingInvitations.map((inv, index) => (
+                  <tr key={inv.id} className={`border-b border-border hover:bg-surface-bright transition-colors ${index % 2 !== 0 ? 'bg-surface-dim/30' : ''}`}>
+                    <td className="p-4">
+                      <div className="font-medium text-text-primary">{inv.invited_email}</div>
+                    </td>
+                    <td className="p-4">
+                      {getRoleBadge(inv.invited_role)}
+                    </td>
+                    <td className="p-4 text-text-secondary">
+                      {inv.invited_by_profile?.full_name || 'Inconnu'}
+                    </td>
+                    <td className="p-4 text-text-secondary">
+                      {new Date(inv.created_at).toLocaleDateString('fr-FR')}
+                    </td>
+                    <td className="p-4 text-warning-dark">
+                      {new Date(inv.expires_at).toLocaleDateString('fr-FR')}
+                    </td>
+                    <td className="p-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button 
+                          disabled={isUpdating}
+                          onClick={() => handleResendInvitation(inv)}
+                          className="text-xs text-primary hover:underline px-2 py-1 disabled:opacity-50"
+                        >
+                          Renvoyer
+                        </button>
+                        <button 
+                          disabled={isUpdating}
+                          onClick={() => handleCancelInvitation(inv.id)}
+                          className="text-xs text-danger hover:underline px-2 py-1 disabled:opacity-50"
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      <InviteMemberModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        projectId={projectId}
+        organizationId={organizationId}
+      />
     </div>
   )
 }

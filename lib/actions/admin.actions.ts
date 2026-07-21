@@ -88,7 +88,8 @@ export async function getAdminUsers() {
           plan
         )
       ),
-      project_members ( count )
+      project_members ( count ),
+      invitations!invited_by ( id, status )
     `)
     .order('created_at', { ascending: false })
   
@@ -100,6 +101,7 @@ export async function getAdminUsers() {
   // Format the data to match the expected flat structure
   const formattedData = data.map((p: any) => {
     const orgMember = p.organization_members && p.organization_members.length > 0 ? p.organization_members[0] : null
+    const pendingInvitations = p.invitations ? p.invitations.filter((i: any) => i.status === 'pending').length : 0
     return {
       id: p.id,
       full_name: p.full_name,
@@ -109,7 +111,8 @@ export async function getAdminUsers() {
       organization_name: orgMember?.organizations?.name || null,
       organization_plan: orgMember?.organizations?.plan || null,
       org_role: orgMember?.org_role || null,
-      nb_projects: p.project_members && p.project_members.length > 0 ? p.project_members[0].count : 0
+      nb_projects: p.project_members && p.project_members.length > 0 ? p.project_members[0].count : 0,
+      pending_invitations: pendingInvitations
     }
   })
   

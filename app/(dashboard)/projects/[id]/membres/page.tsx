@@ -22,6 +22,13 @@ export default async function MembresPage({ params }: { params: Promise<{ id: st
     .select('*, profiles(email, full_name)')
     .eq('project_id', id)
 
+  const { data: invitations } = await supabase
+    .from('invitations')
+    .select('*, invited_by_profile:profiles!invited_by(full_name)')
+    .eq('project_id', id)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false })
+
   const { data: profiles } = await supabase
     .from('profiles')
     .select('id, email, full_name')
@@ -30,8 +37,9 @@ export default async function MembresPage({ params }: { params: Promise<{ id: st
   return (
     <MembresClient 
       projectId={id} 
+      organizationId={project.organization_id}
       members={members || []} 
-      allProfiles={profiles || []}
+      pendingInvitations={invitations || []}
     />
   )
 }

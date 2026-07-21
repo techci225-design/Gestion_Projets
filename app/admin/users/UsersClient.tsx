@@ -87,6 +87,7 @@ export function UsersClient({ users }: { users: any[] }) {
               <th className="px-3 py-3 font-semibold">Organisation</th>
               <th className="px-3 py-3 font-semibold">Rôle</th>
               <th className="px-3 py-3 font-semibold text-center">Projets</th>
+              <th className="px-3 py-3 font-semibold text-center">Invitations</th>
               <th className="px-3 py-3 font-semibold">Inscrit le</th>
               <th className="px-3 py-3 font-semibold text-right">Actions</th>
             </tr>
@@ -94,7 +95,7 @@ export function UsersClient({ users }: { users: any[] }) {
           <tbody className="divide-y divide-gray-100">
             {filteredUsers.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
                   Aucun utilisateur trouvé
                 </td>
               </tr>
@@ -141,6 +142,15 @@ export function UsersClient({ users }: { users: any[] }) {
                   </td>
                   <td className="px-3 py-3 text-center font-medium text-gray-900">
                     {user.nb_projects || 0}
+                  </td>
+                  <td className="px-3 py-3 text-center font-medium text-gray-900">
+                    {user.pending_invitations > 0 ? (
+                      <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
+                        {user.pending_invitations} en attente
+                      </span>
+                    ) : (
+                      <span className="text-gray-400">0</span>
+                    )}
                   </td>
                   <td className="px-3 py-3 text-gray-500 whitespace-nowrap text-xs">
                     {new Date(user.created_at).toLocaleDateString('fr-FR')}
