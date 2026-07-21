@@ -52,9 +52,8 @@ export async function seedDemoProject(organizationId: string) {
     .insert({
       project_id: projectId,
       name: "Banque Africaine de Développement (BAD)",
-      code: "BAD",
-      currency: "XOF",
-      total_amount: 80000000
+      type: "bailleur",
+      amount_committed: 80000000
     })
     .select()
     .single()
@@ -64,9 +63,8 @@ export async function seedDemoProject(organizationId: string) {
     .insert({
       project_id: projectId,
       name: "Contrepartie État",
-      code: "ETAT",
-      currency: "XOF",
-      total_amount: 20000000
+      type: "contrepartie",
+      amount_committed: 20000000
     })
     .select()
     .single()
@@ -75,12 +73,12 @@ export async function seedDemoProject(organizationId: string) {
 
   // 3. Add Budget Lines
   const budgetLinesData = [
-    { code: "1.1", name: "Études et conception", initial_allocated_amount: 8000000, funding_source_id: badSource.id, project_id: projectId },
-    { code: "1.2", name: "Travaux de génie civil", initial_allocated_amount: 45000000, funding_source_id: badSource.id, project_id: projectId },
-    { code: "1.3", name: "Équipements hydrauliques", initial_allocated_amount: 18000000, funding_source_id: badSource.id, project_id: projectId },
-    { code: "1.4", name: "Renforcement des capacités", initial_allocated_amount: 9000000, funding_source_id: badSource.id, project_id: projectId },
-    { code: "2.1", name: "Fonctionnement et mission", initial_allocated_amount: 12000000, funding_source_id: etatSource.id, project_id: projectId },
-    { code: "2.2", name: "Audit et évaluation", initial_allocated_amount: 8000000, funding_source_id: etatSource.id, project_id: projectId }
+    { code: "1.1", label: "Études et conception", initial_allocated_amount: 8000000, funding_source_id: badSource.id, project_id: projectId },
+    { code: "1.2", label: "Travaux de génie civil", initial_allocated_amount: 45000000, funding_source_id: badSource.id, project_id: projectId },
+    { code: "1.3", label: "Équipements hydrauliques", initial_allocated_amount: 18000000, funding_source_id: badSource.id, project_id: projectId },
+    { code: "1.4", label: "Renforcement des capacités", initial_allocated_amount: 9000000, funding_source_id: badSource.id, project_id: projectId },
+    { code: "2.1", label: "Fonctionnement et mission", initial_allocated_amount: 12000000, funding_source_id: etatSource.id, project_id: projectId },
+    { code: "2.2", label: "Audit et évaluation", initial_allocated_amount: 8000000, funding_source_id: etatSource.id, project_id: projectId }
   ]
 
   const { data: budgetLines, error: blError } = await adminClient
@@ -94,12 +92,12 @@ export async function seedDemoProject(organizationId: string) {
 
   // 4. Add Operations Journal
   const operationsData = [
-    { project_id: projectId, reference: "T-001", description: "Études préliminaires (Acompte)", date: "2026-02-15", budget_line_id: blMap["1.1"], status: "decaisse", planned_cost: 8000000, actual_cost: 7800000 },
-    { project_id: projectId, reference: "T-002", description: "Avance de démarrage", date: "2026-03-01", budget_line_id: blMap["1.2"], status: "engage", planned_cost: 45000000 },
-    { project_id: projectId, reference: "T-003", description: "Bon de commande Pompes", date: "2026-04-10", budget_line_id: blMap["1.3"], status: "planifie", planned_cost: 18000000 },
-    { project_id: projectId, reference: "T-004", description: "Ateliers de formation", date: "2026-09-01", budget_line_id: blMap["1.4"], status: "planifie", planned_cost: 9000000 },
-    { project_id: projectId, reference: "T-005", description: "Frais de mission Q1-Q2", date: "2026-06-15", budget_line_id: blMap["2.1"], status: "decaisse", planned_cost: 12000000, actual_cost: 12400000 },
-    { project_id: projectId, reference: "T-006", description: "Contrat cabinet d'audit", date: "2026-06-01", budget_line_id: blMap["2.2"], status: "planifie", planned_cost: 8000000 }
+    { project_id: projectId, task_code: "T-001", phase_wbs: "Études préliminaires (Acompte)", budget_line_id: blMap["1.1"], status: "decaisse", planned_cost: 8000000, actual_cost: 7800000 },
+    { project_id: projectId, task_code: "T-002", phase_wbs: "Avance de démarrage", budget_line_id: blMap["1.2"], status: "engage", planned_cost: 45000000 },
+    { project_id: projectId, task_code: "T-003", phase_wbs: "Bon de commande Pompes", budget_line_id: blMap["1.3"], status: "planifie", planned_cost: 18000000 },
+    { project_id: projectId, task_code: "T-004", phase_wbs: "Ateliers de formation", budget_line_id: blMap["1.4"], status: "planifie", planned_cost: 9000000 },
+    { project_id: projectId, task_code: "T-005", phase_wbs: "Frais de mission Q1-Q2", budget_line_id: blMap["2.1"], status: "decaisse", planned_cost: 12000000, actual_cost: 12400000 },
+    { project_id: projectId, task_code: "T-006", phase_wbs: "Contrat cabinet d'audit", budget_line_id: blMap["2.2"], status: "planifie", planned_cost: 8000000 }
   ]
 
   await adminClient.from('operations_journal').insert(operationsData)
@@ -118,28 +116,28 @@ export async function seedDemoProject(organizationId: string) {
 
   // 6. Add Procurement Plan
   const procurementData = [
-    { project_id: projectId, title: "Travaux de réhabilitation", category: "Travaux", method: "Appel d'Offres International", review_type: "A priori", date_avis: "2026-01-15", date_signature: "2026-03-01", amount: 45000000, status: "planifie" },
-    { project_id: projectId, title: "Fourniture équipements", category: "Fournitures", method: "Demande de Cotations", review_type: "A posteriori", date_avis: "2026-04-01", date_signature: "2026-05-15", amount: 18000000, status: "planifie" },
-    { project_id: projectId, title: "Bureau d'études", category: "Services", method: "Sélection sur Qualité et Coût", review_type: "A priori", date_avis: "2025-11-15", date_signature: "2026-01-15", amount: 8000000, status: "planifie" }
+    { project_id: projectId, description: "Travaux de réhabilitation", market_type: "Travaux", method: "Appel d'Offres International", review_type: "a_priori", planned_notice_date: "2026-01-15", contract_signature_date: "2026-03-01", estimated_amount: 45000000, status: "planifie" },
+    { project_id: projectId, description: "Fourniture équipements", market_type: "Fournitures", method: "Demande de Cotations", review_type: "a_posteriori", planned_notice_date: "2026-04-01", contract_signature_date: "2026-05-15", estimated_amount: 18000000, status: "planifie" },
+    { project_id: projectId, description: "Bureau d'études", market_type: "Services", method: "Sélection sur Qualité et Coût", review_type: "a_priori", planned_notice_date: "2025-11-15", contract_signature_date: "2026-01-15", estimated_amount: 8000000, status: "planifie" }
   ]
 
   await adminClient.from('procurement_plan').insert(procurementData)
 
   // 7. Add Risks
   const risksData = [
-    { project_id: projectId, category: "Financier", title: "Retard de décaissement BAD", probability: 2, impact: 3, mitigation_strategy: "Appel de fonds préventif 30j avant échéance", status: "ouvert" },
-    { project_id: projectId, category: "Opérationnel", title: "Retard chantier saison des pluies", probability: 3, impact: 2, mitigation_strategy: "Planning intégrant les mois secs uniquement", status: "ouvert" },
-    { project_id: projectId, category: "Fiduciaire", title: "Dépassement budgétaire travaux", probability: 2, impact: 2, mitigation_strategy: "Supervision mensuelle + ordre de service encadré", status: "ouvert" }
+    { project_id: projectId, category: "Financier", description: "Retard de décaissement BAD", probability: 2, impact: 3, mitigation_strategy: "Appel de fonds préventif 30j avant échéance", status: "ouvert" },
+    { project_id: projectId, category: "Opérationnel", description: "Retard chantier saison des pluies", probability: 3, impact: 2, mitigation_strategy: "Planning intégrant les mois secs uniquement", status: "ouvert" },
+    { project_id: projectId, category: "Fiduciaire", description: "Dépassement budgétaire travaux", probability: 2, impact: 2, mitigation_strategy: "Supervision mensuelle + ordre de service encadré", status: "ouvert" }
   ]
 
   await adminClient.from('risks').insert(risksData)
 
   // 8. Add Logframe
   const logframeData = [
-    { project_id: projectId, level: 1, title: "Améliorer les conditions de vie de 50 000 habitants en zones rurales d'ici 2027", indicators: "Taux d'accès à l'eau potable", baseline: "35%", target: "75%" },
-    { project_id: projectId, level: 2, title: "Réhabiliter 15 ouvrages hydrauliques", indicators: "Nb forages opérationnels", baseline: "4", target: "15" },
-    { project_id: projectId, level: 3, title: "Travaux réalisés et réceptionnés", indicators: "PV de réception", baseline: "0", target: "15 PV" },
-    { project_id: projectId, level: 4, title: "Études topographiques et géotechniques", indicators: "Nb études réalisées", baseline: "0", target: "15" }
+    { project_id: projectId, level: "objectif_global", intervention_label: "Améliorer les conditions de vie de 50 000 habitants en zones rurales d'ici 2027", indicator: "Taux d'accès à l'eau potable", baseline: "35%", target: "75%" },
+    { project_id: projectId, level: "objectif_specifique", intervention_label: "Réhabiliter 15 ouvrages hydrauliques", indicator: "Nb forages opérationnels", baseline: "4", target: "15" },
+    { project_id: projectId, level: "resultat", intervention_label: "Travaux réalisés et réceptionnés", indicator: "PV de réception", baseline: "0", target: "15 PV" },
+    { project_id: projectId, level: "activite", intervention_label: "Études topographiques et géotechniques", indicator: "Nb études réalisées", baseline: "0", target: "15" }
   ]
 
   await adminClient.from('logframe_items').insert(logframeData)
