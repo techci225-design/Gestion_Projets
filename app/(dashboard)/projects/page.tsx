@@ -293,7 +293,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                     <Target className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="text-base sm:text-lg font-bold text-text-primary truncate" title={formatCurrency(totalBudgetActif)}>{formatCurrency(totalBudgetActif)}</div>
+                <div className="text-base sm:text-lg font-bold text-text-primary whitespace-nowrap" title={formatCurrency(totalBudgetActif)}>{formatCurrency(totalBudgetActif, 'FCFA', true)}</div>
               </div>
 
               <div className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between min-w-0">
@@ -303,7 +303,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                     <DollarSign className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="text-base sm:text-lg font-bold text-text-primary truncate" title={formatCurrency(totalDecaisseActif)}>{formatCurrency(totalDecaisseActif)}</div>
+                <div className="text-base sm:text-lg font-bold text-text-primary whitespace-nowrap" title={formatCurrency(totalDecaisseActif)}>{formatCurrency(totalDecaisseActif, 'FCFA', true)}</div>
               </div>
 
               <div className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between">

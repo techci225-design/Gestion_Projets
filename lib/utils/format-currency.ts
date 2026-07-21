@@ -1,6 +1,15 @@
-export function formatCurrency(amount: number | null | undefined, currency: string = 'FCFA'): string {
+export function formatCurrency(amount: number | null | undefined, currency: string = 'FCFA', compact: boolean = false): string {
   if (amount === null || amount === undefined || isNaN(amount)) return `0\u00A0${currency}`
   
+  if (compact) {
+    if (Math.abs(amount) >= 1_000_000_000) {
+      return `${(amount / 1_000_000_000).toLocaleString('fr-FR', { maximumFractionDigits: 1 })}\u00A0Md\u00A0${currency}`
+    }
+    if (Math.abs(amount) >= 1_000_000) {
+      return `${(amount / 1_000_000).toLocaleString('fr-FR', { maximumFractionDigits: 1 })}\u00A0M\u00A0${currency}`
+    }
+  }
+
   // Format with space as thousands separator and no decimals
   let formatted = new Intl.NumberFormat('fr-FR', {
     style: 'decimal',
