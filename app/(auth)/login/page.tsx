@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Eye, EyeOff, Lock, BriefcaseBusiness, Mail } from 'lucide-react'
 import { login } from './actions'
 import { createClient } from '@/lib/supabase/client'
@@ -184,9 +185,9 @@ export default function LoginPage() {
         <div className="text-center mt-5 sm:mt-8">
           <p className="text-xs sm:text-sm text-white/70">
             Pas encore de compte ?{' '}
-            <a href="#" className="font-semibold text-white hover:underline transition-all">
+            <Link href="/register" className="font-semibold text-white hover:underline transition-all">
               Créer un compte
-            </a>
+            </Link>
           </p>
         </div>
       </form>
