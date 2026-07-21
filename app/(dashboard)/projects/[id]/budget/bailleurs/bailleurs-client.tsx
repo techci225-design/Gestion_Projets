@@ -37,7 +37,7 @@ export function BailleursClient({ projectId, bailleurs }: { projectId: string, b
 
   return (
     <div className="p-6 pb-24 md:pb-6">
-      <div className="flex justify-between items-end mb-6">
+      <div className="flex flex-col md:flex-row justify-between md:items-end gap-4 mb-6">
         <div>
           <h2 className="text-3xl font-bold text-primary mb-1">Sources de financement</h2>
           <p className="text-base text-text-secondary">Suivi des engagements et décaissements par bailleur.</p>

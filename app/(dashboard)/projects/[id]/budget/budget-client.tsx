@@ -97,12 +97,12 @@ export function BudgetClient({ items, fundingSources, operations, projectId, isN
         </div>
       )}
       {/* Header Section */}
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-primary mb-1">Budget — Consommation par ligne budgétaire</h2>
-          <p className="text-base text-text-secondary">Suivi détaillé des allocations et décaissements du projet.</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-primary mb-1">Budget — Consommation par ligne budgétaire</h2>
+          <p className="text-sm md:text-base text-text-secondary">Suivi détaillé des allocations et décaissements du projet.</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap items-center gap-2 md:gap-4">
           <select
             value={selectedResponsable}
             onChange={(e) => setSelectedResponsable(e.target.value)}
@@ -128,9 +128,9 @@ export function BudgetClient({ items, fundingSources, operations, projectId, isN
       </div>
 
       {/* Top Summary Card */}
-      <div className="bg-white rounded-lg shadow-sm border border-border p-6">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xl font-semibold text-primary">Taux de consommation total du projet</h3>
+      <div className="bg-white rounded-lg shadow-sm border border-border p-4 md:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+          <h3 className="text-lg md:text-xl font-semibold text-primary">Taux de consommation total du projet</h3>
           <div className="text-3xl font-bold text-primary">
             {Math.round(totalConsumptionRate)}% <span className="text-base font-normal text-text-secondary">consommé</span>
           </div>

@@ -98,7 +98,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
 
   return (
     <div className="flex flex-col space-y-6 min-h-[500px]">
-      <div className="flex justify-between items-end">
+      <div className="flex flex-col md:flex-row justify-between md:items-end gap-4">
         <div>
           <h2 className="text-3xl font-bold text-primary mb-1">Paramètres du Projet</h2>
           <p className="text-base text-text-secondary">Le socle de gouvernance : configurez les référentiels essentiels.</p>
