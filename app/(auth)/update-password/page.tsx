@@ -16,7 +16,7 @@ export default function UpdatePasswordPage() {
   )
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
     
     // First, listen for auth state changes (especially PASSWORD_RECOVERY or SIGNED_IN)
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
