@@ -11,6 +11,21 @@ export default function LoginPage() {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  
+  // Read URL search params to display errors from callbacks
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    const errParam = url.searchParams.get('error')
+    const msgParam = url.searchParams.get('message')
+    if (errParam && errParam !== 'EMAIL_NOT_CONFIRMED') {
+      if (errParam === 'auth-callback') {
+        setError(`Erreur d'authentification. Si vous avez cliqué sur un lien depuis un email, assurez-vous de l'ouvrir dans le même navigateur. Détail: ${msgParam || ''}`)
+      } else {
+        setError(msgParam || errParam)
+      }
+    }
+  }, [])
+
   const [showPassword, setShowPassword] = useState(false)
   const [attemptedEmail, setAttemptedEmail] = useState<string | null>(null)
   const [resendStatus, setResendStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')

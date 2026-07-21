@@ -16,25 +16,35 @@ export default function UpdatePasswordPage() {
   )
 
   useEffect(() => {
-    const checkSession = async () => {
-      // The API route /api/auth/callback already exchanged the PKCE code.
-      // We just need to check if the session exists.
+    let timeoutId: NodeJS.Timeout;
+    
+    // First, listen for auth state changes (especially PASSWORD_RECOVERY or SIGNED_IN)
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        // Session found via event! We can stop checking.
+        clearTimeout(timeoutId);
+        setMessage(null);
+      }
+    });
 
-      // Fallback for implicit flow (hash fragment) or if already logged in
-      const { data: { session } } = await supabase.auth.getSession()
+    const checkSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession()
       if (!session) {
-        // Wait a bit to let the hash fragment be parsed if present
-        setTimeout(async () => {
+        timeoutId = setTimeout(async () => {
           const { data: { session: delayedSession } } = await supabase.auth.getSession()
           if (!delayedSession) {
-            // Log hash to see if it's an implicit flow that failed
             console.log("Hash:", window.location.hash, "Search:", window.location.search)
-            setMessage({ text: 'Lien invalide ou expiré (Session non trouvée). Demandez un nouveau lien.', type: 'error' })
+            setMessage({ text: 'Lien invalide, expiré, ou ouvert dans un autre navigateur. Veuillez recommencer depuis le même navigateur.', type: 'error' })
           }
-        }, 2000)
+        }, 3000)
       }
     }
     checkSession()
+
+    return () => {
+      authListener.subscription.unsubscribe();
+      clearTimeout(timeoutId);
+    }
   }, [supabase.auth])
 
   const handleSubmit = async (e: React.FormEvent) => {
