@@ -1,9 +1,12 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Plus, Download, History, ClipboardList } from 'lucide-react'
+import { Plus, Download, History, ClipboardList, Paperclip } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { AddOperationModal } from './add-operation-modal'
+import { RightDrawer } from '@/components/ui/RightDrawer'
+import { AttachmentsTab } from '@/components/dashboard/AttachmentsTab'
+import { CommentsTab } from '@/components/dashboard/CommentsTab'
 
 export interface OperationJournal {
   id: string
@@ -17,6 +20,7 @@ export interface OperationJournal {
   montant_engage: number
   montant_decaisse: number
   ecart_budgetaire: number
+  attachments_count?: number
   budget_lines?: {
     id: string
     code: string
@@ -26,6 +30,8 @@ export interface OperationJournal {
 
 export function JournalClient({ items, projectId, budgetLines, fundingSources }: { items: OperationJournal[], projectId: string, budgetLines: any[], fundingSources: any[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedOperation, setSelectedOperation] = useState<OperationJournal | null>(null)
+  const [activeTab, setActiveTab] = useState<'details' | 'docs' | 'comments'>('details')
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -122,6 +128,7 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources }:
                   <th className="p-4 whitespace-nowrap">ID Tâche</th>
                   <th className="p-4 whitespace-nowrap">Phase / WBS</th>
                   <th className="p-4">Ligne Budgétaire</th>
+                  <th className="p-4">Docs</th>
                   <th className="p-4">Statut</th>
                   <th className="p-4 text-right whitespace-nowrap">Coût Prévu (FCFA)</th>
                   <th className="p-4 text-right whitespace-nowrap">Coût Réel (FCFA)</th>
@@ -133,7 +140,14 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources }:
               </thead>
               <tbody className="text-text-primary">
                 {items.map((item, idx) => (
-                  <tr key={item.id} className={`border-b border-border/30 h-10 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} ${item.status === 'annule' ? 'opacity-70' : ''}`}>
+                  <tr 
+                    key={item.id} 
+                    className={`border-b border-border/30 h-10 transition-colors cursor-pointer hover:bg-slate-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} ${item.status === 'annule' ? 'opacity-70' : ''}`}
+                    onClick={() => {
+                      setSelectedOperation(item)
+                      setActiveTab('details')
+                    }}
+                  >
                     <td className={`p-4 font-medium text-primary ${item.status === 'annule' ? 'line-through' : ''}`}>
                       {item.task_code}
                     </td>
@@ -142,6 +156,15 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources }:
                     </td>
                     <td className={`p-4 truncate max-w-[200px] ${item.status === 'annule' ? 'line-through' : ''}`}>
                       {item.budget_lines?.code} {item.budget_lines?.label}
+                    </td>
+                    <td className="p-4">
+                      {item.attachments_count && item.attachments_count > 0 ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                          {item.attachments_count} <Paperclip className="w-3 h-3" />
+                        </span>
+                      ) : (
+                        <span className="text-text-tertiary">—</span>
+                      )}
                     </td>
                     <td className="p-4">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium ${getStatusBadge(item.status)}`}>
@@ -186,6 +209,101 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources }:
           fundingSources={fundingSources}
           onClose={() => setIsModalOpen(false)}
         />
+      )}
+
+      {selectedOperation && (
+        <RightDrawer
+          isOpen={!!selectedOperation}
+          onClose={() => setSelectedOperation(null)}
+          title={`Opération ${selectedOperation.task_code}`}
+        >
+          <div className="flex border-b border-border px-4 pt-2">
+            <button
+              onClick={() => setActiveTab('details')}
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'details' ? 'border-primary text-primary' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
+            >
+              Détails
+            </button>
+            <button
+              onClick={() => setActiveTab('docs')}
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'docs' ? 'border-primary text-primary' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
+            >
+              Documents {selectedOperation.attachments_count ? <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-xs">{selectedOperation.attachments_count}</span> : ''}
+            </button>
+            <button
+              onClick={() => setActiveTab('comments')}
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'comments' ? 'border-primary text-primary' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
+            >
+              Commentaires
+            </button>
+          </div>
+
+          <div className="h-[calc(100vh-130px)] overflow-y-auto">
+            {activeTab === 'details' && (
+              <div className="p-6 space-y-6">
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-1">ID Tâche</h4>
+                    <p className="font-medium text-text-primary">{selectedOperation.task_code}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-1">Phase / WBS</h4>
+                    <p className="font-medium text-text-primary">{selectedOperation.phase_wbs || '—'}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-1">Ligne Budgétaire</h4>
+                    <p className="font-medium text-text-primary">{selectedOperation.budget_lines?.code} {selectedOperation.budget_lines?.label}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-1">Statut</h4>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium ${getStatusBadge(selectedOperation.status)}`}>
+                      {getStatusLabel(selectedOperation.status)}
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-1">Coût Prévu</h4>
+                    <p className="font-mono text-text-primary">{formatCurrency(selectedOperation.planned_cost)} FCFA</p>
+                  </div>
+                  {selectedOperation.actual_cost !== null && (
+                    <div>
+                      <h4 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-1">Coût Réel</h4>
+                      <p className="font-mono text-text-primary">{formatCurrency(selectedOperation.actual_cost)} FCFA</p>
+                    </div>
+                  )}
+                  <div>
+                    <h4 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-1">Reste à Engager</h4>
+                    <p className="font-mono text-text-primary">{formatCurrency(selectedOperation.reste_a_engager)} FCFA</p>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-1">Écart</h4>
+                    <p className={`font-mono ${selectedOperation.ecart_budgetaire >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {selectedOperation.status === 'decaisse' 
+                        ? (selectedOperation.ecart_budgetaire > 0 ? '+' : '') + formatCurrency(selectedOperation.ecart_budgetaire) + ' FCFA'
+                        : '—'
+                      }
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {activeTab === 'docs' && (
+              <AttachmentsTab 
+                projectId={projectId}
+                relatedTable="operations_journal"
+                relatedId={selectedOperation.id}
+              />
+            )}
+            
+            {activeTab === 'comments' && (
+              <CommentsTab 
+                projectId={projectId}
+                relatedTable="operations_journal"
+                relatedId={selectedOperation.id}
+              />
+            )}
+          </div>
+        </RightDrawer>
       )}
     </div>
   )

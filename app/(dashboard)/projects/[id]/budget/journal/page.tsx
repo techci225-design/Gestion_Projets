@@ -13,6 +13,17 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
     .eq('project_id', id)
     .order('created_at', { ascending: false })
 
+  const { data: attachments } = await supabase
+    .from('attachments')
+    .select('id, related_id')
+    .eq('project_id', id)
+    .eq('related_table', 'operations_journal')
+
+  const attachmentCounts: Record<string, number> = {}
+  attachments?.forEach(a => {
+    attachmentCounts[a.related_id] = (attachmentCounts[a.related_id] || 0) + 1
+  })
+
   const { data: budgetLines } = await supabase
     .from('budget_lines')
     .select('id, code, label')
@@ -47,7 +58,10 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
     )
   }
 
-  const items = operationsData as OperationJournal[]
+  const items = (operationsData as any[]).map(op => ({
+    ...op,
+    attachments_count: attachmentCounts[op.id] || 0
+  })) as OperationJournal[]
 
   return (
     <div className="p-6 pb-24 md:pb-6">

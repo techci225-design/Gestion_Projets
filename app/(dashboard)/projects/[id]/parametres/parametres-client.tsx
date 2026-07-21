@@ -8,6 +8,8 @@ import { updateProject, deleteProject } from '@/lib/actions/projects.actions'
 import { useRouter } from 'next/navigation'
 import { AddBudgetModal } from '../budget/add-budget-modal'
 import { AddEvmTaskModal } from '../evm/add-evm-task-modal'
+import { RightDrawer } from '@/components/ui/RightDrawer'
+import { CommentsTab } from '@/components/dashboard/CommentsTab'
 
 interface ParametresClientProps {
   projectId: string
@@ -25,6 +27,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
   // Modals state
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false)
   const [isWbsModalOpen, setIsWbsModalOpen] = useState(false)
+  const [selectedWbsTask, setSelectedWbsTask] = useState<any>(null)
   
   // Bailleur form state
   const [isPending, startTransition] = useTransition()
@@ -498,7 +501,11 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                   </thead>
                   <tbody className="divide-y divide-border bg-white">
                     {wbsTasks.map((task: any) => (
-                      <tr key={task.id} className="hover:bg-slate-50">
+                      <tr 
+                        key={task.id} 
+                        className="hover:bg-slate-50 cursor-pointer"
+                        onClick={() => setSelectedWbsTask(task)}
+                      >
                         <td className="p-3 font-medium text-text-primary">{task.code}</td>
                         <td className="p-3 text-text-secondary max-w-xs truncate">{task.description}</td>
                         <td className="p-3 text-text-secondary">{task.responsible || '—'}</td>
@@ -567,6 +574,29 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
       
       {isWbsModalOpen && (
         <AddEvmTaskModal projectId={projectId} isOpen={isWbsModalOpen} onClose={() => setIsWbsModalOpen(false)} />
+      )}
+
+      {selectedWbsTask && (
+        <RightDrawer
+          isOpen={!!selectedWbsTask}
+          onClose={() => setSelectedWbsTask(null)}
+          title={`Tâche WBS : ${selectedWbsTask.code}`}
+        >
+          <div className="flex border-b border-border px-4 pt-2">
+            <button
+              className="px-4 py-3 text-sm font-medium border-b-2 border-primary text-primary transition-colors"
+            >
+              Commentaires
+            </button>
+          </div>
+          <div className="h-[calc(100vh-130px)] overflow-y-auto">
+            <CommentsTab
+              projectId={projectId}
+              relatedTable="wbs_tasks"
+              relatedId={selectedWbsTask.id}
+            />
+          </div>
+        </RightDrawer>
       )}
     </div>
   )

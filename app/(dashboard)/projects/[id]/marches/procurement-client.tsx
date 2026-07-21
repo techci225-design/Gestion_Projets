@@ -6,6 +6,8 @@ import { Plus, Edit2, Trash2, Calendar } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { format, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
+import { RightDrawer } from '@/components/ui/RightDrawer'
+import { AttachmentsTab } from '@/components/dashboard/AttachmentsTab'
 
 interface ProcurementClientProps {
   projectId: string
@@ -20,6 +22,7 @@ export function ProcurementClient({ projectId, initialData }: ProcurementClientP
   const [data, setData] = useState<ProcurementItem[]>(initialData)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<ProcurementItem | null>(null)
+  const [activeTab, setActiveTab] = useState<'details' | 'docs'>('details')
   
   const [formData, setFormData] = useState({
     description: '',
@@ -225,21 +228,32 @@ export function ProcurementClient({ projectId, initialData }: ProcurementClientP
         </div>
       </div>
 
-      {/* Drawer / Modal */}
-      {isDrawerOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-surface w-full max-w-2xl rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-6 border-b border-border flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-text-primary">
-                {editingItem ? 'Modifier le Marché' : 'Nouveau Marché'}
-              </h3>
-              <button onClick={() => setIsDrawerOpen(false)} className="text-text-secondary hover:text-text-primary p-2">
-                &times;
-              </button>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6 flex-1">
-              
+      {/* Drawer */}
+      <RightDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        title={editingItem ? 'Modifier le Marché' : 'Nouveau Marché'}
+      >
+        {editingItem && (
+          <div className="flex border-b border-border px-4 pt-2">
+            <button
+              onClick={() => setActiveTab('details')}
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'details' ? 'border-primary text-primary' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
+            >
+              Détails
+            </button>
+            <button
+              onClick={() => setActiveTab('docs')}
+              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${activeTab === 'docs' ? 'border-primary text-primary' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
+            >
+              Documents
+            </button>
+          </div>
+        )}
+
+        <div className="h-full overflow-y-auto">
+          {(!editingItem || activeTab === 'details') && (
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
               <div>
                 <label className="block text-sm font-medium text-text-secondary mb-1">
                   Description du Marché <span className="text-red-500">*</span>
@@ -358,9 +372,17 @@ export function ProcurementClient({ projectId, initialData }: ProcurementClientP
                 </button>
               </div>
             </form>
-          </div>
+          )}
+
+          {editingItem && activeTab === 'docs' && (
+            <AttachmentsTab
+              projectId={projectId}
+              relatedTable="procurement_plan"
+              relatedId={editingItem.id}
+            />
+          )}
         </div>
-      )}
+      </RightDrawer>
     </div>
   )
 }

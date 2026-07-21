@@ -4,6 +4,7 @@ import React from 'react'
 import { Bell, Search, Menu, Building2, ChevronDown } from 'lucide-react'
 import Link from 'next/link'
 import { NotificationBell } from './NotificationBell'
+import { GlobalSearch } from './GlobalSearch'
 import { useOrganization } from '@/lib/hooks/useOrganization'
 
 interface HeaderProps {
@@ -61,6 +62,7 @@ export function Header({ title, userFullName }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-3 md:gap-4">
+        {activeOrganization && <GlobalSearch currentOrgId={activeOrganization.id} />}
         <NotificationBell />
         {userFullName && (
           <div className="hidden md:flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold uppercase">
