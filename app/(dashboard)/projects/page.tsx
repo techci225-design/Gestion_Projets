@@ -69,27 +69,38 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
 
   const projectIds = projects?.map(p => p.id) || []
 
-  const { data: evmSummaries } = await supabase
-    .from('v_evm_project_summary')
-    .select('*')
-    .in('project_id', projectIds)
+  let evmSummaries: any[] | null = []
+  let budgetLines: any[] | null = []
+  let budgetConsumption: any[] | null = []
+  let risks: any[] | null = []
 
-  const { data: budgetLines } = await supabase
-    .from('budget_lines')
-    .select('project_id, initial_allocated_amount')
-    .in('project_id', projectIds)
+  if (projectIds.length > 0) {
+    const { data: es } = await supabase
+      .from('v_evm_project_summary')
+      .select('*')
+      .in('project_id', projectIds)
+    evmSummaries = es
 
-  const { data: budgetConsumption } = await supabase
-    .from('v_budget_consumption')
-    .select('project_id, total_engage, total_decaisse, initial_allocated_amount')
-    .in('project_id', projectIds)
+    const { data: bl } = await supabase
+      .from('budget_lines')
+      .select('project_id, initial_allocated_amount')
+      .in('project_id', projectIds)
+    budgetLines = bl
 
-  const { data: risks } = await supabase
-    .from('risks')
-    .select('project_id')
-    .eq('status', 'ouvert')
-    .eq('criticality', 9)
-    .in('project_id', projectIds)
+    const { data: bc } = await supabase
+      .from('v_budget_consumption')
+      .select('project_id, total_engage, total_decaisse, initial_allocated_amount')
+      .in('project_id', projectIds)
+    budgetConsumption = bc
+
+    const { data: r } = await supabase
+      .from('risks')
+      .select('project_id')
+      .eq('status', 'ouvert')
+      .eq('criticality', 9)
+      .in('project_id', projectIds)
+    risks = r
+  }
 
   // Checklist Data Fetching
   const showGuide = effectiveOrgId && projects && projects.length <= 2
@@ -99,11 +110,13 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
   let hasTeamMembers = false
   
   if (showGuide) {
-    const { count: opsCount } = await supabase.from('operations_journal').select('*', { count: 'exact', head: true }).in('project_id', projectIds)
-    hasOperations = (opsCount || 0) > 0
-    
-    const { count: tasksCount } = await supabase.from('wbs_tasks').select('*', { count: 'exact', head: true }).in('project_id', projectIds)
-    hasTasks = (tasksCount || 0) > 0
+    if (projectIds.length > 0) {
+      const { count: opsCount } = await supabase.from('operations_journal').select('*', { count: 'exact', head: true }).in('project_id', projectIds)
+      hasOperations = (opsCount || 0) > 0
+      
+      const { count: tasksCount } = await supabase.from('wbs_tasks').select('*', { count: 'exact', head: true }).in('project_id', projectIds)
+      hasTasks = (tasksCount || 0) > 0
+    }
     
     const { count: membersCount } = await supabase.from('organization_members').select('*', { count: 'exact', head: true }).eq('organization_id', effectiveOrgId)
     hasTeamMembers = (membersCount || 0) > 1
