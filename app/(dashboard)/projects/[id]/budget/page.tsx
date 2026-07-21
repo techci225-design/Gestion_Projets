@@ -58,7 +58,7 @@ export default async function BudgetPage({
   const items = (budgetData || []) as BudgetConsumption[]
 
   return (
-    <div className="flex-1 p-6 overflow-y-auto">
+    <div className="p-4 md:p-6 pb-24 md:pb-6">
       <BudgetClient 
         items={items} 
         fundingSources={fundingData || []} 

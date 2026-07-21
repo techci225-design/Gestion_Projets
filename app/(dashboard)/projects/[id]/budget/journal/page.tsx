@@ -50,7 +50,7 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
   const items = operationsData as OperationJournal[]
 
   return (
-    <div className="flex-1 p-6 overflow-y-auto">
+    <div className="p-6 pb-24 md:pb-6">
       <JournalClient items={items} projectId={id} budgetLines={budgetLines || []} fundingSources={fundingSources || []} />
     </div>
   )

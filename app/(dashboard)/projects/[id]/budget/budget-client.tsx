@@ -89,7 +89,7 @@ export function BudgetClient({ items, fundingSources, operations, projectId, isN
   }
 
   return (
-    <div className="flex flex-col h-full space-y-6">
+    <div className="flex flex-col space-y-6">
       {showBanner && (
         <div className="mb-6 p-4 bg-success/10 border border-success/20 text-success-dark rounded-lg flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
           <CheckCircle2 className="w-5 h-5 flex-shrink-0" />

@@ -33,7 +33,7 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
     .limit(100) // Paginate or limit to last 100 for now
 
   return (
-    <div className="flex-1 overflow-y-auto bg-background-main">
+    <div className="pb-24 md:pb-6 bg-background-main">
       <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-on-surface mb-2">Journal d'Audit</h1>

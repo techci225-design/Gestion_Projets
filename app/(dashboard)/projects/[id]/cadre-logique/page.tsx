@@ -30,7 +30,7 @@ export default async function LogframePage({ params }: { params: Promise<{ id: s
       <div className="flex justify-between items-center px-6 py-4">
         <Header title="Cadre Logique" />
       </div>
-      <div className="flex-1 px-6 pb-6 overflow-y-auto">
+      <div className="px-6 pb-24 md:pb-6">
         <LogframeClient items={items} projectId={id} />
       </div>
     </div>

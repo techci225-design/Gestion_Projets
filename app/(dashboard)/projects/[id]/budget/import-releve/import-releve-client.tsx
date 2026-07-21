@@ -136,7 +136,7 @@ export function ImportReleveClient({ projectId, operations }: { projectId: strin
   }
 
   return (
-    <div className="flex-1 p-6 overflow-y-auto">
+    <div className="p-6 pb-24 md:pb-6">
       <div className="max-w-5xl mx-auto">
         <h2 className="text-3xl font-bold text-primary mb-2">Import de Relevé Bancaire</h2>
         <p className="text-text-secondary mb-8">Rapprochez automatiquement vos dépenses bancaires avec votre journal d'opérations.</p>

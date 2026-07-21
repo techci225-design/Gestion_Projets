@@ -36,7 +36,7 @@ export function BailleursClient({ projectId, bailleurs }: { projectId: string, b
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   return (
-    <div className="flex-1 p-6 overflow-y-auto">
+    <div className="p-6 pb-24 md:pb-6">
       <div className="flex justify-between items-end mb-6">
         <div>
           <h2 className="text-3xl font-bold text-primary mb-1">Sources de financement</h2>
