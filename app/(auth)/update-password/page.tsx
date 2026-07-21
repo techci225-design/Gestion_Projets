@@ -16,11 +16,26 @@ export default function UpdatePasswordPage() {
   )
 
   useEffect(() => {
-    // Check if the user is authenticated (meaning the reset token was successfully verified by the URL hash)
     const checkSession = async () => {
+      // Handle PKCE flow: if there's a code in the URL, exchange it for a session
+      const url = new URL(window.location.href)
+      const code = url.searchParams.get('code')
+      
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        if (error) {
+          setMessage({ text: 'Lien invalide ou expiré. Veuillez refaire une demande.', type: 'error' })
+          return
+        }
+        // Remove code from URL so it's not reused
+        window.history.replaceState({}, document.title, window.location.pathname)
+        return
+      }
+
+      // Fallback for implicit flow (hash fragment) or if already logged in
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
-        // Wait a bit to let the hash fragment be parsed by supabase client
+        // Wait a bit to let the hash fragment be parsed if present
         setTimeout(async () => {
           const { data: { session: delayedSession } } = await supabase.auth.getSession()
           if (!delayedSession) {
