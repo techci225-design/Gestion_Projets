@@ -300,7 +300,6 @@ export async function importTasksToExistingProject(projectId: string, tasksData:
         
         await supabase.from('ptba_activities').insert(ptbaActivities);
       }
-    }
     
     revalidatePath(`/projects/${projectId}`);
     return { success: true };
