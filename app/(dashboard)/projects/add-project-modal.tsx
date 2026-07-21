@@ -39,7 +39,7 @@ export function AddProjectModal() {
   // Validations
   const canGoStep2 = name.trim() !== '' && code.trim() !== '' && startDate !== '' && endDate !== ''
   const canGoStep3 = fundingSources.some(fs => fs.name.trim() !== '' && fs.amount > 0)
-  const canSubmit = budgetLines.some(bl => bl.code.trim() !== '' && bl.label.trim() !== '' && bl.amount > 0)
+  const canSubmit = budgetLines.some(bl => bl.funding_source_id !== '' && bl.amount > 0)
 
   const handleSubmit = async () => {
     setLoading(true)
@@ -54,7 +54,13 @@ export function AddProjectModal() {
         description,
         currency,
         funding_sources: fundingSources.filter(fs => fs.name.trim() !== '' && fs.amount > 0),
-        budget_lines: budgetLines.filter(bl => bl.code.trim() !== '' && bl.label.trim() !== '' && bl.amount > 0)
+        budget_lines: budgetLines
+          .filter(bl => bl.funding_source_id !== '' && bl.amount > 0)
+          .map((bl, i) => ({
+            ...bl,
+            code: `BL-${i + 1}`,
+            label: `Budget ${fundingSources.find(fs => fs.id === bl.funding_source_id)?.name || ''}`.trim()
+          }))
       }
       
       const res = await createProjectWithBudget(payload)
@@ -131,7 +137,7 @@ export function AddProjectModal() {
               {[
                 { num: 1, label: 'Informations' },
                 { num: 2, label: 'Financement' },
-                { num: 3, label: 'Budget initial' }
+                { num: 3, label: 'Budget Alloué' }
               ].map((s, idx) => (
                 <div key={s.num} className="flex items-center flex-1 last:flex-none">
                   <div className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold border-2
@@ -266,22 +272,14 @@ export function AddProjectModal() {
               {step === 3 && (
                 <div className="space-y-4">
                   <div className="mb-4">
-                    <h4 className="text-lg font-bold text-text-primary">Définissez votre budget initial</h4>
+                    <h4 className="text-lg font-bold text-text-primary">Définissez votre budget Alloué</h4>
                     <p className="text-sm text-text-secondary">Ces montants constituent votre enveloppe de référence.</p>
                   </div>
                   
                   {budgetLines.map((bl, idx) => (
                     <div key={bl.id} className="flex items-start gap-3 bg-surface p-4 rounded-lg border border-border shadow-sm">
-                      <div className="w-20">
-                        <label className="block text-xs font-medium text-text-secondary mb-1">Code</label>
-                        <input type="text" value={bl.code} onChange={e => updateBudgetLine(bl.id, 'code', e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="1.1" />
-                      </div>
                       <div className="flex-1">
-                        <label className="block text-xs font-medium text-text-secondary mb-1">Libellé</label>
-                        <input type="text" value={bl.label} onChange={e => updateBudgetLine(bl.id, 'label', e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Ex: Consultants" />
-                      </div>
-                      <div className="w-40">
-                        <label className="block text-xs font-medium text-text-secondary mb-1">Bailleur lié</label>
+                        <label className="block text-xs font-medium text-text-secondary mb-1">Type lié (Prêteur)</label>
                         <select value={bl.funding_source_id} onChange={e => updateBudgetLine(bl.id, 'funding_source_id', e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-surface">
                           <option value="">Sélectionner...</option>
                           {fundingSources.filter(fs => fs.name.trim() !== '').map(fs => (
@@ -290,7 +288,7 @@ export function AddProjectModal() {
                         </select>
                       </div>
                       <div className="w-48">
-                        <label className="block text-xs font-medium text-text-secondary mb-1">Montant alloué (FCFA)</label>
+                        <label className="block text-xs font-medium text-text-secondary mb-1">Montant accordé ({currency})</label>
                         <input type="number" min="0" value={bl.amount || ''} onChange={e => updateBudgetLine(bl.id, 'amount', Number(e.target.value))} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="0" />
                       </div>
                       {budgetLines.length > 1 && (
@@ -307,18 +305,18 @@ export function AddProjectModal() {
 
                   <div className="mt-6 p-4 bg-surface rounded-lg border border-border shadow-sm flex flex-col gap-2">
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-text-secondary">Financement total déclaré (Étape 2) :</span>
-                      <span className="font-semibold">{formatCurrency(totalFunding)}</span>
+                      <span className="text-text-secondary">Financement total demandé (Étape 2) :</span>
+                      <span className="font-semibold">{formatCurrency(totalFunding, currency)}</span>
                     </div>
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-text-secondary">Budget total saisi :</span>
-                      <span className="font-semibold">{formatCurrency(totalBudget)}</span>
+                      <span className="text-text-secondary">Financement total accordé (Étape 3) :</span>
+                      <span className="font-semibold">{formatCurrency(totalBudget, currency)}</span>
                     </div>
                     
                     {diff !== 0 && (
                       <div className="mt-2 p-3 bg-warning/10 text-warning-dark text-sm rounded border border-warning/20 flex items-center gap-2">
                         <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                        <span>⚠️ Écart de <strong>{formatCurrency(Math.abs(diff))}</strong> entre le budget et le financement déclaré.</span>
+                        <span>⚠️ Écart de <strong>{formatCurrency(Math.abs(diff), currency)}</strong> entre les montants accordés et le financement demandé.</span>
                       </div>
                     )}
                   </div>
