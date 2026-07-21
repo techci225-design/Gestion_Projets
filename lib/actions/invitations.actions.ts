@@ -124,38 +124,39 @@ export async function acceptInvitation(token: string, formData?: { password?: st
   }
 
   // 2. Identify User
-  // Check if they are already logged in (they might have accepted the magic link)
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
-  let userId = user?.id
+  let userId = null
 
-  // If there's formData (meaning they filled out the form)
-  if (formData?.password) {
-    if (user) {
-      // User is implicitly logged in via the magic link. We just update their password.
-      const { error: updateAuthError } = await supabase.auth.updateUser({
-        password: formData.password
-      })
-      if (updateAuthError) {
-        return { error: 'Erreur lors de la mise à jour du mot de passe.' }
+  // We should NEVER update a user password if they are logged in as someone else!
+  if (user && user.email?.toLowerCase() === invitation.invited_email.toLowerCase()) {
+    userId = user.id
+  } else if (user) {
+    return { error: `Vous êtes connecté en tant que ${user.email}. Veuillez vous déconnecter pour accepter cette invitation destinée à ${invitation.invited_email}.` }
+  } else {
+    // User is not logged in. Find them by email in auth.users using adminClient
+    const { data: usersData, error: usersError } = await adminClient.auth.admin.listUsers()
+    if (!usersError && usersData?.users) {
+      const existingUser = usersData.users.find(u => u.email?.toLowerCase() === invitation.invited_email.toLowerCase())
+      if (existingUser) {
+        userId = existingUser.id
       }
-      userId = user.id
-    } else {
-      // They are not logged in but they exist (e.g. they came via standard signIn form)
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: invitation.invited_email,
-        password: formData.password
-      })
-      if (signInError) {
-        return { error: 'Identifiants incorrects.' }
-      }
-      userId = signInData.user?.id
     }
   }
 
   if (!userId) {
-    return { error: 'Session invalide ou utilisateur introuvable.' }
+    return { error: 'Utilisateur introuvable. Veuillez créer un compte.' }
+  }
+
+  // Update password using adminClient so we don't rely on the current session
+  if (formData?.password) {
+    const { error: updateAuthError } = await adminClient.auth.admin.updateUserById(userId, {
+      password: formData.password
+    })
+    if (updateAuthError) {
+      return { error: 'Erreur lors de la configuration du mot de passe.' }
+    }
   }
 
   // 3. Update Profile if needed
