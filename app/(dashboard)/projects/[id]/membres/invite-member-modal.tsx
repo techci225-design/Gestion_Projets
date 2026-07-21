@@ -8,7 +8,7 @@ export function InviteMemberModal({
   isOpen, 
   onClose, 
   projectId,
-  allProfiles
+  organizationId
 }: { 
   isOpen: boolean, 
   onClose: () => void, 
