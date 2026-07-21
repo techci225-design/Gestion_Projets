@@ -12,12 +12,13 @@ export async function seedDemoProject(organizationId: string) {
   const adminClient = createAdminClient()
 
   // 1. Create Project
+  const uniqueSuffix = Math.floor(Math.random() * 10000);
   const { data: project, error: projectError } = await adminClient
     .from('projects')
     .insert({
       organization_id: organizationId,
       name: "Projet de Réhabilitation des Infrastructures Rurales",
-      code: "DEMO-2026",
+      code: `DEMO-2026-${uniqueSuffix}`,
       description: "Projet pilote financé par la BAD visant à réhabiliter les infrastructures d'eau potable dans 3 régions.",
       start_date: "2026-01-01",
       end_date: "2026-12-31",
