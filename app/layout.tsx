@@ -8,10 +8,16 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'ProjetPilote — Pilotage de projets bailleurs',
-  description: 'Plateforme de gestion de projets de développement financés par des bailleurs de fonds. Moteur EVM, suivi budgétaire, rapport institutionnel.',
-  keywords: 'gestion projet, bailleur, EVM, FCFA, Afrique, consultant',
+  title: 'ProjetPilote — Pilotage de projets bailleurs en Afrique',
+  description: 'Application web de gestion de projets de développement financés par des bailleurs de fonds. Moteur EVM, suivi budgétaire FCFA, rapport institutionnel. Conforme Banque Mondiale et BID.',
+  keywords: 'gestion projet bailleur, EVM, FCFA, Afrique francophone, BAD, USAID, BM, consultant développement',
   manifest: "/manifest.json",
+  openGraph: {
+    title: 'ProjetPilote — Pilotage de projets bailleurs',
+    description: 'Transformez votre matrice Excel en application web sécurisée.',
+    url: 'https://gestion-projets-e3uj.vercel.app',
+    siteName: 'ProjetPilote',
+  },
 };
 
 export default function RootLayout({

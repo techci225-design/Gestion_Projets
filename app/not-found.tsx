@@ -1,26 +1,27 @@
 import Link from 'next/link'
-import { Briefcase } from 'lucide-react'
+import { LayoutDashboard } from 'lucide-react'
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-[#0F172A] flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 flex flex-col items-center text-center">
-        <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-6">
-          <Briefcase className="w-8 h-8" />
+    <div className="min-h-screen bg-[#1E3A5F] text-white flex flex-col items-center justify-center p-4">
+      <div className="mb-8 flex items-center gap-3">
+        <div className="w-12 h-12 bg-[#16A34A] rounded-xl flex items-center justify-center shadow-lg">
+          <LayoutDashboard className="text-white w-7 h-7" />
         </div>
-        
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Page introuvable</h1>
-        <p className="text-gray-500 mb-8">
-          La page que vous recherchez n'existe pas ou a été déplacée.
-        </p>
-        
-        <Link 
-          href="/projects" 
-          className="w-full bg-blue-600 text-white font-medium py-3 rounded-lg hover:bg-blue-700 transition-colors inline-block"
-        >
-          Retour au tableau de bord
-        </Link>
+        <span className="font-bold text-3xl tracking-tight text-white">ProjetPilote</span>
       </div>
+      
+      <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center">404 — Page introuvable</h1>
+      <p className="text-blue-200 text-lg mb-8 text-center max-w-md">
+        Désolé, la page que vous recherchez n'existe pas ou a été déplacée.
+      </p>
+      
+      <Link 
+        href="/" 
+        className="bg-white text-[#1E3A5F] px-8 py-3 rounded-lg font-bold hover:bg-slate-100 transition-colors shadow-lg"
+      >
+        Retour à l'accueil
+      </Link>
     </div>
   )
 }
