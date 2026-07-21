@@ -15,10 +15,10 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
 
   if (error || !invitation) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <h1 className="text-2xl font-bold text-text-primary mb-2">Lien d'invitation invalide</h1>
-        <p className="text-text-secondary mb-6">Ce lien n'existe pas ou est mal formaté.</p>
-        <a href="/" className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors">
+      <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl w-full text-center">
+        <h1 className="text-2xl font-bold text-white mb-2">Lien d'invitation invalide</h1>
+        <p className="text-white/70 mb-6">Ce lien n'existe pas ou est mal formaté.</p>
+        <a href="/" className="px-6 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-all shadow-lg shadow-blue-500/30 inline-block">
           Retour à l'accueil
         </a>
       </div>
@@ -27,11 +27,11 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
 
   if (invitation.status !== 'pending' || new Date(invitation.expires_at) < new Date()) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <h1 className="text-2xl font-bold text-text-primary mb-2">Invitation expirée</h1>
-        <p className="text-text-secondary mb-6">Cette invitation a expiré ou a déjà été utilisée.</p>
-        <p className="text-sm text-text-tertiary">Demandez un nouveau lien à l'administrateur de l'organisation.</p>
-        <a href="/" className="mt-6 px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors">
+      <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl w-full text-center">
+        <h1 className="text-2xl font-bold text-white mb-2">Invitation expirée</h1>
+        <p className="text-white/70 mb-4 font-medium">Cette invitation a expiré ou a déjà été utilisée.</p>
+        <p className="text-sm text-white/50 mb-8">Demandez un nouveau lien à l'administrateur de l'organisation.</p>
+        <a href="/" className="px-6 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-all shadow-lg shadow-blue-500/30 inline-block">
           Retour à l'accueil
         </a>
       </div>
