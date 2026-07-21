@@ -111,11 +111,11 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="bg-surface w-full rounded-lg shadow-sm sm:shadow-lg p-8 max-w-md mx-auto my-auto relative overflow-hidden">
+    <div className="bg-surface w-full rounded-lg shadow-sm sm:shadow-lg p-6 sm:p-8 max-w-md mx-auto my-auto relative overflow-hidden">
       
       {/* Header */}
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-center gap-2 mb-2 text-primary">
+      <div className="text-center mb-6">
+        <div className="flex items-center justify-center gap-2 mb-1 text-primary">
           <BriefcaseBusiness className="w-8 h-8" />
           <h1 className="text-2xl font-bold tracking-tight">ProjetPilote</h1>
         </div>
@@ -144,9 +144,9 @@ export default function RegisterPage() {
 
       {/* Step 1: User Account */}
       <div className={`transition-all duration-500 ease-in-out ${step === 1 ? 'opacity-100 translate-x-0 relative block' : 'opacity-0 -translate-x-full absolute invisible'}`}>
-        <h2 className="text-xl font-bold text-text-primary mb-6">Créer votre espace ProjetPilote</h2>
+        <h2 className="text-xl font-bold text-text-primary mb-4">Créer votre espace ProjetPilote</h2>
         
-        <form onSubmit={handleStep1Submit} className="space-y-4">
+        <form onSubmit={handleStep1Submit} className="space-y-3">
           <div className="flex gap-4">
             <div className="flex-1">
               <label className="block text-sm font-medium text-text-primary mb-1">Prénom</label>
@@ -249,7 +249,7 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-4 text-center">
           <a href="/login" className="text-sm font-medium text-primary hover:underline">
             Déjà un compte ? Se connecter
           </a>
