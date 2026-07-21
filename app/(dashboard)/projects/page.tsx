@@ -122,15 +122,16 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
     hasTeamMembers = (membersCount || 0) > 1
   }
 
-  const guideSteps = showGuide ? [
-    { id: 'org', title: 'Créer votre organisation', completed: true, href: '#', icon: Building2 },
-    { id: 'proj', title: 'Créer votre premier projet', completed: projects.some(p => p.code !== 'DEMO-2026'), href: '#', icon: FolderPlus },
-    { id: 'budget', title: 'Ajouter vos lignes budgétaires', completed: (budgetLines || []).length > 0, href: projects.length > 0 ? `/projects/${projects[0].id}/budget` : '#', icon: Coins },
-    { id: 'ops', title: 'Saisir votre première opération', completed: hasOperations, href: projects.length > 0 ? `/projects/${projects[0].id}/budget/journal` : '#', icon: FileSpreadsheet },
-    { id: 'evm', title: 'Configurer le moteur EVM (tâches)', completed: hasTasks, href: projects.length > 0 ? `/projects/${projects[0].id}/evm` : '#', icon: Activity },
-    { id: 'team', title: 'Inviter un membre de votre équipe', completed: hasTeamMembers, href: projects.length > 0 ? `/projects/${projects[0].id}/membres` : '#', icon: Users },
-    { id: 'pdf', title: 'Générer un rapport PDF', completed: evmSummaries?.some(s => s.ac_total > 0) || false, href: projects.length > 0 ? `/projects/${projects[0].id}` : '#', icon: FileText },
-  ] : []
+  const checklistState = showGuide ? {
+    hasOrganization: true,
+    hasProject: projects.some(p => p.code !== 'DEMO-2026'),
+    hasBudget: (budgetLines || []).length > 0,
+    hasOperations,
+    hasTasks,
+    hasTeamMembers,
+    hasPdfReport: evmSummaries?.some(s => s.ac_total > 0) || false,
+    firstProjectId: projects.length > 0 ? projects[0].id : undefined
+  } : null
 
   // 1. BLOC KPIs GLOBAUX (Calculs)
   const activeProjects = projects?.filter(p => p.status === 'actif') || []
@@ -245,8 +246,8 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
           <AddProjectModal />
         </div>
 
-        {showGuide && guideSteps.length > 0 && (
-          <GettingStartedGuide steps={guideSteps} />
+        {checklistState && (
+          <GettingStartedGuide state={checklistState} />
         )}
 
         {projectsError ? (
