@@ -85,7 +85,24 @@ export async function sendInvitation(payload: {
 
   if (inviteError) {
     console.error('Invite email error:', inviteError)
-    return { error: 'Erreur lors de l\'envoi de l\'email.' }
+    
+    // If the user already exists, Supabase throws an error for inviteUserByEmail.
+    // In this case, we send them a Magic Link which will redirect them to the invite page.
+    if (inviteError.message.toLowerCase().includes('already') || inviteError.status === 422 || inviteError.status === 400) {
+      const { error: magicLinkError } = await adminClient.auth.signInWithOtp({
+        email: payload.email,
+        options: {
+          emailRedirectTo: `https://gestion-projets-e3uj.vercel.app/invite/${token}`,
+        }
+      })
+      
+      if (magicLinkError) {
+        console.error('Magic link fallback error:', magicLinkError)
+        return { error: 'L\'utilisateur existe déjà, mais impossible d\'envoyer l\'email de notification.' }
+      }
+    } else {
+      return { error: `Erreur lors de l'envoi de l'email: ${inviteError.message}` }
+    }
   }
 
   revalidatePath('/projects')
