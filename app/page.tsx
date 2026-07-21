@@ -22,7 +22,7 @@ export default function LandingPage() {
               ProjetPilote traduit la méthodologie Excel de M. Bakayoko en application web sécurisée, accessible sur mobile, conforme aux standards Banque Mondiale et BID.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/register" className="bg-white text-[#1E3A5F] px-8 py-4 rounded-lg font-bold hover:bg-slate-100 transition-colors text-center text-lg">
+              <Link href="/login" className="bg-white text-[#1E3A5F] px-8 py-4 rounded-lg font-bold hover:bg-slate-100 transition-colors text-center text-lg">
                 Créer mon espace gratuit →
               </Link>
               <Link href="#demo" className="bg-transparent border border-white text-white px-8 py-4 rounded-lg font-bold hover:bg-white/10 transition-colors text-center text-lg">
