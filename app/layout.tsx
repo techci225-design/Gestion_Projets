@@ -20,11 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="fr"
-      className="h-full"
-    >
-      <body className={`${inter.className} h-full antialiased bg-background-main text-on-surface flex flex-col`}>
+    <html lang="fr">
+      <body className={`${inter.className} min-h-screen antialiased bg-background-main text-on-surface flex flex-col`}>
         <PwaRegister />
         {children}
       </body>
