@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 export async function seedDemoProject(organizationId: string) {
@@ -8,8 +9,10 @@ export async function seedDemoProject(organizationId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Non authentifié' }
 
+  const adminClient = createAdminClient()
+
   // 1. Create Project
-  const { data: project, error: projectError } = await supabase
+  const { data: project, error: projectError } = await adminClient
     .from('projects')
     .insert({
       organization_id: organizationId,
@@ -32,7 +35,7 @@ export async function seedDemoProject(organizationId: string) {
   const projectId = project.id
 
   // Add the user as owner of the project to satisfy RLS for subsequent inserts
-  const { error: memberError } = await supabase.from('project_members').insert({
+  const { error: memberError } = await adminClient.from('project_members').insert({
     project_id: projectId,
     user_id: user.id,
     role: 'owner'
@@ -44,7 +47,7 @@ export async function seedDemoProject(organizationId: string) {
   }
 
   // 2. Add Funding Sources
-  const { data: badSource, error: badError } = await supabase
+  const { data: badSource, error: badError } = await adminClient
     .from('funding_sources')
     .insert({
       project_id: projectId,
@@ -56,7 +59,7 @@ export async function seedDemoProject(organizationId: string) {
     .select()
     .single()
 
-  const { data: etatSource, error: etatError } = await supabase
+  const { data: etatSource, error: etatError } = await adminClient
     .from('funding_sources')
     .insert({
       project_id: projectId,
@@ -80,7 +83,7 @@ export async function seedDemoProject(organizationId: string) {
     { code: "2.2", name: "Audit et évaluation", initial_allocated_amount: 8000000, funding_source_id: etatSource.id, project_id: projectId }
   ]
 
-  const { data: budgetLines, error: blError } = await supabase
+  const { data: budgetLines, error: blError } = await adminClient
     .from('budget_lines')
     .insert(budgetLinesData)
     .select()
@@ -99,7 +102,7 @@ export async function seedDemoProject(organizationId: string) {
     { project_id: projectId, reference: "T-006", description: "Contrat cabinet d'audit", date: "2026-06-01", budget_line_id: blMap["2.2"], status: "planifie", planned_cost: 8000000 }
   ]
 
-  await supabase.from('operations_journal').insert(operationsData)
+  await adminClient.from('operations_journal').insert(operationsData)
 
   // 5. Add EVM Tasks
   const tasksData = [
@@ -111,7 +114,7 @@ export async function seedDemoProject(organizationId: string) {
     { project_id: projectId, code: "T6", description: "Audit mi-parcours", date_start: "2026-06-01", date_end: "2026-07-31", budget_allocated: 4000000, percent_complete: 80, actual_cost: 3500000 }
   ]
 
-  await supabase.from('wbs_tasks').insert(tasksData)
+  await adminClient.from('wbs_tasks').insert(tasksData)
 
   // 6. Add Procurement Plan
   const procurementData = [
@@ -120,7 +123,7 @@ export async function seedDemoProject(organizationId: string) {
     { project_id: projectId, title: "Bureau d'études", category: "Services", method: "Sélection sur Qualité et Coût", review_type: "A priori", date_avis: "2025-11-15", date_signature: "2026-01-15", amount: 8000000, status: "planifie" }
   ]
 
-  await supabase.from('procurement_plan').insert(procurementData)
+  await adminClient.from('procurement_plan').insert(procurementData)
 
   // 7. Add Risks
   const risksData = [
@@ -129,7 +132,7 @@ export async function seedDemoProject(organizationId: string) {
     { project_id: projectId, category: "Fiduciaire", title: "Dépassement budgétaire travaux", probability: 2, impact: 2, mitigation_strategy: "Supervision mensuelle + ordre de service encadré", status: "ouvert" }
   ]
 
-  await supabase.from('risks').insert(risksData)
+  await adminClient.from('risks').insert(risksData)
 
   // 8. Add Logframe
   const logframeData = [
@@ -139,7 +142,7 @@ export async function seedDemoProject(organizationId: string) {
     { project_id: projectId, level: 4, title: "Études topographiques et géotechniques", indicators: "Nb études réalisées", baseline: "0", target: "15" }
   ]
 
-  await supabase.from('logframe_items').insert(logframeData)
+  await adminClient.from('logframe_items').insert(logframeData)
 
   revalidatePath('/projects')
   return { success: true, projectId }
