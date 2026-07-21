@@ -7,6 +7,9 @@ import { formatCurrency } from '@/lib/utils/format-currency'
 import { AlertBadge } from '@/components/ui/AlertBadge'
 import { Plus, Briefcase, Calendar, AlertTriangle, ArrowUpDown, ChevronRight, Activity, DollarSign, Target } from 'lucide-react'
 import { AddProjectModal } from './add-project-modal'
+import { DemoProjectButton } from '@/components/dashboard/DemoProjectButton'
+import { GettingStartedGuide } from '@/components/dashboard/GettingStartedGuide'
+import { Building2, FolderPlus, Coins, FileSpreadsheet, Users, FileText } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -87,6 +90,34 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
     .eq('status', 'ouvert')
     .eq('criticality', 9)
     .in('project_id', projectIds)
+
+  // Checklist Data Fetching
+  const showGuide = effectiveOrgId && projects && projects.length <= 2
+  
+  let hasOperations = false
+  let hasTasks = false
+  let hasTeamMembers = false
+  
+  if (showGuide) {
+    const { count: opsCount } = await supabase.from('operations_journal').select('*', { count: 'exact', head: true }).in('project_id', projectIds)
+    hasOperations = (opsCount || 0) > 0
+    
+    const { count: tasksCount } = await supabase.from('wbs_tasks').select('*', { count: 'exact', head: true }).in('project_id', projectIds)
+    hasTasks = (tasksCount || 0) > 0
+    
+    const { count: membersCount } = await supabase.from('organization_members').select('*', { count: 'exact', head: true }).eq('organization_id', effectiveOrgId)
+    hasTeamMembers = (membersCount || 0) > 1
+  }
+
+  const guideSteps = showGuide ? [
+    { id: 'org', title: 'Créer votre organisation', completed: true, href: '#', icon: Building2 },
+    { id: 'proj', title: 'Créer votre premier projet', completed: projects.some(p => p.code !== 'DEMO-2026'), href: '#', icon: FolderPlus },
+    { id: 'budget', title: 'Ajouter vos lignes budgétaires', completed: (budgetLines || []).length > 0, href: projects.length > 0 ? `/projects/${projects[0].id}/budget` : '#', icon: Coins },
+    { id: 'ops', title: 'Saisir votre première opération', completed: hasOperations, href: projects.length > 0 ? `/projects/${projects[0].id}/budget/journal` : '#', icon: FileSpreadsheet },
+    { id: 'evm', title: 'Configurer le moteur EVM (tâches)', completed: hasTasks, href: projects.length > 0 ? `/projects/${projects[0].id}/evm` : '#', icon: Activity },
+    { id: 'team', title: 'Inviter un membre de votre équipe', completed: hasTeamMembers, href: projects.length > 0 ? `/projects/${projects[0].id}/membres` : '#', icon: Users },
+    { id: 'pdf', title: 'Générer un rapport PDF', completed: evmSummaries?.some(s => s.ac_total > 0) || false, href: projects.length > 0 ? `/projects/${projects[0].id}` : '#', icon: FileText },
+  ] : []
 
   // 1. BLOC KPIs GLOBAUX (Calculs)
   const activeProjects = projects?.filter(p => p.status === 'actif') || []
@@ -201,6 +232,10 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
           <AddProjectModal />
         </div>
 
+        {showGuide && guideSteps.length > 0 && (
+          <GettingStartedGuide steps={guideSteps} />
+        )}
+
         {projectsError ? (
           <div className="p-4 bg-danger/10 text-danger rounded-md border border-danger/20">
             Erreur lors du chargement des projets: {projectsError.message}
@@ -214,7 +249,8 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
             </p>
             <div className="flex flex-col gap-4 max-w-xs mx-auto">
               <AddProjectModal />
-              <Link href="/projects/import" className="text-sm font-medium text-text-tertiary hover:text-primary transition-colors inline-flex justify-center items-center">
+              {effectiveOrgId && <DemoProjectButton organizationId={effectiveOrgId} />}
+              <Link href="/projects/import" className="text-sm font-medium text-text-tertiary hover:text-primary transition-colors inline-flex justify-center items-center mt-2">
                 Importer depuis Excel →
               </Link>
             </div>
