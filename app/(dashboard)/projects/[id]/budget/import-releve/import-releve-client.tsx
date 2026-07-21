@@ -142,20 +142,20 @@ export function ImportReleveClient({ projectId, operations }: { projectId: strin
         <p className="text-text-secondary mb-8">Rapprochez automatiquement vos dépenses bancaires avec votre journal d'opérations.</p>
 
         {/* Stepper */}
-        <div className="flex items-center mb-8 bg-surface border border-border p-4 rounded-xl shadow-sm">
-          <div className={`flex items-center gap-2 ${step >= 1 ? 'text-primary' : 'text-text-secondary'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${step >= 1 ? 'bg-primary/20' : 'bg-surface-dim'}`}>1</div>
-            <span className="font-medium">Upload</span>
+        <div className="flex items-center justify-between mb-8 bg-surface border border-border p-3 sm:p-4 rounded-xl shadow-sm overflow-x-auto hide-scrollbar">
+          <div className={`flex items-center gap-1 sm:gap-2 shrink-0 ${step >= 1 ? 'text-primary' : 'text-text-secondary'}`}>
+            <div className={`w-6 h-6 sm:w-8 sm:h-8 text-sm sm:text-base rounded-full flex items-center justify-center font-bold ${step >= 1 ? 'bg-primary/20' : 'bg-surface-dim'}`}>1</div>
+            <span className="font-medium text-xs sm:text-base">Upload</span>
           </div>
-          <div className={`h-px w-16 mx-4 ${step >= 2 ? 'bg-primary' : 'bg-border'}`} />
-          <div className={`flex items-center gap-2 ${step >= 2 ? 'text-primary' : 'text-text-secondary'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${step >= 2 ? 'bg-primary/20' : 'bg-surface-dim'}`}>2</div>
-            <span className="font-medium">Matching</span>
+          <div className={`flex-1 h-px min-w-[12px] mx-2 sm:mx-4 ${step >= 2 ? 'bg-primary' : 'bg-border'}`} />
+          <div className={`flex items-center gap-1 sm:gap-2 shrink-0 ${step >= 2 ? 'text-primary' : 'text-text-secondary'}`}>
+            <div className={`w-6 h-6 sm:w-8 sm:h-8 text-sm sm:text-base rounded-full flex items-center justify-center font-bold ${step >= 2 ? 'bg-primary/20' : 'bg-surface-dim'}`}>2</div>
+            <span className="font-medium text-xs sm:text-base">Matching</span>
           </div>
-          <div className={`h-px w-16 mx-4 ${step >= 3 ? 'bg-primary' : 'bg-border'}`} />
-          <div className={`flex items-center gap-2 ${step >= 3 ? 'text-primary' : 'text-text-secondary'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${step >= 3 ? 'bg-primary/20' : 'bg-surface-dim'}`}>3</div>
-            <span className="font-medium">Application</span>
+          <div className={`flex-1 h-px min-w-[12px] mx-2 sm:mx-4 ${step >= 3 ? 'bg-primary' : 'bg-border'}`} />
+          <div className={`flex items-center gap-1 sm:gap-2 shrink-0 ${step >= 3 ? 'text-primary' : 'text-text-secondary'}`}>
+            <div className={`w-6 h-6 sm:w-8 sm:h-8 text-sm sm:text-base rounded-full flex items-center justify-center font-bold ${step >= 3 ? 'bg-primary/20' : 'bg-surface-dim'}`}>3</div>
+            <span className="font-medium text-xs sm:text-base">Application</span>
           </div>
         </div>
 
