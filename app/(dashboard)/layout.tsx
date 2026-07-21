@@ -86,7 +86,7 @@ export default async function DashboardLayout({
             Pages will include <Header title="..." /> themselves, or we can use a client context. 
             For simplicity, each page renders the Header component itself to have dynamic titles.
         */}
-        <main className="w-full h-full min-h-screen">
+        <main className="w-full">
           {children}
         </main>
       </div>
