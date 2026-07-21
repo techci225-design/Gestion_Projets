@@ -137,9 +137,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
   const activeProjects = projects?.filter(p => p.status === 'actif') || []
   const activeProjectIds = activeProjects.map(p => p.id)
 
-  const totalBudgetActif = budgetLines
-    ?.filter(bl => activeProjectIds.includes(bl.project_id))
-    .reduce((sum, bl) => sum + Number(bl.initial_allocated_amount), 0) || 0
+  // We will calculate totalBudgetActif later after projectsData is mapped
 
   const totalDecaisseActif = budgetConsumption
     ?.filter(bc => activeProjectIds.includes(bc.project_id))
@@ -200,6 +198,11 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
   }) || []
 
   const alertProjects = projectsData.filter(p => p.isAlert)
+
+  // Calculate total budget using the mapped projectsData
+  const totalBudgetActif = projectsData
+    .filter(p => p.status === 'actif')
+    .reduce((sum, p) => sum + p.pTotalBudget, 0)
 
   // Tri du tableau comparatif
   const sortedProjects = [...projectsData].sort((a, b) => {
@@ -510,17 +513,17 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                         <div className="mt-auto space-y-4">
                           <div className="space-y-1.5">
                             <div className="flex justify-between text-sm">
-                              <span className="text-text-secondary">Consommation ({project.progress.toFixed(0)}%)</span>
-                              <span className="font-semibold">{formatCurrency(project.ac)}</span>
+                              <span className="text-text-secondary">Consommation ({(project.pTauxConso * 100).toFixed(0)}%)</span>
+                              <span className="font-semibold">{formatCurrency(project.pTotalConsumed)}</span>
                             </div>
                             <div className="w-full bg-surface-dim rounded-full h-2 overflow-hidden">
                               <div 
-                                className={`h-full rounded-full ${project.progress >= 100 ? 'bg-danger' : project.progress >= 80 ? 'bg-warning' : 'bg-primary'}`} 
-                                style={{ width: `${Math.min(project.progress, 100)}%` }}
+                                className={`h-full rounded-full ${project.pTauxConso >= 1 ? 'bg-danger' : project.pTauxConso >= 0.8 ? 'bg-warning' : 'bg-primary'}`} 
+                                style={{ width: `${Math.min(project.pTauxConso * 100, 100)}%` }}
                               />
                             </div>
                             <div className="text-right text-xs text-text-tertiary">
-                              sur {formatCurrency(project.bac)}
+                              sur {formatCurrency(project.pTotalBudget)}
                             </div>
                           </div>
 
