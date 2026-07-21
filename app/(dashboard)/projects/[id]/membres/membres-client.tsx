@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Plus, MoreVertical, Edit2, Trash2 } from 'lucide-react'
+import { InviteMemberModal } from './invite-member-modal'
 import { removeMember, updateMemberRole } from '@/lib/actions/members.actions'
 import { cancelInvitation, sendInvitation } from '@/lib/actions/invitations.actions'
 
