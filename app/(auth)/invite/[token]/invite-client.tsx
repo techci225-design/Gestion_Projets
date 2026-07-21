@@ -66,12 +66,12 @@ export default function InviteClient({
   }
 
   return (
-    <div className="w-full">
+    <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl w-full">
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-text-primary">
+        <h1 className="text-2xl font-bold text-white">
           Vous avez été invité à rejoindre {orgName}
         </h1>
-        <p className="text-text-secondary mt-2">
+        <p className="text-white/70 mt-2 text-sm font-medium">
           {isExistingUser 
             ? `Connectez-vous avec ${email} pour accepter`
             : "Créez votre compte pour accepter l'invitation"
@@ -81,46 +81,46 @@ export default function InviteClient({
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-3 bg-danger/10 text-danger text-sm rounded-lg border border-danger/20">
+          <div className="p-3 bg-red-500/10 text-red-200 text-sm rounded-lg border border-red-500/20">
             {error}
           </div>
         )}
 
         <div>
-          <label className="block text-sm font-medium text-text-primary mb-1">Email</label>
+          <label className="block text-xs font-semibold text-white/90 mb-1">Email</label>
           <input
             type="email"
             value={email}
             disabled
-            className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-surface-dim text-text-secondary cursor-not-allowed"
+            className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white/50 cursor-not-allowed focus:outline-none text-sm"
           />
         </div>
 
         {!isExistingUser && (
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">Prénom</label>
+              <label className="block text-xs font-semibold text-white/90 mb-1">Prénom</label>
               <input
                 type="text"
                 name="firstName"
                 required
-                className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
+                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-blue-400/50 text-sm"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">Nom</label>
+              <label className="block text-xs font-semibold text-white/90 mb-1">Nom</label>
               <input
                 type="text"
                 name="lastName"
                 required
-                className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
+                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-blue-400/50 text-sm"
               />
             </div>
           </div>
         )}
 
         <div>
-          <label className="block text-sm font-medium text-text-primary mb-1">Mot de passe</label>
+          <label className="block text-xs font-semibold text-white/90 mb-1">Mot de passe</label>
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -128,12 +128,12 @@ export default function InviteClient({
               required
               minLength={8}
               placeholder="Min. 8 caractères"
-              className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
+              className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-blue-400/50 text-sm"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-2.5 text-text-tertiary hover:text-text-primary"
+              className="absolute right-3 top-2.5 text-white/50 hover:text-white"
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -142,19 +142,19 @@ export default function InviteClient({
 
         {!isExistingUser && (
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1">Confirmer le mot de passe</label>
+            <label className="block text-xs font-semibold text-white/90 mb-1">Confirmer le mot de passe</label>
             <div className="relative">
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 name="confirmPassword"
                 required
                 minLength={8}
-                className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
+                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-blue-400/50 text-sm"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-2.5 text-text-tertiary hover:text-text-primary"
+                className="absolute right-3 top-2.5 text-white/50 hover:text-white"
               >
                 {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -165,7 +165,7 @@ export default function InviteClient({
         <button
           type="submit"
           disabled={isPending}
-          className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2.5 rounded-lg transition-colors mt-6 disabled:opacity-70"
+          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-xl transition-all mt-6 shadow-lg shadow-blue-500/30 disabled:opacity-70 text-sm"
         >
           {isPending 
             ? 'Veuillez patienter...' 
