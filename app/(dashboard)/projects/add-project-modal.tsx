@@ -20,6 +20,7 @@ export function AddProjectModal() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [description, setDescription] = useState('')
+  const [currency, setCurrency] = useState('FCFA')
 
   // Step 2: Funding
   const [fundingSources, setFundingSources] = useState<{ id: string, name: string, type: string, amount: number }[]>([
@@ -51,6 +52,7 @@ export function AddProjectModal() {
         start_date: startDate,
         end_date: endDate,
         description,
+        currency,
         funding_sources: fundingSources.filter(fs => fs.name.trim() !== '' && fs.amount > 0),
         budget_lines: budgetLines.filter(bl => bl.code.trim() !== '' && bl.label.trim() !== '' && bl.amount > 0)
       }
@@ -203,6 +205,13 @@ export function AddProjectModal() {
                     </div>
                   </div>
                   <div>
+                    <label className="block text-sm font-medium text-text-primary mb-1">Devise du projet *</label>
+                    <select value={currency} onChange={e => setCurrency(e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-surface">
+                      <option value="FCFA">FCFA</option>
+                      <option value="USD">USD ($)</option>
+                    </select>
+                  </div>
+                  <div>
                     <label className="block text-sm font-medium text-text-primary mb-1">Description (Optionnel)</label>
                     <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none" placeholder="Description courte du projet..." />
                   </div>
@@ -219,19 +228,20 @@ export function AddProjectModal() {
                   {fundingSources.map((fs, idx) => (
                     <div key={fs.id} className="flex items-start gap-3 bg-surface p-4 rounded-lg border border-border shadow-sm">
                       <div className="flex-1">
-                        <label className="block text-xs font-medium text-text-secondary mb-1">Nom du bailleur</label>
+                        <label className="block text-xs font-medium text-text-secondary mb-1">Nom du prêteur</label>
                         <input type="text" value={fs.name} onChange={e => updateFundingSource(fs.id, 'name', e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Ex: Banque Mondiale" />
                       </div>
                       <div className="w-32">
                         <label className="block text-xs font-medium text-text-secondary mb-1">Type</label>
                         <select value={fs.type} onChange={e => updateFundingSource(fs.id, 'type', e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-surface">
                           <option value="bailleur">Bailleur</option>
-                          <option value="contrepartie">Contrepartie État</option>
+                          <option value="donateur">Donateur</option>
+                          <option value="etat">Etat</option>
                           <option value="autre">Autre</option>
                         </select>
                       </div>
                       <div className="flex-1">
-                        <label className="block text-xs font-medium text-text-secondary mb-1">Montant engagé (FCFA)</label>
+                        <label className="block text-xs font-medium text-text-secondary mb-1">Montant demandé ({currency})</label>
                         <input type="number" min="0" value={fs.amount || ''} onChange={e => updateFundingSource(fs.id, 'amount', Number(e.target.value))} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="0" />
                       </div>
                       {fundingSources.length > 1 && (
@@ -248,7 +258,7 @@ export function AddProjectModal() {
 
                   <div className="mt-6 p-4 bg-surface rounded-lg border border-border shadow-sm flex justify-between items-center">
                     <span className="font-semibold text-text-primary">Total du financement :</span>
-                    <span className="text-xl font-bold text-success">{formatCurrency(totalFunding)}</span>
+                    <span className="text-xl font-bold text-success">{formatCurrency(totalFunding, currency)}</span>
                   </div>
                 </div>
               )}

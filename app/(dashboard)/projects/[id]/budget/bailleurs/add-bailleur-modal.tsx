@@ -60,7 +60,7 @@ export function AddBailleurModal({
           {error && <div className="p-3 bg-danger/10 text-danger rounded-lg text-sm">{error}</div>}
           
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1">Nom du bailleur</label>
+            <label className="block text-sm font-medium text-text-primary mb-1">Nom du prêteur</label>
             <input
               required
               type="text"
@@ -78,14 +78,15 @@ export function AddBailleurModal({
               onChange={e => setType(e.target.value)}
               className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-surface transition-all"
             >
-              <option value="subvention">Subvention</option>
-              <option value="pret">Prêt</option>
-              <option value="fonds_propres">Fonds propres</option>
+              <option value="bailleur">Bailleur</option>
+              <option value="donateur">Donateur</option>
+              <option value="etat">Etat</option>
+              <option value="autre">Autre</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1">Montant engagé (FCFA)</label>
+            <label className="block text-sm font-medium text-text-primary mb-1">Montant demandé</label>
             <input
               required
               type="number"

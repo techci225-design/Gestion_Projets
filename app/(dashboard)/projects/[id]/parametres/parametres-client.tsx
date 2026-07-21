@@ -334,7 +334,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                     <form onSubmit={handleAddBailleur} className="space-y-4">
                       {bailleurError && <div className="p-3 bg-danger/10 text-danger text-sm rounded-md">{bailleurError}</div>}
                       <div>
-                        <label className="block text-sm font-medium text-text-secondary mb-1">Nom du bailleur</label>
+                        <label className="block text-sm font-medium text-text-secondary mb-1">Nom du prêteur</label>
                         <input
                           type="text"
                           required
@@ -345,7 +345,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-text-secondary mb-1">Montant engagé (FCFA)</label>
+                        <label className="block text-sm font-medium text-text-secondary mb-1">Montant demandé</label>
                         <input
                           type="number"
                           required
