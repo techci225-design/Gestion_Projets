@@ -5,11 +5,11 @@ export default function AuthLayout({
 }) {
   return (
     <div 
-      className="flex min-h-screen items-center justify-center bg-cover bg-center bg-no-repeat relative overflow-x-hidden"
+      className="flex min-h-screen flex-col bg-cover bg-center bg-no-repeat relative overflow-x-hidden"
       style={{ backgroundImage: 'url("/bridge-bg.jpg")' }}
     >
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]"></div>
-      <div className="w-full max-w-md px-4 sm:px-6 relative z-10 mx-auto">
+      <div className="w-full max-w-md px-4 sm:px-6 py-8 sm:py-12 relative z-10 mx-auto my-auto">
         {children}
       </div>
     </div>
