@@ -4,6 +4,7 @@ import * as ExcelJS from 'exceljs'
 import { createClient } from '../supabase/server'
 import { revalidatePath } from 'next/cache'
 import { requireRole } from './auth.actions'
+import { cookies } from 'next/headers'
 
 export async function parseExcelHeaders(formData: FormData) {
   const file = formData.get('file') as File
@@ -214,15 +215,18 @@ export async function importProjectFromExcel(data: {
 
     const validTasks = wbsTasks.filter(t => t.code && t.description && t.date_start && t.date_end);
 
-    if (validTasks.length > 0) {
-      const { error: tasksError } = await supabase
-        .from('wbs_tasks')
-        .insert(validTasks);
+    if (validTasks.length === 0) {
+      await supabase.from('projects').delete().eq('id', projectId);
+      throw new Error("Aucune tâche valide trouvée. Vérifiez que votre fichier respecte strictement le modèle (colonnes: Code Tâche, Description, Date Début, Date Fin requises).");
+    }
 
-      if (tasksError) {
-        await supabase.from('projects').delete().eq('id', projectId);
-        throw new Error(`Erreur insertion des tâches: ${tasksError.message}`);
-      }
+    const { error: tasksError } = await supabase
+      .from('wbs_tasks')
+      .insert(validTasks);
+
+    if (tasksError) {
+      await supabase.from('projects').delete().eq('id', projectId);
+      throw new Error(`Erreur insertion des tâches: ${tasksError.message}`);
     }
 
     return { success: true, projectId };
@@ -269,15 +273,18 @@ export async function importTasksToExistingProject(projectId: string, tasksData:
 
     const validTasks = wbsTasks.filter(t => t.code && t.description && t.date_start && t.date_end);
 
-    if (validTasks.length > 0) {
-      const { data: insertedTasks, error: tasksError } = await supabase
-        .from('wbs_tasks')
-        .insert(validTasks)
-        .select();
+    if (validTasks.length === 0) {
+      throw new Error("Aucune tâche valide trouvée. Vérifiez que votre fichier respecte strictement le modèle (colonnes: Code Tâche, Description, Date Début, Date Fin requises).");
+    }
 
-      if (tasksError) {
-        throw new Error(`Erreur insertion des tâches: ${tasksError.message}`);
-      }
+    const { data: insertedTasks, error: tasksError } = await supabase
+      .from('wbs_tasks')
+      .insert(validTasks)
+      .select();
+
+    if (tasksError) {
+      throw new Error(`Erreur insertion des tâches: ${tasksError.message}`);
+    }
 
       if (insertedTasks && insertedTasks.length > 0) {
         const ptbaActivities = insertedTasks.map(t => ({
