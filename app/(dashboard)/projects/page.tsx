@@ -275,7 +275,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
         ) : (
           <>
             {/* 1. BLOC KPIs GLOBAUX */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-sm font-medium text-text-secondary">Projets actifs</span>
@@ -286,24 +286,24 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                 <div className="text-2xl font-bold text-text-primary">{activeProjects.length}</div>
               </div>
               
-              <div className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between">
+              <div className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between min-w-0">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-sm font-medium text-text-secondary">Budget total</span>
-                  <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                  <div className="p-2 bg-primary/10 rounded-lg text-primary shrink-0 ml-2">
                     <Target className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="text-lg font-bold text-text-primary">{formatCurrency(totalBudgetActif)}</div>
+                <div className="text-base sm:text-lg font-bold text-text-primary truncate" title={formatCurrency(totalBudgetActif)}>{formatCurrency(totalBudgetActif)}</div>
               </div>
 
-              <div className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between">
+              <div className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between min-w-0">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-sm font-medium text-text-secondary">Décaissements cumulés</span>
-                  <div className="p-2 bg-success/10 rounded-lg text-success">
+                  <div className="p-2 bg-success/10 rounded-lg text-success shrink-0 ml-2">
                     <DollarSign className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="text-lg font-bold text-text-primary">{formatCurrency(totalDecaisseActif)}</div>
+                <div className="text-base sm:text-lg font-bold text-text-primary truncate" title={formatCurrency(totalDecaisseActif)}>{formatCurrency(totalDecaisseActif)}</div>
               </div>
 
               <div className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between">
