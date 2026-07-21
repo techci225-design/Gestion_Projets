@@ -54,14 +54,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-white/10 backdrop-blur-md border border-white/20 w-full rounded-2xl shadow-2xl p-6 sm:p-10 relative overflow-hidden mx-auto">
+    <div className="bg-white/10 backdrop-blur-md border border-white/20 w-full rounded-2xl shadow-2xl p-5 sm:p-10 relative overflow-hidden mx-auto">
       
       {/* Decorative gradient blob */}
       <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
       <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
 
       {/* Header */}
-      <div className="text-center mb-6 sm:mb-10 relative z-10">
+      <div className="text-center mb-5 sm:mb-10 relative z-10">
         <div className="flex items-center justify-center gap-3 mb-2 sm:mb-3 text-white">
           <div className="p-2 sm:p-3 bg-white/10 rounded-xl backdrop-blur-sm border border-white/20 shadow-inner">
             <BriefcaseBusiness className="w-6 h-6 sm:w-8 sm:h-8" />
@@ -182,7 +182,7 @@ export default function LoginPage() {
           )}
         </button>
 
-        <div className="text-center mt-5 sm:mt-8">
+        <div className="text-center mt-4 sm:mt-8">
           <p className="text-xs sm:text-sm text-white/70">
             Pas encore de compte ?{' '}
             <Link href="/register" className="font-semibold text-white hover:underline transition-all">
