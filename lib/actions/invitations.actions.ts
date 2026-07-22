@@ -230,8 +230,18 @@ export async function acceptInvitation(token: string, formData?: { password?: st
     }
   }
 
-  // 6. Mark invitation as accepted
-  await adminClient.from('invitations').update({ status: 'accepted' }).eq('id', invitation.id)
+  // 6. Mark all pending invitations for this email in this org/project as accepted
+  let updateQuery = adminClient.from('invitations')
+    .update({ status: 'accepted' })
+    .eq('invited_email', invitation.invited_email)
+    .eq('organization_id', invitation.organization_id)
+    .eq('status', 'pending')
+
+  if (invitation.project_id) {
+    updateQuery = updateQuery.eq('project_id', invitation.project_id)
+  }
+
+  await updateQuery
 
   return { success: true }
 }
