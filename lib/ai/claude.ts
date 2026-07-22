@@ -12,7 +12,17 @@ export async function analyzeProject(projectData: object): Promise<string> {
     max_tokens: 1024,
     messages: [{
       role: 'user',
-      content: `Tu es un expert en gestion de projets de développement financés par des bailleurs de fonds (Banque Mondiale, BID). Analyse ces données de projet et donne une réponse en JSON.\n\n${JSON.stringify(projectData)}`
+      content: `Tu es un expert en gestion de projets de développement financés par des bailleurs de fonds. Analyse ces données de projet et donne une réponse en JSON respectant STRICTEMENT ce schéma et rien d'autre (ne mets pas de texte avant ou après) :
+{
+  "sante_globale": "critique" | "vigilance" | "satisfaisante" | "optimale",
+  "resume": "string (un paragraphe court)",
+  "projection": { "date_epuisement_budget": "YYYY-MM-DD" | null, "cout_final_estime": number, "ecart_previsionnel": number },
+  "alertes": [ { "niveau": "critique" | "attention" | "info", "message": "string", "action": "string" } ],
+  "recommandations": [ "string" ]
+}
+
+Données du projet :
+${JSON.stringify(projectData)}`
     }]
   })
   
@@ -53,7 +63,8 @@ Réponds uniquement avec le code et le libellé de la ligne la plus appropriée,
   
   if (response.content[0].type === 'text') {
     try {
-      return JSON.parse(response.content[0].text)
+      const cleanText = response.content[0].text.replace(/```json\n?|```/g, '').trim()
+      return JSON.parse(cleanText)
     } catch (e) {
       return null
     }

@@ -52,9 +52,11 @@ export async function POST(req: Request) {
     const rawResult = await analyzeProject(projectData)
     let jsonResult = null
     try {
-      jsonResult = JSON.parse(rawResult)
+      const cleanResult = rawResult.replace(/```json\n?|```/g, '').trim()
+      jsonResult = JSON.parse(cleanResult)
     } catch (e) {
-      return NextResponse.json({ error: 'Failed to parse AI response' }, { status: 500 })
+      console.error('AI Parse Error:', rawResult)
+      return NextResponse.json({ error: 'Failed to parse AI response: ' + rawResult.substring(0, 100) }, { status: 500 })
     }
 
     // Save to DB

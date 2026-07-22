@@ -43,7 +43,12 @@ export function EvmAiAnalysis({ projectId }: { projectId: string }) {
         body: JSON.stringify({ projectId })
       })
       if (!res.ok) {
-        throw new Error('Erreur lors de la génération de l\'analyse')
+        let errStr = 'Erreur lors de la génération de l\'analyse'
+        try {
+          const errData = await res.json()
+          if (errData.error) errStr = errData.error
+        } catch (e) {}
+        throw new Error(errStr)
       }
       const result: AiResult = await res.json()
       setData(result)
