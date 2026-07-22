@@ -7,7 +7,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || 'dummy_key' }
 
 export async function analyzeProject(projectData: object): Promise<string> {
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-1.5-flash',
     contents: `Tu es un expert en gestion de projets de développement financés par des bailleurs de fonds. Analyse ces données de projet et donne une réponse en JSON respectant STRICTEMENT ce schéma et rien d'autre (ne mets pas de texte avant ou après) :
 {
   "sante_globale": "critique" | "vigilance" | "satisfaisante" | "optimale",
@@ -30,7 +30,7 @@ ${JSON.stringify(projectData)}`,
 
 export async function generateExecutiveSummary(projectData: object): Promise<string> {
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-1.5-flash',
     contents: `Tu es un consultant expert en projets bailleurs. Rédige un résumé exécutif de 200 mots en français pour ce rapport de supervision de projet. Sois factuel, institutionnel et précis. Mentionne les chiffres clés. Réponds uniquement avec le texte du résumé, sans titre.\n\nDonnées du projet : ${JSON.stringify(projectData)}`,
     config: {
       temperature: 0.3
@@ -42,7 +42,7 @@ export async function generateExecutiveSummary(projectData: object): Promise<str
 
 export async function suggestBudgetLine(taskDescription: string, budgetLines: any[]): Promise<{ code: string, label: string } | null> {
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-1.5-flash',
     contents: `Suggère-moi la ligne budgétaire la plus probable pour cette tâche dans un projet de développement bailleur.
 Description de la tâche : '${taskDescription}'
 Lignes budgétaires disponibles : ${JSON.stringify(budgetLines.map(b => ({ code: b.code, label: b.label })))}
