@@ -46,12 +46,27 @@ export async function GET(request: Request) {
     supabase.from('risks').select('*').eq('project_id', projectId).order('criticality', { ascending: false })
   ])
 
-  // Date format en français
   const dateString = new Date().toLocaleDateString('fr-FR', {
     day: 'numeric',
     month: 'long',
     year: 'numeric'
   })
+
+  // Appel à Claude pour le résumé exécutif
+  const { generateExecutiveSummary } = await import('@/lib/ai/claude')
+  let executiveSummary = ''
+  try {
+    executiveSummary = await generateExecutiveSummary({
+      project,
+      total_budget: evmSummary?.bac_total,
+      cpi: evmSummary?.cpi_global,
+      spi: evmSummary?.spi_global,
+      risks: risks?.length || 0,
+      budget_consumption_rate: (budgetConsumption.reduce((acc: number, curr: any) => acc + (curr.total_decaisse || 0), 0) / budgetConsumption.reduce((acc: number, curr: any) => acc + (curr.initial_allocated_amount || 0), 0)) * 100
+    })
+  } catch (e) {
+    console.error('Claude AI Error:', e)
+  }
 
   const data = {
     project,
@@ -61,7 +76,8 @@ export async function GET(request: Request) {
     evmIndicators: evmIndicators || [],
     procurementPlan: procurementPlan || [],
     risks: risks || [],
-    dateString
+    dateString,
+    executiveSummary
   }
 
   try {

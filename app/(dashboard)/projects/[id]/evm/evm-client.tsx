@@ -8,6 +8,7 @@ import { formatCurrency } from '@/lib/utils/format-currency'
 import { AddEvmTaskModal } from './add-evm-task-modal'
 import { EvmHistory } from './evm-history'
 import { ImportTasksButton } from '@/components/dashboard/ImportTasksButton'
+import { EvmAiAnalysis } from '@/components/dashboard/evm-ai-analysis'
 
 function AlertBadge({ value }: { value: number }) {
   if (value >= 1) {
@@ -196,6 +197,8 @@ export function EvmClient({
           </div>
         </div>
       </div>
+
+      <EvmAiAnalysis projectId={projectId} />
 
       {/* Data Table */}
       <div className="bg-white/90 backdrop-blur-sm border border-white/20 shadow-sm rounded-xl flex flex-col">

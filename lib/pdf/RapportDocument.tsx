@@ -95,6 +95,17 @@ export const RapportDocument = ({ data }: { data: any }) => {
         <Text style={styles.coverFooter}>Généré avec ProjetPilote</Text>
       </Page>
 
+      {data.executiveSummary && (
+        <Page size="A4" style={styles.page} wrap>
+          <View style={styles.section}>
+            <Text style={styles.sectionHeader}>RÉSUMÉ EXÉCUTIF</Text>
+            <Text style={{ fontSize: 14, lineHeight: 1.5, color: '#334155', textAlign: 'justify' }}>
+              {data.executiveSummary}
+            </Text>
+          </View>
+        </Page>
+      )}
+
       <Page size="A4" style={styles.page} wrap>
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>1. Cadre Logique</Text>

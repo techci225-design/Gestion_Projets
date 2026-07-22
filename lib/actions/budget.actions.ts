@@ -157,7 +157,7 @@ export async function batchUpdateOperationsFromBank(projectId: string, updates: 
 const fundingSourceSchema = z.object({
   project_id: z.string().uuid(),
   name: z.string().min(1),
-  type: z.enum(['subvention', 'pret', 'fonds_propres']),
+  type: z.enum(['bailleur', 'donateur', 'etat', 'contrepartie', 'autre']),
   amount_committed: z.number().min(0)
 })
 
