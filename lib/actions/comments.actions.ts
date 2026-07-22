@@ -1,7 +1,6 @@
 'use server'
 
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 
 export async function addComment(
   projectId: string,
@@ -9,7 +8,7 @@ export async function addComment(
   relatedId: string,
   content: string
 ) {
-  const supabase = createServerActionClient({ cookies })
+  const supabase = await createClient()
   const { data: { session } } = await supabase.auth.getSession()
 
   if (!session) {
@@ -46,7 +45,7 @@ export async function addComment(
 }
 
 export async function updateComment(commentId: string, content: string) {
-  const supabase = createServerActionClient({ cookies })
+  const supabase = await createClient()
   const { data: { session } } = await supabase.auth.getSession()
 
   if (!session) return { error: 'Non autorisé' }
@@ -67,7 +66,7 @@ export async function updateComment(commentId: string, content: string) {
 }
 
 export async function deleteComment(commentId: string) {
-  const supabase = createServerActionClient({ cookies })
+  const supabase = await createClient()
   const { data: { session } } = await supabase.auth.getSession()
 
   if (!session) return { error: 'Non autorisé' }
@@ -86,7 +85,7 @@ export async function deleteComment(commentId: string) {
 }
 
 export async function getComments(relatedTable: string, relatedId: string) {
-  const supabase = createServerActionClient({ cookies })
+  const supabase = await createClient()
   
   const { data, error } = await supabase
     .from('comments')

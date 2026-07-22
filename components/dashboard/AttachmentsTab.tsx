@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Upload, File as FileIcon, X, Download, Loader2, FileText, FileSpreadsheet, Image as ImageIcon } from 'lucide-react'
 import { getAttachments, uploadAttachment, deleteAttachment } from '@/lib/actions/attachments.actions'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
@@ -21,14 +21,11 @@ export function AttachmentsTab({ projectId, relatedTable, relatedId }: Attachmen
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setCurrentUserId(data.session.user.id)
-    })
     loadAttachments()
-  }, [relatedId])
+  }, [projectId, relatedTable, relatedId])
 
   const loadAttachments = async () => {
     setIsLoading(true)

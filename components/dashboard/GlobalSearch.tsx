@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import { Search, Loader2, Clock, MapPin, Briefcase, AlertTriangle, ListTodo, X } from 'lucide-react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
 export function GlobalSearch({ currentOrgId }: { currentOrgId: string }) {
@@ -13,7 +13,7 @@ export function GlobalSearch({ currentOrgId }: { currentOrgId: string }) {
   const [recentSearches, setRecentSearches] = useState<any[]>([])
   
   const searchInputRef = useRef<HTMLInputElement>(null)
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
   const router = useRouter()
 
   useEffect(() => {

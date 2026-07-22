@@ -102,7 +102,7 @@ export default function RegisterPage() {
 
     } catch (err: any) {
       if (err instanceof z.ZodError) {
-        setError(err.errors[0].message)
+        setError(err.issues[0]?.message || 'Erreur de validation')
       } else {
         setError(err.message || 'Une erreur est survenue.')
       }

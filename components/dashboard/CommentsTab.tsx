@@ -6,7 +6,7 @@ import { getComments, addComment, updateComment, deleteComment } from '@/lib/act
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 
 interface CommentsTabProps {
   projectId: string
@@ -23,7 +23,7 @@ export function CommentsTab({ projectId, relatedTable, relatedId }: CommentsTabP
   const [editContent, setEditContent] = useState('')
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
 

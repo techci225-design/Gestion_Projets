@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/server'
 import { cookies } from 'next/headers'
 
 export async function uploadAttachment(
@@ -12,7 +12,7 @@ export async function uploadAttachment(
   fileType: string,
   filePath: string
 ) {
-  const supabase = createServerActionClient({ cookies })
+  const supabase = await createClient()
   const { data: { session } } = await supabase.auth.getSession()
 
   if (!session) {
@@ -70,7 +70,7 @@ export async function uploadAttachment(
 }
 
 export async function deleteAttachment(attachmentId: string) {
-  const supabase = createServerActionClient({ cookies })
+  const supabase = await createClient()
   const { data: { session } } = await supabase.auth.getSession()
 
   if (!session) return { error: 'Non autorisé' }
@@ -126,7 +126,7 @@ export async function deleteAttachment(attachmentId: string) {
 }
 
 export async function getAttachments(relatedTable: string, relatedId: string) {
-  const supabase = createServerActionClient({ cookies })
+  const supabase = await createClient()
   
   const { data, error } = await supabase
     .from('attachments')

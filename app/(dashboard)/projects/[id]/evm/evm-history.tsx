@@ -160,7 +160,7 @@ export function EvmHistory({ projectId, snapshots, currentSummary }: { projectId
                 <YAxis stroke="#64748b" fontSize={12} domain={['auto', 'auto']} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#f8fafc' }}
-                  labelFormatter={(val) => new Date(val).toLocaleDateString('fr-FR')}
+                  labelFormatter={(val) => new Date(val as any).toLocaleDateString('fr-FR')}
                   formatter={(value: any, name: any) => [Number(value).toFixed(2), String(name)]}
                 />
                 <Legend />

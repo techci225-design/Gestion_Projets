@@ -56,7 +56,7 @@ export default async function ParametresPage({ params }: { params: Promise<{ id:
       fundingSources={fundingSources || []}
       budgetLines={budgetLines || []}
       wbsTasks={wbsTasks || []}
-      userRole={undefined}
+      userRole={''}
     />
   )
 }
