@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Sparkles, AlertTriangle, Info, AlertCircle, RefreshCw } from 'lucide-react'
+import { Sparkles, AlertTriangle, Info, AlertCircle, RefreshCw, ChevronDown } from 'lucide-react'
 
 type AiResult = {
   sante_globale: 'critique' | 'vigilance' | 'satisfaisante' | 'optimale'
@@ -19,6 +19,7 @@ export function EvmAiAnalysis({ projectId }: { projectId: string }) {
   const [data, setData] = useState<AiResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isExpanded, setIsExpanded] = useState(false)
 
   const fetchAnalysis = async (forceRefresh = false) => {
     // If not forcing, check localStorage cache (1 hour)
@@ -131,31 +132,47 @@ export function EvmAiAnalysis({ projectId }: { projectId: string }) {
               "{data.resume}"
             </div>
 
-            {data.alertes.length > 0 && (
-              <div className="space-y-2 mt-4">
-                <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-orange-500" /> Points d'attention
-                </h3>
-                {data.alertes.map((a, idx) => (
-                  <div key={idx} className="flex items-start gap-2 bg-surface-dim/50 p-3 rounded-lg">
-                    {a.niveau === 'critique' ? <AlertCircle className="w-4 h-4 text-red-500 mt-0.5" /> : <Info className="w-4 h-4 text-orange-400 mt-0.5" />}
-                    <div>
-                      <p className="text-sm font-medium text-text-primary">{a.message}</p>
-                      <p className="text-xs text-text-secondary mt-1"><span className="font-semibold">Action :</span> {a.action}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            {(data.alertes.length > 0 || data.recommandations.length > 0) && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium flex items-center gap-1 mt-2"
+              >
+                {isExpanded ? 'Masquer les détails' : 'Voir les détails de l\'analyse'}
+                <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+              </button>
             )}
 
-            <div className="mt-4">
-              <h3 className="text-sm font-bold text-text-primary mb-2">Recommandations de l'IA</h3>
-              <ul className="list-disc list-inside space-y-1">
-                {data.recommandations.map((rec, idx) => (
-                  <li key={idx} className="text-sm text-text-secondary">{rec}</li>
-                ))}
-              </ul>
-            </div>
+            {isExpanded && (
+              <div className="space-y-6 mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                {data.alertes.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-bold text-text-primary flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 text-orange-500" /> Points d'attention
+                    </h3>
+                    {data.alertes.map((a, idx) => (
+                      <div key={idx} className="flex items-start gap-2 bg-surface-dim/50 p-3 rounded-lg">
+                        {a.niveau === 'critique' ? <AlertCircle className="w-4 h-4 text-red-500 mt-0.5" /> : <Info className="w-4 h-4 text-orange-400 mt-0.5" />}
+                        <div>
+                          <p className="text-sm font-medium text-text-primary">{a.message}</p>
+                          <p className="text-xs text-text-secondary mt-1"><span className="font-semibold">Action :</span> {a.action}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {data.recommandations.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold text-text-primary mb-2">Recommandations de l'IA</h3>
+                    <ul className="list-disc list-inside space-y-1">
+                      {data.recommandations.map((rec, idx) => (
+                        <li key={idx} className="text-sm text-text-secondary">{rec}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
