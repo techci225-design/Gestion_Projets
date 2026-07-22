@@ -52,17 +52,17 @@ export function MembresClient({ projectId, organizationId, members, pendingInvit
   const getRoleBadge = (role: string) => {
     switch(role) {
       case 'owner':
-        return <span className="bg-blue-900 text-blue-100 text-xs px-2 py-1 rounded">Propriétaire</span>
+        return <span className="bg-blue-900 text-blue-50 text-xs px-2.5 py-1 rounded-md font-medium">Propriétaire</span>
       case 'chef_projet':
-        return <span className="bg-primary text-white text-xs px-2 py-1 rounded">Chef de Projet</span>
+        return <span className="bg-slate-800 text-slate-50 text-xs px-2.5 py-1 rounded-md font-medium">Chef de Projet</span>
       case 'comptable':
-        return <span className="bg-secondary text-white text-xs px-2 py-1 rounded">Comptable</span>
+        return <span className="bg-emerald-600 text-emerald-50 text-xs px-2.5 py-1 rounded-md font-medium">Comptable</span>
       case 'bailleur_lecture':
-        return <span className="bg-surface-variant text-primary text-xs px-2 py-1 rounded">Bailleur (Lecture)</span>
+        return <span className="bg-amber-100 text-amber-800 border border-amber-200 text-xs px-2.5 py-1 rounded-md font-medium">Bailleur (Lecture)</span>
       case 'consultant':
-        return <span className="bg-tertiary-fixed text-on-tertiary-container text-xs px-2 py-1 rounded">Consultant</span>
+        return <span className="bg-purple-100 text-purple-800 border border-purple-200 text-xs px-2.5 py-1 rounded-md font-medium">Consultant</span>
       default:
-        return <span className="bg-surface-dim text-primary text-xs px-2 py-1 rounded">{role}</span>
+        return <span className="bg-slate-100 text-slate-800 border border-slate-200 text-xs px-2.5 py-1 rounded-md font-medium">{role}</span>
     }
   }
 
