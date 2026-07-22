@@ -31,9 +31,21 @@ function ProgressBar({ percentage }: { percentage: number }) {
 }
 
 import { AddBailleurModal } from './add-bailleur-modal'
+import { Edit2 } from 'lucide-react'
 
 export function BailleursClient({ projectId, bailleurs }: { projectId: string, bailleurs: any[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingBailleur, setEditingBailleur] = useState<any>(null)
+
+  const handleOpenEdit = (item: any) => {
+    setEditingBailleur(item)
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setEditingBailleur(null)
+    setIsModalOpen(false)
+  }
 
   return (
     <div className="p-6 pb-24 md:pb-6">
@@ -43,7 +55,7 @@ export function BailleursClient({ projectId, bailleurs }: { projectId: string, b
           <p className="text-base text-text-secondary">Suivi des engagements et décaissements par bailleur.</p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => { setEditingBailleur(null); setIsModalOpen(true); }}
           className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity"
         >
           <Plus className="w-4 h-4" />
@@ -62,6 +74,7 @@ export function BailleursClient({ projectId, bailleurs }: { projectId: string, b
                 <th className="p-4 text-xs font-medium text-text-secondary text-right">Total Décaissé (FCFA)</th>
                 <th className="p-4 text-xs font-medium text-text-secondary text-right">Solde Restant (FCFA)</th>
                 <th className="p-4 text-xs font-medium text-text-secondary w-40">Taux d'utilisation</th>
+                <th className="p-4 w-12"></th>
               </tr>
             </thead>
             <tbody className="text-sm text-text-primary">
@@ -79,11 +92,20 @@ export function BailleursClient({ projectId, bailleurs }: { projectId: string, b
                   <td className="p-4">
                     <ProgressBar percentage={Number(item.taux_utilisation) * 100} />
                   </td>
+                  <td className="p-4 text-right">
+                    <button 
+                      onClick={() => handleOpenEdit(item)}
+                      className="p-1.5 text-text-secondary hover:text-primary hover:bg-primary/10 rounded transition-colors"
+                      title="Modifier"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                  </td>
                 </tr>
               ))}
               {bailleurs.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-text-secondary">Aucune source de financement trouvée.</td>
+                  <td colSpan={7} className="p-8 text-center text-text-secondary">Aucune source de financement trouvée.</td>
                 </tr>
               )}
             </tbody>
@@ -93,7 +115,8 @@ export function BailleursClient({ projectId, bailleurs }: { projectId: string, b
       <AddBailleurModal 
         projectId={projectId} 
         isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+        onClose={handleCloseModal}
+        initialData={editingBailleur}
       />
     </div>
   )

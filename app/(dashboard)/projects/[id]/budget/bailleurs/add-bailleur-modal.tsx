@@ -2,22 +2,40 @@
 
 import React, { useState } from 'react'
 import { X, Save } from 'lucide-react'
-import { createFundingSource } from '@/lib/actions/budget.actions'
+import { createFundingSource, updateFundingSource } from '@/lib/actions/budget.actions'
 
 export function AddBailleurModal({
   projectId,
   isOpen,
-  onClose
+  onClose,
+  initialData
 }: {
   projectId: string
   isOpen: boolean
   onClose: () => void
+  initialData?: any
 }) {
   const [name, setName] = useState('')
   const [type, setType] = useState('subvention')
   const [amountCommitted, setAmountCommitted] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Reset form when modal opens or initialData changes
+  React.useEffect(() => {
+    if (isOpen) {
+      if (initialData) {
+        setName(initialData.name || initialData.bailleur_name || '')
+        setType(initialData.type || 'subvention')
+        setAmountCommitted(initialData.amount_committed?.toString() || initialData.total_engage?.toString() || '')
+      } else {
+        setName('')
+        setType('subvention')
+        setAmountCommitted('')
+      }
+      setError(null)
+    }
+  }, [isOpen, initialData])
 
   if (!isOpen) return null
 
@@ -33,15 +51,18 @@ export function AddBailleurModal({
       amount_committed: parseFloat(amountCommitted)
     }
 
-    const res = await createFundingSource(payload)
+    let res;
+    if (initialData?.id || initialData?.funding_source_id) {
+      res = await updateFundingSource(initialData.id || initialData.funding_source_id, payload)
+    } else {
+      res = await createFundingSource(payload)
+    }
+
     if (res.error) {
       setError(res.error)
       setIsSubmitting(false)
     } else {
       setIsSubmitting(false)
-      setName('')
-      setType('subvention')
-      setAmountCommitted('')
       onClose()
     }
   }
@@ -50,7 +71,9 @@ export function AddBailleurModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/20 backdrop-blur-sm">
       <div className="bg-surface rounded-xl shadow-lg w-full max-w-md border border-border animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="text-lg font-semibold text-text-primary">Nouvelle Source de Financement</h2>
+          <h2 className="text-lg font-semibold text-text-primary">
+            {initialData ? 'Modifier la Source' : 'Nouvelle Source de Financement'}
+          </h2>
           <button onClick={onClose} className="p-2 rounded-lg text-text-secondary hover:bg-surface-dim hover:text-text-primary transition-colors">
             <X className="w-5 h-5" />
           </button>
@@ -60,7 +83,7 @@ export function AddBailleurModal({
           {error && <div className="p-3 bg-danger/10 text-danger rounded-lg text-sm">{error}</div>}
           
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1">Nom du prêteur</label>
+            <label className="block text-sm font-medium text-text-primary mb-1">Nom du prêteur / bailleur</label>
             <input
               required
               type="text"
@@ -81,12 +104,13 @@ export function AddBailleurModal({
               <option value="bailleur">Bailleur</option>
               <option value="donateur">Donateur</option>
               <option value="etat">Etat</option>
+              <option value="subvention">Subvention</option>
               <option value="autre">Autre</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1">Montant demandé</label>
+            <label className="block text-sm font-medium text-text-primary mb-1">Montant engagé</label>
             <input
               required
               type="number"
@@ -98,11 +122,10 @@ export function AddBailleurModal({
             />
           </div>
 
-          <div className="pt-4 flex justify-end gap-3">
+          <div className="pt-4 flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              disabled={isSubmitting}
               className="px-4 py-2 text-sm font-medium text-text-secondary hover:text-text-primary hover:bg-surface-dim rounded-lg transition-colors"
             >
               Annuler
@@ -110,7 +133,7 @@ export function AddBailleurModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
             >
               <Save className="w-4 h-4" />
               {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}

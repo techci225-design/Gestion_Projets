@@ -161,30 +161,55 @@ const fundingSourceSchema = z.object({
   amount_committed: z.number().min(0)
 })
 
-export async function createFundingSource(data: z.infer<typeof fundingSourceSchema>) {
-  const parsed = fundingSourceSchema.safeParse(data)
-  if (!parsed.success) {
-    return { error: 'Invalid data', details: parsed.error.issues }
-  }
-
+export async function createFundingSource(payload: any) {
   try {
-    await requireRole(parsed.data.project_id, ['owner', 'comptable'])
+    await requireRole(payload.project_id, ['owner', 'chef_projet'])
   } catch (error: any) {
     return { error: error.message }
   }
 
   const supabase = await createClient()
 
-  const { data: result, error } = await supabase
+  const { data, error } = await supabase
     .from('funding_sources')
-    .insert(parsed.data)
+    .insert({
+      project_id: payload.project_id,
+      name: payload.name,
+      type: payload.type,
+      amount_committed: payload.amount_committed
+    })
     .select()
     .single()
 
-  if (error) {
+  if (error) return { error: error.message }
+  
+  revalidatePath(`/projects/${payload.project_id}/budget`)
+  return { success: true, data }
+}
+
+export async function updateFundingSource(id: string, payload: any) {
+  try {
+    await requireRole(payload.project_id, ['owner', 'chef_projet'])
+  } catch (error: any) {
     return { error: error.message }
   }
 
-  revalidatePath(`/projects/${parsed.data.project_id}/budget/bailleurs`)
-  return { data: result }
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('funding_sources')
+    .update({
+      name: payload.name,
+      type: payload.type,
+      amount_committed: payload.amount_committed
+    })
+    .eq('id', id)
+    .eq('project_id', payload.project_id)
+    .select()
+    .single()
+
+  if (error) return { error: error.message }
+  
+  revalidatePath(`/projects/${payload.project_id}/budget`)
+  return { success: true, data }
 }
