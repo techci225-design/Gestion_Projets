@@ -26,5 +26,13 @@ export default async function OnboardingLayout({
     redirect('/projects')
   }
 
+  // Vérifier s'il y a des invitations en attente pour cet email
+  // et les accepter automatiquement pour lui éviter de créer sa propre organisation.
+  const { autoAcceptPendingInvitations } = await import('@/lib/actions/invitations.actions')
+  const acceptedCount = await autoAcceptPendingInvitations()
+  if (acceptedCount > 0) {
+    redirect('/projects')
+  }
+
   return <>{children}</>
 }

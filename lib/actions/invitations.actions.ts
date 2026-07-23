@@ -260,3 +260,48 @@ export async function cancelInvitation(invitationId: string) {
   revalidatePath('/projects')
   return { success: true }
 }
+
+export async function autoAcceptPendingInvitations() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user || !user.email) return 0
+
+  const adminClient = createAdminClient()
+  const { data: pendingInvs, error } = await adminClient
+    .from('invitations')
+    .select('*')
+    .eq('invited_email', user.email)
+    .eq('status', 'pending')
+
+  if (error || !pendingInvs || pendingInvs.length === 0) return 0
+
+  let acceptedCount = 0
+
+  for (const inv of pendingInvs) {
+    // 1. Add to organization
+    await adminClient.from('organization_members').upsert({
+      organization_id: inv.organization_id,
+      user_id: user.id,
+      org_role: 'member'
+    }, { onConflict: 'organization_id, user_id' })
+
+    // 2. Add to project if exists
+    if (inv.project_id) {
+      await adminClient.from('project_members').upsert({
+        project_id: inv.project_id,
+        user_id: user.id,
+        role: inv.invited_role
+      }, { onConflict: 'project_id, user_id' })
+    }
+
+    // 3. Mark as accepted
+    await adminClient.from('invitations')
+      .update({ status: 'accepted' })
+      .eq('id', inv.id)
+
+    acceptedCount++
+  }
+
+  return acceptedCount
+}
