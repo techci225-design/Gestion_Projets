@@ -14,6 +14,9 @@ export interface LogframeItem {
   indicator: string | null
   baseline: string | null
   target: string | null
+  s1_value: string | null
+  s2_value: string | null
+  s3_value: string | null
   verification_source: string | null
   risks_assumptions: string | null
   created_at: string
