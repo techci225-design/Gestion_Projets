@@ -128,13 +128,9 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources }:
                   <th className="p-4 whitespace-nowrap">ID Tâche</th>
                   <th className="p-4 whitespace-nowrap">Phase / WBS</th>
                   <th className="p-4">Ligne Budgétaire</th>
-                  <th className="p-4">Docs</th>
                   <th className="p-4">Statut</th>
                   <th className="p-4 text-right whitespace-nowrap">Coût Prévu (FCFA)</th>
                   <th className="p-4 text-right whitespace-nowrap">Coût Réel (FCFA)</th>
-                  <th className="p-4 text-right whitespace-nowrap">Reste à Engager (FCFA)</th>
-                  <th className="p-4 text-right whitespace-nowrap">Montant Engagé (FCFA)</th>
-                  <th className="p-4 text-right whitespace-nowrap">Montant Décaissé (FCFA)</th>
                   <th className="p-4 text-right whitespace-nowrap">Écart (FCFA)</th>
                 </tr>
               </thead>
@@ -149,22 +145,25 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources }:
                     }}
                   >
                     <td className={`p-4 font-medium text-primary ${item.status === 'annule' ? 'line-through' : ''}`}>
-                      {item.task_code}
+                      <div className="flex items-center gap-2">
+                        {item.task_code}
+                        {item.attachments_count && item.attachments_count > 0 ? (
+                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-500 border border-slate-200" title={`${item.attachments_count} document(s)`}>
+                            <Paperclip className="w-3 h-3" />
+                            {item.attachments_count}
+                          </span>
+                        ) : null}
+                      </div>
                     </td>
                     <td className={`p-4 text-text-secondary ${item.status === 'annule' ? 'line-through' : ''}`}>
-                      {item.phase_wbs || '—'}
+                      <div className="truncate max-w-[150px]" title={item.phase_wbs || ''}>
+                        {item.phase_wbs || '—'}
+                      </div>
                     </td>
-                    <td className={`p-4 truncate max-w-[200px] ${item.status === 'annule' ? 'line-through' : ''}`}>
-                      {item.budget_lines?.code} {item.budget_lines?.label}
-                    </td>
-                    <td className="p-4">
-                      {item.attachments_count && item.attachments_count > 0 ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                          {item.attachments_count} <Paperclip className="w-3 h-3" />
-                        </span>
-                      ) : (
-                        <span className="text-text-tertiary">—</span>
-                      )}
+                    <td className={`p-4 ${item.status === 'annule' ? 'line-through' : ''}`}>
+                      <div className="truncate max-w-[200px]" title={`${item.budget_lines?.code} ${item.budget_lines?.label}`}>
+                        {item.budget_lines?.code} {item.budget_lines?.label}
+                      </div>
                     </td>
                     <td className="p-4">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium ${getStatusBadge(item.status)}`}>
@@ -176,15 +175,6 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources }:
                     </td>
                     <td className={`p-4 text-right font-mono ${item.status === 'annule' ? 'line-through text-text-secondary' : ''}`}>
                       {item.actual_cost !== null && item.status === 'decaisse' ? formatCurrency(item.actual_cost) : '—'}
-                    </td>
-                    <td className={`p-4 text-right font-mono ${item.status === 'annule' ? 'line-through text-text-secondary' : ''}`}>
-                      {item.reste_a_engager > 0 ? formatCurrency(item.reste_a_engager) : '—'}
-                    </td>
-                    <td className={`p-4 text-right font-mono ${item.status === 'annule' ? 'line-through text-text-secondary' : ''}`}>
-                      {item.montant_engage > 0 ? formatCurrency(item.montant_engage) : '—'}
-                    </td>
-                    <td className={`p-4 text-right font-mono ${item.status === 'annule' ? 'line-through text-text-secondary' : ''}`}>
-                      {item.montant_decaisse > 0 ? formatCurrency(item.montant_decaisse) : '—'}
                     </td>
                     <td className={`p-4 text-right font-mono font-medium ${
                       item.status === 'annule' ? 'text-text-secondary line-through' :
