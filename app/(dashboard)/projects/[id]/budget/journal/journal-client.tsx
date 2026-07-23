@@ -252,23 +252,23 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources }:
                   </div>
                   <div>
                     <h4 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-1">Coût Prévu</h4>
-                    <p className="font-mono text-text-primary">{formatCurrency(selectedOperation.planned_cost)} FCFA</p>
+                    <p className="font-mono text-text-primary">{formatCurrency(selectedOperation.planned_cost)}</p>
                   </div>
                   {selectedOperation.actual_cost !== null && (
                     <div>
                       <h4 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-1">Coût Réel</h4>
-                      <p className="font-mono text-text-primary">{formatCurrency(selectedOperation.actual_cost)} FCFA</p>
+                      <p className="font-mono text-text-primary">{formatCurrency(selectedOperation.actual_cost)}</p>
                     </div>
                   )}
                   <div>
                     <h4 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-1">Reste à Engager</h4>
-                    <p className="font-mono text-text-primary">{formatCurrency(selectedOperation.reste_a_engager)} FCFA</p>
+                    <p className="font-mono text-text-primary">{formatCurrency(selectedOperation.reste_a_engager)}</p>
                   </div>
                   <div>
                     <h4 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-1">Écart</h4>
                     <p className={`font-mono ${selectedOperation.ecart_budgetaire >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {selectedOperation.status === 'decaisse' 
-                        ? (selectedOperation.ecart_budgetaire > 0 ? '+' : '') + formatCurrency(selectedOperation.ecart_budgetaire) + ' FCFA'
+                        ? (selectedOperation.ecart_budgetaire > 0 ? '+' : '') + formatCurrency(selectedOperation.ecart_budgetaire)
                         : '—'
                       }
                     </p>
