@@ -29,18 +29,22 @@ export default async function LogframePage({ params }: { params: Promise<{ id: s
     redirect('/projects')
   }
 
-  // 2. Fetch Logframe Items
+  // 2. Fetch Logframe items
   const logframeItems = await getLogframe(id)
 
   return (
     <div className="flex-1 overflow-auto bg-background">
-      <div className="max-w-7xl mx-auto p-6 md:p-8 space-y-8">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">Cadre Logique</h1>
+      <div className="p-6 lg:p-8 max-w-[1600px] mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-primary">Cadre Logique</h1>
           <p className="text-text-secondary mt-1">Structurez l'intervention de votre projet du niveau stratégique (Impact) au niveau opérationnel (Activités).</p>
         </div>
 
-        <LogframeClient projectId={id} initialData={logframeItems} />
+        <LogframeClient 
+          projectId={id} 
+          initialData={logframeItems || []} 
+          project={project}
+        />
       </div>
     </div>
   )
