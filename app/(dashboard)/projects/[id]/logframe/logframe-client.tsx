@@ -360,10 +360,9 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                     return children.map(ind => {
                       const isTopLevel = ind.level === 'objectif_global'
                       const isMidLevel = ind.level === 'objectif_specifique'
-                      const hasNoTracking = !ind.indicator && !ind.target && !ind.baseline
 
-                      // Render top/mid level items as full-width section headers ONLY if they have no tracking data
-                      if ((isTopLevel || isMidLevel) && hasNoTracking) {
+                      // ALWAYS render top/mid level items as full-width section headers in the Suivi tab
+                      if (isTopLevel || isMidLevel) {
                         return (
                           <React.Fragment key={ind.id}>
                             <tr className={`border-b border-blue-200 ${isTopLevel ? 'bg-[#dbeafe]' : 'bg-[#eff6ff]'}`}>
@@ -393,7 +392,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                         )
                       }
 
-                      // Otherwise render as a normal tracking row with columns (Résultats, or Objectifs with data)
+                      // Otherwise render as a normal tracking row with columns (Résultats)
                       return (
                         <React.Fragment key={ind.id}>
                           <tr className="border-b border-blue-100 hover:bg-slate-50 transition-colors bg-white">
