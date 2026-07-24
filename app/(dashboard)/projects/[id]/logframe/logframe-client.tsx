@@ -322,10 +322,9 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                     return children.map(ind => {
                       const isTopLevel = ind.level === 'objectif_global'
                       const isMidLevel = ind.level === 'objectif_specifique'
-                      const hasNoTracking = !ind.indicator && !ind.target && !ind.baseline
 
-                      // If it's a top/mid level item with NO tracking data, render as a full-width section header
-                      if ((isTopLevel || isMidLevel) && hasNoTracking) {
+                      // ALWAYS render top/mid level items as full-width section headers in the Suivi tab
+                      if (isTopLevel || isMidLevel) {
                         return (
                           <React.Fragment key={ind.id}>
                             <tr className={`border-b border-blue-200 ${isTopLevel ? 'bg-[#dbeafe]' : 'bg-[#eff6ff]'}`}>
@@ -345,10 +344,10 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                         )
                       }
 
-                      // Otherwise render as a normal tracking row with columns
+                      // Otherwise render as a normal tracking row with columns (Résultats)
                       return (
                         <React.Fragment key={ind.id}>
-                          <tr className={`border-b border-blue-100 hover:bg-slate-50 transition-colors ${isTopLevel ? 'bg-[#dbeafe]' : isMidLevel ? 'bg-[#eff6ff]' : 'bg-white'}`}>
+                          <tr className="border-b border-blue-100 hover:bg-slate-50 transition-colors bg-white">
                             <td className="p-3 border-r border-blue-100" style={{ paddingLeft: `${Math.max(0.75, depth * 1.5)}rem` }}>
                               <div className="flex items-start justify-between group">
                                 <div>
