@@ -247,7 +247,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                 : 'text-text-secondary hover:text-text-primary'
             }`}
           >
-            Matrice des Résultats (Suivi semestriel)
+            Composante / Résultat (Suivi semestriel)
             {activeTab === 'suivi' && (
               <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600" />
             )}
@@ -298,7 +298,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
       {activeTab === 'suivi' && (
         <div className="border border-blue-900 rounded-sm overflow-hidden bg-white">
           <div className="bg-[#1e3a6a] text-white text-center font-bold py-2 text-sm uppercase tracking-wide">
-            MATRICE DES RÉSULTATS (Suivi semestriel)
+            COMPOSANTE / RÉSULTAT
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse">
