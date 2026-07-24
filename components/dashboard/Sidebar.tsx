@@ -38,13 +38,11 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
     { name: 'Cadre Logique', href: `/projects/${projectId}/logframe`, icon: FolderTree },
     { name: 'PTBA', href: `/projects/${projectId}/ptba`, icon: CalendarDays },
     { name: 'Budget', href: `/projects/${projectId}/budget`, icon: Wallet },
-    { name: 'Sources de financement', href: `/projects/${projectId}/budget/bailleurs`, icon: Landmark },
     { name: 'Journal des opérations', href: `/projects/${projectId}/budget/journal`, icon: Receipt },
     { name: 'Import Relevé', href: `/projects/${projectId}/budget/import-releve`, icon: FileUp },
     { name: 'Suivi EVM (Tâches)', href: `/projects/${projectId}/evm`, icon: TrendingUp },
     { name: 'Passation des Marchés', href: `/projects/${projectId}/marches`, icon: ShoppingCart },
     { name: 'Risques', href: `/projects/${projectId}/risques`, icon: AlertTriangle },
-    { name: 'Membres', href: `/projects/${projectId}/membres`, icon: Users },
     { name: 'Journal d\'Audit', href: `/projects/${projectId}/audit`, icon: ShieldAlert },
   ]
 

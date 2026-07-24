@@ -17,7 +17,7 @@ export default async function ParametresPage({ params }: { params: Promise<{ id:
 
   const { id } = await params
 
-  // 1. Get project details and role
+  // 1. Get project details
   const { data: project } = await supabase
     .from('projects')
     .select('*')
@@ -27,6 +27,16 @@ export default async function ParametresPage({ params }: { params: Promise<{ id:
   if (!project) {
     redirect('/projects')
   }
+
+  // 1b. Get user role in project
+  const { data: member } = await supabase
+    .from('project_members')
+    .select('role')
+    .eq('project_id', id)
+    .eq('user_id', user.id)
+    .single()
+  
+  const userRole = member?.role || ''
 
   // 2. Fetch Funding Sources
   const { data: fundingSources } = await supabase
@@ -49,6 +59,20 @@ export default async function ParametresPage({ params }: { params: Promise<{ id:
     .eq('project_id', id)
     .order('code', { ascending: true })
 
+  // 5. Fetch Members
+  const { data: members } = await supabase
+    .from('project_members')
+    .select('*, profiles(email, full_name)')
+    .eq('project_id', id)
+
+  // 6. Fetch Invitations
+  const { data: invitations } = await supabase
+    .from('invitations')
+    .select('*, invited_by_profile:profiles!invited_by(full_name)')
+    .eq('project_id', id)
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false })
+
   return (
     <ParametresClient
       projectId={id}
@@ -56,7 +80,9 @@ export default async function ParametresPage({ params }: { params: Promise<{ id:
       fundingSources={fundingSources || []}
       budgetLines={budgetLines || []}
       wbsTasks={wbsTasks || []}
-      userRole={''}
+      userRole={userRole}
+      members={members || []}
+      invitations={invitations || []}
     />
   )
 }

@@ -10,6 +10,8 @@ import { AddBudgetModal } from '../budget/add-budget-modal'
 import { AddEvmTaskModal } from '../evm/add-evm-task-modal'
 import { RightDrawer } from '@/components/ui/RightDrawer'
 import { CommentsTab } from '@/components/dashboard/CommentsTab'
+import { MembresClient } from '../membres/membres-client'
+import { Users } from 'lucide-react'
 
 interface ParametresClientProps {
   projectId: string
@@ -18,11 +20,13 @@ interface ParametresClientProps {
   wbsTasks: any[]
   userRole: string
   project?: any
+  members?: any[]
+  invitations?: any[]
 }
 
-export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTasks, userRole, project }: ParametresClientProps) {
+export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTasks, userRole, project, members = [], invitations = [] }: ParametresClientProps) {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<'general' | 'bailleurs' | 'budget' | 'wbs' | 'statuts'>('general')
+  const [activeTab, setActiveTab] = useState<'general' | 'bailleurs' | 'budget' | 'wbs' | 'statuts' | 'membres'>('general')
   
   // Modals state
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false)
@@ -126,14 +130,39 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
         {/* Sidebar Nav */}
         <div className="w-full md:w-64 bg-surface-dim border-b md:border-b-0 md:border-r border-border p-4 flex flex-col gap-2">
           <button
-            onClick={() => setActiveTab('bailleurs')}
+            onClick={() => setActiveTab('general')}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left ${
-              activeTab === 'bailleurs' ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+              activeTab === 'general' ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
             }`}
           >
-            <Wallet className="w-5 h-5" />
-            Sources de Financement
+            <Settings className="w-5 h-5" />
+            Informations générales
           </button>
+          
+          {['owner', 'admin'].includes(userRole) && (
+            <>
+              <button
+                onClick={() => setActiveTab('bailleurs')}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left ${
+                  activeTab === 'bailleurs' ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+                }`}
+              >
+                <Wallet className="w-5 h-5" />
+                Sources de Financement
+              </button>
+              
+              <button
+                onClick={() => setActiveTab('membres')}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left ${
+                  activeTab === 'membres' ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+                }`}
+              >
+                <Users className="w-5 h-5" />
+                Équipe (Membres)
+              </button>
+            </>
+          )}
+
           <button
             onClick={() => setActiveTab('budget')}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left ${
@@ -562,6 +591,18 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                   <p className="text-sm text-text-secondary">L'opération est annulée. Ses montants ne sont plus pris en compte dans les calculs de consommation du budget.</p>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* TAB: Membres */}
+          {activeTab === 'membres' && (
+            <div className="animate-in fade-in duration-300 h-full">
+              <MembresClient 
+                projectId={projectId} 
+                organizationId={project?.organization_id} 
+                members={members} 
+                pendingInvitations={invitations} 
+              />
             </div>
           )}
 
