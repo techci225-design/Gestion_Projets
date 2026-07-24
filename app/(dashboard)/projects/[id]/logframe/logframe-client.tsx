@@ -297,37 +297,31 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                 </tr>
               </thead>
               <tbody>
-                {data.filter(item => item.level === 'objectif_specifique' || item.level === 'resultat').map((group, gIdx) => {
-                  const indicators = data.filter(child => child.parent_id === group.id && child.level !== 'activite')
-                  if (indicators.length === 0) return null
-
-                  return (
-                    <React.Fragment key={group.id}>
-                      <tr className="bg-[#dbeafe]">
-                        <td colSpan={6} className="p-3 font-bold text-[#1e3a6a] border-b border-blue-200">
-                          {levelLabels[group.level]} {gIdx + 1} : {group.intervention_label}
-                        </td>
-                      </tr>
-                      {indicators.map(ind => (
-                        <tr key={ind.id} className="border-b border-blue-100 hover:bg-slate-50 transition-colors">
-                          <td className="p-3 border-r border-blue-100">
-                            <div className="flex items-center justify-between group">
-                              <span className="text-text-primary font-medium">{ind.indicator || ind.intervention_label}</span>
-                              <button onClick={() => openEditModal(ind)} className="opacity-0 group-hover:opacity-100 p-1 text-blue-600 hover:bg-blue-50 rounded" title="Modifier le suivi">
-                                <Edit2 className="w-3 h-3" />
-                              </button>
-                            </div>
-                          </td>
-                          <td className="p-3 text-center border-r border-blue-100 text-text-secondary">{ind.baseline || '0'}</td>
-                          <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s1_value || '—'}</td>
-                          <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s2_value || '—'}</td>
-                          <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s3_value || '—'}</td>
-                          <td className="p-3 text-center text-text-secondary">{ind.target || '—'}</td>
-                        </tr>
-                      ))}
-                    </React.Fragment>
-                  )
-                })}
+                {data.filter(item => item.level !== 'activite').map((ind, idx) => (
+                  <tr key={ind.id} className="border-b border-blue-100 hover:bg-slate-50 transition-colors">
+                    <td className="p-3 border-r border-blue-100">
+                      <div className="flex items-start justify-between group">
+                        <div>
+                          <div className="text-xs font-bold text-blue-600 mb-1">{levelLabels[ind.level]}</div>
+                          <div className="text-text-primary font-medium">{ind.intervention_label}</div>
+                          {ind.indicator ? (
+                            <div className="text-sm text-text-secondary mt-1 italic">Ind: {ind.indicator}</div>
+                          ) : (
+                            <div className="text-sm text-orange-500 mt-1 italic">Aucun indicateur défini</div>
+                          )}
+                        </div>
+                        <button onClick={() => openEditModal(ind)} className="opacity-0 group-hover:opacity-100 p-1.5 text-blue-600 hover:bg-blue-50 rounded flex-shrink-0 ml-2" title="Saisir les données de suivi">
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                    <td className="p-3 text-center border-r border-blue-100 text-text-secondary">{ind.baseline || '0'}</td>
+                    <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s1_value || '—'}</td>
+                    <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s2_value || '—'}</td>
+                    <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s3_value || '—'}</td>
+                    <td className="p-3 text-center text-text-secondary font-bold">{ind.target || '—'}</td>
+                  </tr>
+                ))}
                 {data.length === 0 && (
                   <tr>
                     <td colSpan={6} className="p-8 text-center text-text-secondary">
