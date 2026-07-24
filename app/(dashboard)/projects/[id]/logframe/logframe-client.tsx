@@ -313,38 +313,44 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                 </tr>
               </thead>
               <tbody>
-                {data.filter(item => item.level !== 'activite').map((ind, idx) => (
-                  <tr key={ind.id} className="border-b border-blue-100 hover:bg-slate-50 transition-colors">
-                    <td className="p-3 border-r border-blue-100">
-                      <div className="flex items-start justify-between group">
-                        <div>
-                          <div className="text-xs font-bold text-blue-600 mb-1">{levelLabels[ind.level]}</div>
-                          <div className="text-text-primary font-medium">{ind.intervention_label}</div>
-                          {ind.indicator ? (
-                            <div className="text-sm text-text-secondary mt-1 italic">Ind: {ind.indicator}</div>
-                          ) : (
-                            <div className="text-sm text-orange-500 mt-1 italic">Aucun indicateur défini</div>
-                          )}
+                {(() => {
+                  const matriceData = data.filter(item => item.level !== 'activite')
+                  if (matriceData.length === 0) {
+                    return (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center text-text-secondary">
+                          Aucun résultat, objectif spécifique ou objectif global à afficher dans la matrice.<br/>
+                          <span className="text-xs italic">(Note: Les activités sont suivies dans le PTBA)</span>
+                        </td>
+                      </tr>
+                    )
+                  }
+                  return matriceData.map((ind, idx) => (
+                    <tr key={ind.id} className="border-b border-blue-100 hover:bg-slate-50 transition-colors">
+                      <td className="p-3 border-r border-blue-100">
+                        <div className="flex items-start justify-between group">
+                          <div>
+                            <div className="text-xs font-bold text-blue-600 mb-1">{levelLabels[ind.level]}</div>
+                            <div className="text-text-primary font-medium">{ind.intervention_label}</div>
+                            {ind.indicator ? (
+                              <div className="text-sm text-text-secondary mt-1 italic">Ind: {ind.indicator}</div>
+                            ) : (
+                              <div className="text-sm text-orange-500 mt-1 italic">Aucun indicateur défini</div>
+                            )}
+                          </div>
+                          <button onClick={() => openEditModal(ind)} className="opacity-0 group-hover:opacity-100 p-1.5 text-blue-600 hover:bg-blue-50 rounded flex-shrink-0 ml-2" title="Saisir les données de suivi">
+                            <Edit2 className="w-4 h-4" />
+                          </button>
                         </div>
-                        <button onClick={() => openEditModal(ind)} className="opacity-0 group-hover:opacity-100 p-1.5 text-blue-600 hover:bg-blue-50 rounded flex-shrink-0 ml-2" title="Saisir les données de suivi">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                    <td className="p-3 text-center border-r border-blue-100 text-text-secondary">{ind.baseline || '0'}</td>
-                    <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s1_value || '—'}</td>
-                    <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s2_value || '—'}</td>
-                    <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s3_value || '—'}</td>
-                    <td className="p-3 text-center text-text-secondary font-bold">{ind.target || '—'}</td>
-                  </tr>
-                ))}
-                {data.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="p-8 text-center text-text-secondary">
-                      Aucune donnée à afficher.
-                    </td>
-                  </tr>
-                )}
+                      </td>
+                      <td className="p-3 text-center border-r border-blue-100 text-text-secondary">{ind.baseline || '0'}</td>
+                      <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s1_value || '—'}</td>
+                      <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s2_value || '—'}</td>
+                      <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s3_value || '—'}</td>
+                      <td className="p-3 text-center text-text-secondary font-bold">{ind.target || '—'}</td>
+                    </tr>
+                  ))
+                })()}
               </tbody>
             </table>
           </div>
