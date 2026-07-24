@@ -24,6 +24,42 @@ const levelColors: Record<LogframeLevel, { bg: string, text: string, border: str
   activite: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' }
 }
 
+const placeholders: Record<LogframeLevel, any> = {
+  objectif_global: {
+    description: "Ex: Améliorer l'offre et la qualité des services éducatifs...",
+    indicator: "Ex: 80% des élèves passent les tests finaux...",
+    baseline: "Ex: Données manquantes (post-séisme)",
+    target: "Ex: 80% à fin du projet",
+    source: "Ex: Dossiers étudiants, Notes d'élèves...",
+    risks: "Ex: -"
+  },
+  objectif_specifique: {
+    description: "Ex: Fourniture d'infrastructures d'éducation de qualité...",
+    indicator: "Ex: 30 nouvelles écoles en fonctionnement qui répondent aux normes...",
+    baseline: "Ex: 0 école en fonctionnement",
+    target: "Ex: 30 écoles opérationnelles",
+    source: "Ex: Rapports semestriels des consultants...",
+    risks: "Ex: Il existe une révision permanente des politiques..."
+  },
+  resultat: {
+    description: "Ex: 30 écoles construites, 30 écoles équipées...",
+    indicator: "Ex: 30 écoles construites, équipées et avec contrat...",
+    baseline: "Ex: 0",
+    target: "Ex: 30 écoles à S4",
+    source: "Ex: Rapport d'un consultant ou ingénieur...",
+    risks: "Ex: Le matériel et le mobilier sont affectés aux classes..."
+  },
+  activite: {
+    description: "Ex: Lancement des appels d'offres...",
+    indicator: "Ex: Nombre d'appels d'offres lancés",
+    baseline: "Ex: 0",
+    target: "Ex: 3",
+    source: "Ex: Dossiers d'appels d'offres",
+    risks: "Ex: Retards dans le processus..."
+  }
+}
+
+
 const nextLevel: Record<LogframeLevel, LogframeLevel | null> = {
   objectif_global: 'objectif_specifique',
   objectif_specifique: 'resultat',
@@ -221,6 +257,8 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
       )
     })
   }
+
+  const currentLevel = parentForNew ? parentForNew.level : (editingItem ? editingItem.level : 'objectif_global')
 
   return (
     <div className="space-y-6">
@@ -435,7 +473,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                         value={formData.intervention_label}
                         onChange={e => setFormData({ ...formData, intervention_label: e.target.value })}
                         className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                        placeholder="Ex: Améliorer l'offre et la qualité..."
+                        placeholder={placeholders[currentLevel]?.description || "Description..."}
                       />
                     </div>
 
@@ -448,7 +486,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                         value={formData.indicator}
                         onChange={e => setFormData({ ...formData, indicator: e.target.value })}
                         className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                        placeholder="Ex: 80% des élèves passent les tests finaux..."
+                        placeholder={placeholders[currentLevel]?.indicator || "Ex: Taux de réussite..."}
                       />
                     </div>
 
@@ -461,7 +499,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                         value={formData.baseline}
                         onChange={e => setFormData({ ...formData, baseline: e.target.value })}
                         className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                        placeholder="Ex: Données manquantes (post-séisme)"
+                        placeholder={placeholders[currentLevel]?.baseline || "Ligne de base..."}
                       />
                     </div>
 
@@ -474,7 +512,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                         value={formData.target}
                         onChange={e => setFormData({ ...formData, target: e.target.value })}
                         className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                        placeholder="Ex: 80% à fin du projet"
+                        placeholder={placeholders[currentLevel]?.target || "Cible..."}
                       />
                     </div>
                   </>
@@ -542,7 +580,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                         value={formData.verification_source}
                         onChange={e => setFormData({ ...formData, verification_source: e.target.value })}
                         className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                        placeholder="Ex: Enquête ménages, Rapports annuels..."
+                        placeholder={placeholders[currentLevel]?.source || "Sources..."}
                       />
                     </div>
 
@@ -555,7 +593,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                         value={formData.risks_assumptions}
                         onChange={e => setFormData({ ...formData, risks_assumptions: e.target.value })}
                         className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                        placeholder="Ex: Stabilité politique, Maintien des financements..."
+                        placeholder={placeholders[currentLevel]?.risks || "Hypothèses..."}
                       />
                     </div>
                   </>
