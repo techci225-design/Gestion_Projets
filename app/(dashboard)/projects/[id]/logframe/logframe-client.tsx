@@ -8,7 +8,6 @@ import { format } from 'date-fns'
 interface LogframeClientProps {
   projectId: string
   initialData: LogframeItem[]
-  project?: any
 }
 
 const levelLabels: Record<LogframeLevel, string> = {
@@ -19,20 +18,20 @@ const levelLabels: Record<LogframeLevel, string> = {
 }
 
 const levelColors: Record<LogframeLevel, { bg: string, text: string, border: string }> = {
-  objectif_global: { bg: 'bg-[#2563eb]', text: 'text-white', border: 'border-blue-600' },
+  objectif_global: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
   objectif_specifique: { bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200' },
   resultat: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
   activite: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' }
 }
 
-const nextLevel: Record<string, LogframeLevel | null> = {
+const nextLevel: Record<LogframeLevel, LogframeLevel | null> = {
   objectif_global: 'objectif_specifique',
   objectif_specifique: 'resultat',
   resultat: 'activite',
   activite: null
 }
 
-export function LogframeClient({ projectId, initialData, project }: LogframeClientProps) {
+export function LogframeClient({ projectId, initialData }: LogframeClientProps) {
   const [activeTab, setActiveTab] = useState<'planification' | 'suivi'>('planification')
   const [data, setData] = useState<LogframeItem[]>(initialData)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
@@ -168,98 +167,50 @@ export function LogframeClient({ projectId, initialData, project }: LogframeClie
       const isExpanded = expandedIds.has(item.id)
       const colors = levelColors[item.level]
 
-      if (item.level === 'objectif_global') {
-        return (
-          <React.Fragment key={item.id}>
-            <tr className="bg-[#2563eb] text-white border-b border-blue-300 hover:bg-[#1d4ed8] transition-colors group">
-              <td colSpan={7} className="p-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {hasChildren ? (
-                      <button onClick={() => toggleExpand(item.id)} className="text-blue-100 hover:text-white">
-                        {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                      </button>
-                    ) : (
-                      <span className="w-4 h-4 block" />
-                    )}
-                    <span className="font-semibold text-base">But du projet : {item.intervention_label}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => openEditModal(item)} className="p-1.5 text-blue-100 hover:text-white hover:bg-blue-700 rounded-md transition-colors" title="Modifier">
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => handleDelete(item.id)} className="p-1.5 text-blue-100 hover:text-red-200 hover:bg-blue-700 rounded-md transition-colors" title="Supprimer">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                    {nextLevel[item.level] && (
-                      <button 
-                        onClick={() => openAddModal(item.id, nextLevel[item.level] as LogframeLevel)}
-                        className="text-xs font-medium bg-blue-700 text-white px-2 py-1 rounded hover:bg-blue-800 flex items-center gap-1"
-                      >
-                        <Plus className="w-3 h-3" /> Ajouter {levelLabels[nextLevel[item.level] as LogframeLevel]}
-                      </button>
-                    )}
-                  </div>
-                </div>
-                
-                {(item.indicator || item.baseline || item.target || item.verification_source || item.risks_assumptions) && (
-                  <div className="mt-2 ml-6 text-sm text-blue-100 flex flex-wrap items-center gap-x-6 gap-y-1">
-                    {item.indicator && <span><span className="font-semibold">Indicateurs:</span> {item.indicator}</span>}
-                    {item.baseline && <span><span className="font-semibold">Base:</span> {item.baseline}</span>}
-                    {item.target && <span><span className="font-semibold">Cible:</span> {item.target}</span>}
-                    {item.verification_source && <span><span className="font-semibold">Sources:</span> {item.verification_source}</span>}
-                    {item.risks_assumptions && <span><span className="font-semibold">Hypothèses:</span> {item.risks_assumptions}</span>}
-                  </div>
-                )}
-              </td>
-            </tr>
-            {isExpanded && renderRows(item.id, depth + 1)}
-          </React.Fragment>
-        )
-      }
-
       return (
         <React.Fragment key={item.id}>
-          <tr className={`border-b border-blue-100 hover:bg-slate-50 transition-colors bg-white group`}>
-            <td className="p-3 border-r border-blue-100" style={{ paddingLeft: `${Math.max(0.75, depth * 1.5)}rem` }}>
+          <tr className={`border-b border-border hover:bg-surface-hover transition-colors ${depth === 0 ? 'bg-surface' : ''}`}>
+            <td className="p-4 align-top" style={{ paddingLeft: `${Math.max(1, depth * 2.5)}rem` }}>
               <div className="flex items-start gap-2">
                 {hasChildren ? (
-                  <button onClick={() => toggleExpand(item.id)} className="mt-0.5 text-blue-400 hover:text-blue-600">
+                  <button onClick={() => toggleExpand(item.id)} className="mt-1 text-text-secondary hover:text-text-primary">
                     {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                   </button>
                 ) : (
                   <span className="w-4 h-4 block" />
                 )}
                 <div>
-                  <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold border mb-1 uppercase tracking-wider ${colors.bg} ${colors.text} ${colors.border}`}>
+                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium border mb-1 ${colors.bg} ${colors.text} ${colors.border}`}>
                     {levelLabels[item.level]}
                   </span>
                   <p className="text-sm font-medium text-text-primary leading-tight">{item.intervention_label}</p>
                 </div>
               </div>
             </td>
-            <td className="p-3 border-r border-blue-100 align-top text-sm text-text-secondary">{item.indicator || '—'}</td>
-            <td className="p-3 border-r border-blue-100 align-top text-sm text-text-secondary">{item.baseline || '—'}</td>
-            <td className="p-3 border-r border-blue-100 align-top text-sm text-text-secondary font-medium">{item.target || '—'}</td>
-            <td className="p-3 border-r border-blue-100 align-top text-sm text-text-secondary">{item.verification_source || '—'}</td>
-            <td className="p-3 border-r border-blue-100 align-top text-sm text-text-secondary">{item.risks_assumptions || '—'}</td>
-            <td className="p-3 align-top text-right">
-              <div className="flex flex-col items-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <td className="p-4 align-top text-sm text-text-secondary">{item.indicator || '—'}</td>
+            <td className="p-4 align-top text-sm text-text-secondary">{item.baseline || '—'}</td>
+            <td className="p-4 align-top text-sm text-text-secondary">{item.target || '—'}</td>
+            <td className="p-4 align-top text-sm text-text-secondary">{item.verification_source || '—'}</td>
+            <td className="p-4 align-top text-sm text-text-secondary">{item.risks_assumptions || '—'}</td>
+            <td className="p-4 align-top text-right">
+              <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                {/* Reveal actions on hover, actually let's just show them always for mobile friendliness or use a dropdown */}
+              </div>
+              <div className="flex flex-col items-end gap-2">
                 <div className="flex items-center gap-1">
-                  <button onClick={() => openEditModal(item)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="Modifier">
+                  <button onClick={() => openEditModal(item)} className="p-1.5 text-text-secondary hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="Modifier">
                     <Edit2 className="w-4 h-4" />
                   </button>
-                  <button onClick={() => handleDelete(item.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Supprimer">
+                  <button onClick={() => handleDelete(item.id)} className="p-1.5 text-text-secondary hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Supprimer">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
                 {nextLevel[item.level] && (
                   <button 
                     onClick={() => openAddModal(item.id, nextLevel[item.level] as LogframeLevel)}
-                    className="text-[11px] font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                    className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
                   >
-                    <Plus className="w-3 h-3" /> {levelLabels[nextLevel[item.level] as LogframeLevel]}
+                    <Plus className="w-3 h-3" /> Ajouter {levelLabels[nextLevel[item.level] as LogframeLevel]}
                   </button>
                 )}
               </div>
@@ -314,22 +265,18 @@ export function LogframeClient({ projectId, initialData, project }: LogframeClie
       </div>
 
       {activeTab === 'planification' && (
-        <div className="border border-blue-900 rounded-sm overflow-hidden bg-white shadow-sm">
-          <div className="bg-[#1e3a6a] text-white text-center font-bold py-2 flex flex-col items-center justify-center">
-             <div className="text-sm uppercase tracking-wide">ONGLET 1 : CADRE LOGIQUE (LOGFRAME)</div>
-             <div className="text-xs font-normal opacity-90 mt-0.5">Projet : {project?.name || '...'}</div>
-          </div>
+        <div className="bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
-              <thead className="bg-[#3b82f6] text-white">
+            <table className="w-full text-left">
+              <thead className="bg-background border-b border-border">
                 <tr>
-                  <th className="p-3 font-semibold border-r border-blue-400 w-[25%]">Description du projet</th>
-                  <th className="p-3 font-semibold border-r border-blue-400 w-[15%]">Indicateurs (IOV)</th>
-                  <th className="p-3 font-semibold border-r border-blue-400 w-[10%]">Ligne de base</th>
-                  <th className="p-3 font-semibold border-r border-blue-400 w-[10%]">Cible visée</th>
-                  <th className="p-3 font-semibold border-r border-blue-400 w-[15%]">Sources de vérification</th>
-                  <th className="p-3 font-semibold border-r border-blue-400 w-[15%]">Hypothèses & Risques</th>
-                  <th className="p-3 font-semibold w-[10%] text-right">Actions</th>
+                  <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[25%]">Niveau d'intervention</th>
+                  <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[15%]">Indicateurs (IOV)</th>
+                  <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[10%]">Ligne de base</th>
+                  <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[10%]">Cible visée</th>
+                  <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[15%]">Source de vérification</th>
+                  <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[15%]">Hypothèses & Risques</th>
+                  <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[10%] text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
