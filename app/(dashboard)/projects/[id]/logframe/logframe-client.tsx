@@ -426,7 +426,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                   <>
                     <div>
                       <label className="block text-sm font-medium text-text-secondary mb-1">
-                        Libellé de l'intervention <span className="text-red-500">*</span>
+                        Description du projet <span className="text-red-500">*</span>
                       </label>
                       <textarea
                         required
@@ -434,46 +434,46 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                         value={formData.intervention_label}
                         onChange={e => setFormData({ ...formData, intervention_label: e.target.value })}
                         className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                        placeholder="Description..."
+                        placeholder="Ex: Améliorer l'offre et la qualité..."
                       />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-text-secondary mb-1">
-                        Indicateur
+                        Indicateur (IOV)
                       </label>
                       <textarea
                         rows={2}
                         value={formData.indicator}
                         onChange={e => setFormData({ ...formData, indicator: e.target.value })}
                         className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                        placeholder="Ex: Taux de réussite..."
+                        placeholder="Ex: 80% des élèves passent les tests finaux..."
                       />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-text-secondary mb-1">
-                        Ligne de base (Baseline)
+                        Ligne de base
                       </label>
                       <input
                         type="text"
                         value={formData.baseline}
                         onChange={e => setFormData({ ...formData, baseline: e.target.value })}
                         className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                        placeholder="Ex: 50% (2023)"
+                        placeholder="Ex: Données manquantes (post-séisme)"
                       />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-text-secondary mb-1">
-                        Cible visée (Target)
+                        Cible visée
                       </label>
                       <input
                         type="text"
                         value={formData.target}
                         onChange={e => setFormData({ ...formData, target: e.target.value })}
                         className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                        placeholder="Ex: 80% (2026)"
+                        placeholder="Ex: 80% à fin du projet"
                       />
                     </div>
                   </>
@@ -534,7 +534,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                   <>
                     <div>
                       <label className="block text-sm font-medium text-text-secondary mb-1">
-                        Source de vérification
+                        Sources de vérification
                       </label>
                       <textarea
                         rows={2}
@@ -547,7 +547,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
 
                     <div>
                       <label className="block text-sm font-medium text-text-secondary mb-1">
-                        Hypothèses & Risques
+                        Hypothèses
                       </label>
                       <textarea
                         rows={2}
