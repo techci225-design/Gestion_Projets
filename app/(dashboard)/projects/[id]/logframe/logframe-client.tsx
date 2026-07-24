@@ -165,52 +165,49 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
     return children.map(item => {
       const hasChildren = data.some(child => child.parent_id === item.id)
       const isExpanded = expandedIds.has(item.id)
-      const colors = levelColors[item.level]
+      const isTopLevel = item.level === 'objectif_global'
 
       return (
         <React.Fragment key={item.id}>
-          <tr className={`border-b border-border hover:bg-surface-hover transition-colors ${depth === 0 ? 'bg-surface' : ''}`}>
-            <td className="p-4 align-top" style={{ paddingLeft: `${Math.max(1, depth * 2.5)}rem` }}>
+          <tr className={`border-b border-[#93c5fd] hover:bg-[#e0f2fe] transition-colors ${isTopLevel ? 'bg-[#cce0ff]' : 'bg-white'}`}>
+            <td className="p-3 align-top border border-[#93c5fd]" style={{ paddingLeft: `${Math.max(0.75, depth * 1.5)}rem` }}>
               <div className="flex items-start gap-2">
                 {hasChildren ? (
-                  <button onClick={() => toggleExpand(item.id)} className="mt-1 text-text-secondary hover:text-text-primary">
+                  <button onClick={() => toggleExpand(item.id)} className="mt-0.5 text-blue-600 hover:text-blue-800">
                     {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                   </button>
                 ) : (
                   <span className="w-4 h-4 block" />
                 )}
-                <div>
-                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium border mb-1 ${colors.bg} ${colors.text} ${colors.border}`}>
-                    {levelLabels[item.level]}
-                  </span>
+                <div className="flex-1">
+                  <div className="font-semibold text-blue-900 text-xs mb-1 uppercase">
+                    {item.level === 'objectif_global' ? 'OBJECTIF GLOBAL / BUT (IMPACT)' : levelLabels[item.level]}
+                  </div>
                   <p className="text-sm font-medium text-text-primary leading-tight">{item.intervention_label}</p>
                 </div>
               </div>
             </td>
-            <td className="p-4 align-top text-sm text-text-secondary">{item.indicator || '—'}</td>
-            <td className="p-4 align-top text-sm text-text-secondary">{item.baseline || '—'}</td>
-            <td className="p-4 align-top text-sm text-text-secondary">{item.target || '—'}</td>
-            <td className="p-4 align-top text-sm text-text-secondary">{item.verification_source || '—'}</td>
-            <td className="p-4 align-top text-sm text-text-secondary">{item.risks_assumptions || '—'}</td>
-            <td className="p-4 align-top text-right">
-              <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                {/* Reveal actions on hover, actually let's just show them always for mobile friendliness or use a dropdown */}
-              </div>
-              <div className="flex flex-col items-end gap-2">
+            <td className="p-3 align-top text-sm text-text-secondary border border-[#93c5fd]">{item.indicator || '—'}</td>
+            <td className="p-3 align-top text-sm text-text-secondary border border-[#93c5fd] text-center">{item.baseline || '—'}</td>
+            <td className="p-3 align-top text-sm text-text-secondary border border-[#93c5fd] text-center">{item.target || '—'}</td>
+            <td className="p-3 align-top text-sm text-text-secondary border border-[#93c5fd]">{item.verification_source || '—'}</td>
+            <td className="p-3 align-top text-sm text-text-secondary border border-[#93c5fd]">{item.risks_assumptions || '—'}</td>
+            <td className="p-3 align-top text-right border border-[#93c5fd]">
+              <div className="flex flex-col items-center gap-2">
                 <div className="flex items-center gap-1">
-                  <button onClick={() => openEditModal(item)} className="p-1.5 text-text-secondary hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="Modifier">
+                  <button onClick={() => openEditModal(item)} className="p-1.5 text-blue-600 hover:bg-blue-100 rounded-md transition-colors" title="Modifier">
                     <Edit2 className="w-4 h-4" />
                   </button>
-                  <button onClick={() => handleDelete(item.id)} className="p-1.5 text-text-secondary hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Supprimer">
+                  <button onClick={() => handleDelete(item.id)} className="p-1.5 text-red-600 hover:bg-red-100 rounded-md transition-colors" title="Supprimer">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
                 {nextLevel[item.level] && (
                   <button 
                     onClick={() => openAddModal(item.id, nextLevel[item.level] as LogframeLevel)}
-                    className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                    className="text-[10px] font-medium text-blue-700 hover:text-blue-900 flex items-center gap-1"
                   >
-                    <Plus className="w-3 h-3" /> Ajouter {levelLabels[nextLevel[item.level] as LogframeLevel]}
+                    <Plus className="w-3 h-3" /> Ajouter
                   </button>
                 )}
               </div>
@@ -265,18 +262,22 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
       </div>
 
       {activeTab === 'planification' && (
-        <div className="bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
+        <div className="border border-[#1e3a6a] bg-white">
+          <div className="bg-[#1e3a6a] text-white text-center font-bold py-2 text-sm">
+             <div className="uppercase">ONGLET 1 : CADRE LOGIQUE (LOGFRAME)</div>
+             <div className="font-normal mt-0.5">Projet : {project?.name || '...'}</div>
+          </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-background border-b border-border">
+            <table className="w-full text-left text-sm border-collapse border border-[#3b82f6]">
+              <thead className="bg-[#3b82f6] text-white">
                 <tr>
-                  <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[25%]">Description du projet</th>
-                  <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[15%]">Indicateurs (IOV)</th>
-                  <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[10%]">Ligne de base</th>
-                  <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[10%]">Cible visée</th>
-                  <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[15%]">Source de vérification</th>
-                  <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[15%]">Hypothèses & Risques</th>
-                  <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[10%] text-right">Actions</th>
+                  <th className="p-3 font-semibold border border-[#3b82f6] w-[25%] text-center">Description du projet</th>
+                  <th className="p-3 font-semibold border border-[#3b82f6] w-[15%] text-center">Indicateurs (IOV)</th>
+                  <th className="p-3 font-semibold border border-[#3b82f6] w-[10%] text-center">Ligne de base</th>
+                  <th className="p-3 font-semibold border border-[#3b82f6] w-[10%] text-center">Cible visée</th>
+                  <th className="p-3 font-semibold border border-[#3b82f6] w-[15%] text-center">Sources de vérification</th>
+                  <th className="p-3 font-semibold border border-[#3b82f6] w-[15%] text-center">Hypothèses</th>
+                  <th className="p-3 font-semibold border border-[#3b82f6] w-[10%] text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -284,8 +285,8 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                   renderRows(null, 0)
                 ) : (
                   <tr>
-                    <td colSpan={7} className="p-8 text-center text-text-secondary">
-                      Le cadre logique est vide. Commencez par ajouter un Objectif Global.
+                    <td colSpan={7} className="p-8 text-center text-text-secondary border border-[#3b82f6]">
+                      Le cadre logique est vide.
                     </td>
                   </tr>
                 )}
@@ -301,15 +302,15 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
             COMPOSANTE / RÉSULTAT
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
+            <table className="w-full text-left text-sm border-collapse border border-[#3b82f6]">
               <thead className="bg-[#3b82f6] text-white">
                 <tr>
-                  <th className="p-3 font-semibold border-r border-blue-400 w-[30%]">Composante / Résultat</th>
-                  <th className="p-3 font-semibold text-center border-r border-blue-400">Base (départ)</th>
-                  <th className="p-3 font-semibold text-center border-r border-blue-400">S 1</th>
-                  <th className="p-3 font-semibold text-center border-r border-blue-400">S 2</th>
-                  <th className="p-3 font-semibold text-center border-r border-blue-400">S 3</th>
-                  <th className="p-3 font-semibold text-center">S 4 (But final)</th>
+                  <th className="p-3 font-semibold border border-[#3b82f6] w-[30%]">Composante / Résultat</th>
+                  <th className="p-3 font-semibold text-center border border-[#3b82f6]">Base (départ)</th>
+                  <th className="p-3 font-semibold text-center border border-[#3b82f6]">S 1</th>
+                  <th className="p-3 font-semibold text-center border border-[#3b82f6]">S 2</th>
+                  <th className="p-3 font-semibold text-center border border-[#3b82f6]">S 3</th>
+                  <th className="p-3 font-semibold text-center border border-[#3b82f6]">S 4 (But final)</th>
                 </tr>
               </thead>
               <tbody>
@@ -324,15 +325,14 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                       const isMidLevel = ind.level === 'objectif_specifique'
                       const hasNoTracking = !ind.indicator && !ind.target && !ind.baseline
 
-                      // If it's a top/mid level item with NO tracking data, render as a full-width section header
                       if ((isTopLevel || isMidLevel) && hasNoTracking) {
                         return (
                           <React.Fragment key={ind.id}>
-                            <tr className={`border-b border-blue-200 ${isTopLevel ? 'bg-[#dbeafe]' : 'bg-[#eff6ff]'}`}>
-                              <td colSpan={6} className="p-3" style={{ paddingLeft: `${Math.max(0.75, depth * 1.5)}rem` }}>
+                            <tr className={`border-b border-[#93c5fd] ${isTopLevel ? 'bg-[#cce0ff]' : 'bg-[#e0f2fe]'}`}>
+                              <td colSpan={6} className="p-3 border border-[#93c5fd]" style={{ paddingLeft: `${Math.max(0.75, depth * 1.5)}rem` }}>
                                 <div className="flex items-center justify-between group">
                                   <div className="font-bold text-blue-900">
-                                    {levelLabels[ind.level]} : {ind.intervention_label}
+                                    {ind.intervention_label}
                                   </div>
                                   <button onClick={() => openEditModal(ind)} className="opacity-0 group-hover:opacity-100 p-1.5 text-blue-600 hover:bg-blue-100 rounded flex-shrink-0 ml-2" title="Modifier">
                                     <Edit2 className="w-4 h-4" />
@@ -345,14 +345,12 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                         )
                       }
 
-                      // Otherwise render as a normal tracking row with columns
                       return (
                         <React.Fragment key={ind.id}>
-                          <tr className={`border-b border-blue-100 hover:bg-slate-50 transition-colors ${isTopLevel ? 'bg-[#dbeafe]' : isMidLevel ? 'bg-[#eff6ff]' : 'bg-white'}`}>
-                            <td className="p-3 border-r border-blue-100" style={{ paddingLeft: `${Math.max(0.75, depth * 1.5)}rem` }}>
+                          <tr className={`border-b border-[#93c5fd] hover:bg-[#e0f2fe] transition-colors ${isTopLevel ? 'bg-[#cce0ff]' : isMidLevel ? 'bg-[#eff6ff]' : 'bg-white'}`}>
+                            <td className="p-3 border border-[#93c5fd]" style={{ paddingLeft: `${Math.max(0.75, depth * 1.5)}rem` }}>
                               <div className="flex items-start justify-between group">
                                 <div>
-                                  <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${isTopLevel ? 'text-blue-800' : isMidLevel ? 'text-blue-700' : 'text-blue-600'}`}>{levelLabels[ind.level]}</div>
                                   <div className={`font-medium ${isTopLevel || isMidLevel ? 'text-blue-900' : 'text-text-primary'}`}>{ind.intervention_label}</div>
                                   {ind.indicator ? (
                                     <div className="text-sm text-text-secondary mt-1 italic">Ind: {ind.indicator}</div>
@@ -365,11 +363,11 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                                 </button>
                               </div>
                             </td>
-                            <td className="p-3 text-center border-r border-blue-100 text-text-secondary">{ind.baseline || '0'}</td>
-                            <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s1_value || '—'}</td>
-                            <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s2_value || '—'}</td>
-                            <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s3_value || '—'}</td>
-                            <td className="p-3 text-center text-text-secondary font-bold">{ind.target || '—'}</td>
+                            <td className="p-3 text-center border border-[#93c5fd] text-text-secondary">{ind.baseline || '0'}</td>
+                            <td className="p-3 text-center border border-[#93c5fd] font-medium text-text-primary">{ind.s1_value || '—'}</td>
+                            <td className="p-3 text-center border border-[#93c5fd] font-medium text-text-primary">{ind.s2_value || '—'}</td>
+                            <td className="p-3 text-center border border-[#93c5fd] font-medium text-text-primary">{ind.s3_value || '—'}</td>
+                            <td className="p-3 text-center text-text-secondary font-bold border border-[#93c5fd]">{ind.target || '—'}</td>
                           </tr>
                           {renderSuiviRows(ind.id, depth + 1)}
                         </React.Fragment>
