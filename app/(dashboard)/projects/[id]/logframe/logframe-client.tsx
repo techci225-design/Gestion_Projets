@@ -314,8 +314,71 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
               </thead>
               <tbody>
                 {(() => {
-                  const matriceData = data.filter(item => item.level !== 'activite')
-                  if (matriceData.length === 0) {
+                  const renderSuiviRows = (parentId: string | null = null, depth: number = 0) => {
+                    const children = data.filter(item => item.parent_id === parentId && item.level !== 'activite')
+                    
+                    if (children.length === 0) return null
+
+                    return children.map(ind => {
+                      const isTopLevel = ind.level === 'objectif_global'
+                      const isMidLevel = ind.level === 'objectif_specifique'
+                      const hasNoTracking = !ind.indicator && !ind.target && !ind.baseline
+
+                      // If it's a top/mid level item with NO tracking data, render as a full-width section header
+                      if ((isTopLevel || isMidLevel) && hasNoTracking) {
+                        return (
+                          <React.Fragment key={ind.id}>
+                            <tr className={`border-b border-blue-200 ${isTopLevel ? 'bg-[#dbeafe]' : 'bg-[#eff6ff]'}`}>
+                              <td colSpan={6} className="p-3" style={{ paddingLeft: `${Math.max(0.75, depth * 1.5)}rem` }}>
+                                <div className="flex items-center justify-between group">
+                                  <div className="font-bold text-blue-900">
+                                    {levelLabels[ind.level]} : {ind.intervention_label}
+                                  </div>
+                                  <button onClick={() => openEditModal(ind)} className="opacity-0 group-hover:opacity-100 p-1.5 text-blue-600 hover:bg-blue-100 rounded flex-shrink-0 ml-2" title="Modifier">
+                                    <Edit2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                            {renderSuiviRows(ind.id, depth + 1)}
+                          </React.Fragment>
+                        )
+                      }
+
+                      // Otherwise render as a normal tracking row with columns
+                      return (
+                        <React.Fragment key={ind.id}>
+                          <tr className={`border-b border-blue-100 hover:bg-slate-50 transition-colors ${isTopLevel ? 'bg-[#dbeafe]' : isMidLevel ? 'bg-[#eff6ff]' : 'bg-white'}`}>
+                            <td className="p-3 border-r border-blue-100" style={{ paddingLeft: `${Math.max(0.75, depth * 1.5)}rem` }}>
+                              <div className="flex items-start justify-between group">
+                                <div>
+                                  <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${isTopLevel ? 'text-blue-800' : isMidLevel ? 'text-blue-700' : 'text-blue-600'}`}>{levelLabels[ind.level]}</div>
+                                  <div className={`font-medium ${isTopLevel || isMidLevel ? 'text-blue-900' : 'text-text-primary'}`}>{ind.intervention_label}</div>
+                                  {ind.indicator ? (
+                                    <div className="text-sm text-text-secondary mt-1 italic">Ind: {ind.indicator}</div>
+                                  ) : (
+                                    <div className="text-sm text-orange-500 mt-1 italic">Aucun indicateur défini</div>
+                                  )}
+                                </div>
+                                <button onClick={() => openEditModal(ind)} className="opacity-0 group-hover:opacity-100 p-1.5 text-blue-600 hover:bg-blue-50 bg-white/50 rounded flex-shrink-0 ml-2" title="Saisir les données de suivi">
+                                  <Edit2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </td>
+                            <td className="p-3 text-center border-r border-blue-100 text-text-secondary">{ind.baseline || '0'}</td>
+                            <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s1_value || '—'}</td>
+                            <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s2_value || '—'}</td>
+                            <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s3_value || '—'}</td>
+                            <td className="p-3 text-center text-text-secondary font-bold">{ind.target || '—'}</td>
+                          </tr>
+                          {renderSuiviRows(ind.id, depth + 1)}
+                        </React.Fragment>
+                      )
+                    })
+                  }
+
+                  const rootItems = data.filter(item => item.parent_id === null && item.level !== 'activite')
+                  if (rootItems.length === 0) {
                     return (
                       <tr>
                         <td colSpan={6} className="p-8 text-center text-text-secondary">
@@ -325,31 +388,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                       </tr>
                     )
                   }
-                  return matriceData.map((ind, idx) => (
-                    <tr key={ind.id} className="border-b border-blue-100 hover:bg-slate-50 transition-colors">
-                      <td className="p-3 border-r border-blue-100">
-                        <div className="flex items-start justify-between group">
-                          <div>
-                            <div className="text-xs font-bold text-blue-600 mb-1">{levelLabels[ind.level]}</div>
-                            <div className="text-text-primary font-medium">{ind.intervention_label}</div>
-                            {ind.indicator ? (
-                              <div className="text-sm text-text-secondary mt-1 italic">Ind: {ind.indicator}</div>
-                            ) : (
-                              <div className="text-sm text-orange-500 mt-1 italic">Aucun indicateur défini</div>
-                            )}
-                          </div>
-                          <button onClick={() => openEditModal(ind)} className="opacity-0 group-hover:opacity-100 p-1.5 text-blue-600 hover:bg-blue-50 rounded flex-shrink-0 ml-2" title="Saisir les données de suivi">
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                      <td className="p-3 text-center border-r border-blue-100 text-text-secondary">{ind.baseline || '0'}</td>
-                      <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s1_value || '—'}</td>
-                      <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s2_value || '—'}</td>
-                      <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s3_value || '—'}</td>
-                      <td className="p-3 text-center text-text-secondary font-bold">{ind.target || '—'}</td>
-                    </tr>
-                  ))
+                  return renderSuiviRows(null, 0)
                 })()}
               </tbody>
             </table>
