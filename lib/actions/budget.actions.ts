@@ -163,7 +163,7 @@ const fundingSourceSchema = z.object({
 
 export async function createFundingSource(payload: any) {
   try {
-    await requireRole(payload.project_id, ['owner', 'chef_projet'])
+    await requireRole(payload.project_id, ['owner', 'chef_projet', 'comptable'])
   } catch (error: any) {
     return { error: error.message }
   }
@@ -189,7 +189,7 @@ export async function createFundingSource(payload: any) {
 
 export async function updateFundingSource(id: string, payload: any) {
   try {
-    await requireRole(payload.project_id, ['owner', 'chef_projet'])
+    await requireRole(payload.project_id, ['owner', 'chef_projet', 'comptable'])
   } catch (error: any) {
     return { error: error.message }
   }
