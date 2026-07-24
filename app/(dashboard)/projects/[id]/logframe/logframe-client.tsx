@@ -224,28 +224,44 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex gap-4 border-b border-border w-full max-w-md">
+      <div className="mb-6 flex justify-between items-center">
+        <div className="flex border-b border-border">
           <button
             onClick={() => setActiveTab('planification')}
-            className={`pb-2 text-sm font-medium transition-colors border-b-2 ${activeTab === 'planification' ? 'border-blue-600 text-blue-600' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
+            className={`px-6 py-3 font-medium text-sm transition-colors relative ${
+              activeTab === 'planification'
+                ? 'text-blue-600'
+                : 'text-text-secondary hover:text-text-primary'
+            }`}
           >
             Cadre Logique (Planification)
+            {activeTab === 'planification' && (
+              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600" />
+            )}
           </button>
           <button
             onClick={() => setActiveTab('suivi')}
-            className={`pb-2 text-sm font-medium transition-colors border-b-2 ${activeTab === 'suivi' ? 'border-blue-600 text-blue-600' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
+            className={`px-6 py-3 font-medium text-sm transition-colors relative ${
+              activeTab === 'suivi'
+                ? 'text-blue-600'
+                : 'text-text-secondary hover:text-text-primary'
+            }`}
           >
             Matrice des Résultats (Suivi semestriel)
+            {activeTab === 'suivi' && (
+              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600" />
+            )}
           </button>
         </div>
-        <button
-          onClick={() => openAddModal(null, 'objectif_global')}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          Nouvel Objectif Global
-        </button>
+        {activeTab === 'planification' && (
+          <button
+            onClick={() => openAddModal(null, 'objectif_global')}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Nouvel Objectif Global
+          </button>
+        )}
       </div>
 
       {activeTab === 'planification' && (
@@ -349,124 +365,144 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
             </div>
             
             <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6 flex-1">
-              <div>
-                <label className="block text-sm font-medium text-text-secondary mb-1">
-                  Description de l'intervention <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  required
-                  rows={3}
-                  value={formData.intervention_label}
-                  onChange={e => setFormData({ ...formData, intervention_label: e.target.value })}
-                  className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                  placeholder="Ex: Améliorer l'accès à l'eau potable..."
-                />
-              </div>
+              <div className="space-y-4">
+                {activeTab === 'planification' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">
+                        Libellé de l'intervention <span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        required
+                        rows={3}
+                        value={formData.intervention_label}
+                        onChange={e => setFormData({ ...formData, intervention_label: e.target.value })}
+                        className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
+                        placeholder="Description..."
+                      />
+                    </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="col-span-1 md:col-span-2">
-                  <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Indicateurs Objectivement Vérifiables (IOV)
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={formData.indicator}
-                    onChange={e => setFormData({ ...formData, indicator: e.target.value })}
-                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                    placeholder="Ex: Taux d'accès à l'eau potable (%)"
-                  />
-                </div>
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">
+                        Indicateur
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={formData.indicator}
+                        onChange={e => setFormData({ ...formData, indicator: e.target.value })}
+                        className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
+                        placeholder="Ex: Taux de réussite..."
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Ligne de base (Baseline)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.baseline}
-                    onChange={e => setFormData({ ...formData, baseline: e.target.value })}
-                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                    placeholder="Ex: 40% (2023)"
-                  />
-                </div>
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">
+                        Ligne de base (Baseline)
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.baseline}
+                        onChange={e => setFormData({ ...formData, baseline: e.target.value })}
+                        className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
+                        placeholder="Ex: 50% (2023)"
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Cible visée (Target)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.target}
-                    onChange={e => setFormData({ ...formData, target: e.target.value })}
-                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                    placeholder="Ex: 80% (2026)"
-                  />
-                </div>
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">
+                        Cible visée (Target)
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.target}
+                        onChange={e => setFormData({ ...formData, target: e.target.value })}
+                        className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
+                        placeholder="Ex: 80% (2026)"
+                      />
+                    </div>
+                  </>
+                )}
 
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Suivi S1
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.s1_value}
-                    onChange={e => setFormData({ ...formData, s1_value: e.target.value })}
-                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                    placeholder="Valeur atteinte en S1"
-                  />
-                </div>
+                {activeTab === 'suivi' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">
+                        Indicateur suivi
+                      </label>
+                      <div className="p-3 bg-gray-50 border border-border rounded-lg text-sm text-gray-700">
+                        {formData.indicator || formData.intervention_label}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">
+                        Suivi S1
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.s1_value}
+                        onChange={e => setFormData({ ...formData, s1_value: e.target.value })}
+                        className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
+                        placeholder="Valeur atteinte en S1"
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Suivi S2
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.s2_value}
-                    onChange={e => setFormData({ ...formData, s2_value: e.target.value })}
-                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                    placeholder="Valeur atteinte en S2"
-                  />
-                </div>
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">
+                        Suivi S2
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.s2_value}
+                        onChange={e => setFormData({ ...formData, s2_value: e.target.value })}
+                        className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
+                        placeholder="Valeur atteinte en S2"
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Suivi S3
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.s3_value}
-                    onChange={e => setFormData({ ...formData, s3_value: e.target.value })}
-                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                    placeholder="Valeur atteinte en S3"
-                  />
-                </div>
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">
+                        Suivi S3
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.s3_value}
+                        onChange={e => setFormData({ ...formData, s3_value: e.target.value })}
+                        className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
+                        placeholder="Valeur atteinte en S3"
+                      />
+                    </div>
+                  </>
+                )}
 
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Source de vérification
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={formData.verification_source}
-                    onChange={e => setFormData({ ...formData, verification_source: e.target.value })}
-                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                    placeholder="Ex: Enquête ménages, Rapports annuels..."
-                  />
-                </div>
+                {activeTab === 'planification' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">
+                        Source de vérification
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={formData.verification_source}
+                        onChange={e => setFormData({ ...formData, verification_source: e.target.value })}
+                        className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
+                        placeholder="Ex: Enquête ménages, Rapports annuels..."
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Hypothèses & Risques
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={formData.risks_assumptions}
-                    onChange={e => setFormData({ ...formData, risks_assumptions: e.target.value })}
-                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                    placeholder="Ex: Stabilité politique, Maintien des financements..."
-                  />
-                </div>
+                    <div>
+                      <label className="block text-sm font-medium text-text-secondary mb-1">
+                        Hypothèses & Risques
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={formData.risks_assumptions}
+                        onChange={e => setFormData({ ...formData, risks_assumptions: e.target.value })}
+                        className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
+                        placeholder="Ex: Stabilité politique, Maintien des financements..."
+                      />
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="pt-4 border-t border-border flex justify-end gap-3">
