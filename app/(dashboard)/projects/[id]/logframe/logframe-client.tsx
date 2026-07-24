@@ -270,7 +270,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
             <table className="w-full text-left">
               <thead className="bg-background border-b border-border">
                 <tr>
-                  <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[25%]">Niveau d'intervention</th>
+                  <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[25%]">Description du projet</th>
                   <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[15%]">Indicateurs (IOV)</th>
                   <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[10%]">Ligne de base</th>
                   <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[10%]">Cible visée</th>
