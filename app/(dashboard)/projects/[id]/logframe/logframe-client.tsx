@@ -322,9 +322,10 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                     return children.map(ind => {
                       const isTopLevel = ind.level === 'objectif_global'
                       const isMidLevel = ind.level === 'objectif_specifique'
+                      const hasNoTracking = !ind.indicator && !ind.target && !ind.baseline
 
-                      // ALWAYS render top/mid level items as full-width section headers in the Suivi tab
-                      if (isTopLevel || isMidLevel) {
+                      // Render top/mid level items as full-width section headers ONLY if they have no tracking data
+                      if ((isTopLevel || isMidLevel) && hasNoTracking) {
                         return (
                           <React.Fragment key={ind.id}>
                             <tr className={`border-b border-blue-200 ${isTopLevel ? 'bg-[#dbeafe]' : 'bg-[#eff6ff]'}`}>
@@ -333,7 +334,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                                   <div className="font-bold text-blue-900">
                                     {levelLabels[ind.level]} : {ind.intervention_label}
                                   </div>
-                                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <div className="flex items-center">
                                     <button onClick={() => openEditModal(ind)} className="p-1.5 text-blue-600 hover:bg-blue-100 rounded ml-2" title="Modifier">
                                       <Edit2 className="w-4 h-4" />
                                     </button>
@@ -354,7 +355,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                         )
                       }
 
-                      // Otherwise render as a normal tracking row with columns (Résultats)
+                      // Otherwise render as a normal tracking row with columns (Résultats, or Objectifs with data)
                       return (
                         <React.Fragment key={ind.id}>
                           <tr className="border-b border-blue-100 hover:bg-slate-50 transition-colors bg-white">
@@ -369,7 +370,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                                     <div className="text-sm text-orange-500 mt-1 italic">Aucun indicateur défini</div>
                                   )}
                                 </div>
-                                <div className="flex flex-col items-end opacity-0 group-hover:opacity-100 transition-opacity ml-2">
+                                <div className="flex flex-col items-end ml-2">
                                   <button onClick={() => openEditModal(ind)} className="p-1.5 text-blue-600 hover:bg-blue-50 bg-white/50 rounded" title="Saisir les données de suivi">
                                     <Edit2 className="w-4 h-4" />
                                   </button>
@@ -422,7 +423,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
             
             <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6 flex-1">
               <div className="space-y-4">
-                {activeTab === 'planification' && (
+                {(activeTab === 'planification' || !isEditing) && (
                   <>
                     <div>
                       <label className="block text-sm font-medium text-text-secondary mb-1">
@@ -479,7 +480,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                   </>
                 )}
 
-                {activeTab === 'suivi' && (
+                {activeTab === 'suivi' && isEditing && (
                   <>
                     <div>
                       <label className="block text-sm font-medium text-text-secondary mb-1">
@@ -530,7 +531,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                   </>
                 )}
 
-                {activeTab === 'planification' && (
+                {(activeTab === 'planification' || !isEditing) && (
                   <>
                     <div>
                       <label className="block text-sm font-medium text-text-secondary mb-1">
