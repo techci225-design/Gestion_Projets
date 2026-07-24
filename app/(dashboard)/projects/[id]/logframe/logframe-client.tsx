@@ -333,9 +333,19 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                                   <div className="font-bold text-blue-900">
                                     {levelLabels[ind.level]} : {ind.intervention_label}
                                   </div>
-                                  <button onClick={() => openEditModal(ind)} className="opacity-0 group-hover:opacity-100 p-1.5 text-blue-600 hover:bg-blue-100 rounded flex-shrink-0 ml-2" title="Modifier">
-                                    <Edit2 className="w-4 h-4" />
-                                  </button>
+                                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button onClick={() => openEditModal(ind)} className="p-1.5 text-blue-600 hover:bg-blue-100 rounded ml-2" title="Modifier">
+                                      <Edit2 className="w-4 h-4" />
+                                    </button>
+                                    {nextLevel[ind.level] && nextLevel[ind.level] !== 'activite' && (
+                                      <button 
+                                        onClick={() => openAddModal(ind.id, nextLevel[ind.level] as LogframeLevel)}
+                                        className="text-[10px] font-medium text-blue-700 hover:text-blue-900 hover:bg-blue-100 px-2 py-1.5 rounded flex items-center gap-1 ml-1"
+                                      >
+                                        <Plus className="w-3 h-3" /> Ajouter
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
                               </td>
                             </tr>
@@ -351,17 +361,19 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                             <td className="p-3 border-r border-blue-100" style={{ paddingLeft: `${Math.max(0.75, depth * 1.5)}rem` }}>
                               <div className="flex items-start justify-between group">
                                 <div>
-                                  <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${isTopLevel ? 'text-blue-800' : isMidLevel ? 'text-blue-700' : 'text-blue-600'}`}>{levelLabels[ind.level]}</div>
-                                  <div className={`font-medium ${isTopLevel || isMidLevel ? 'text-blue-900' : 'text-text-primary'}`}>{ind.intervention_label}</div>
+                                  <div className="text-[10px] font-bold uppercase tracking-wider mb-1 text-blue-600">{levelLabels[ind.level]}</div>
+                                  <div className="font-medium text-text-primary">{ind.intervention_label}</div>
                                   {ind.indicator ? (
                                     <div className="text-sm text-text-secondary mt-1 italic">Ind: {ind.indicator}</div>
                                   ) : (
                                     <div className="text-sm text-orange-500 mt-1 italic">Aucun indicateur défini</div>
                                   )}
                                 </div>
-                                <button onClick={() => openEditModal(ind)} className="opacity-0 group-hover:opacity-100 p-1.5 text-blue-600 hover:bg-blue-50 bg-white/50 rounded flex-shrink-0 ml-2" title="Saisir les données de suivi">
-                                  <Edit2 className="w-4 h-4" />
-                                </button>
+                                <div className="flex flex-col items-end opacity-0 group-hover:opacity-100 transition-opacity ml-2">
+                                  <button onClick={() => openEditModal(ind)} className="p-1.5 text-blue-600 hover:bg-blue-50 bg-white/50 rounded" title="Saisir les données de suivi">
+                                    <Edit2 className="w-4 h-4" />
+                                  </button>
+                                </div>
                               </div>
                             </td>
                             <td className="p-3 text-center border-r border-blue-100 text-text-secondary">{ind.baseline || '0'}</td>
