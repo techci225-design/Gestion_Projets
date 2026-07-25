@@ -16,6 +16,7 @@ export default async function BudgetPage({
   let budgetData = null
   let fundingData = null
   let operationsData = null
+  let logframeData = null
   let queryError = null
 
   try {
@@ -66,7 +67,7 @@ export default async function BudgetPage({
       .eq('project_id', id)
       .eq('level', 'objectif_specifique')
       .order('created_at', { ascending: true })
-    const logframeItems = resLogframe.data || []
+    logframeData = resLogframe.data || []
 
     queryError = res.error || resFunding.error || resRawBudget.error || resOps.error || resLogframe.error
   } catch (err: any) {
@@ -84,7 +85,7 @@ export default async function BudgetPage({
   }
 
   const items = (budgetData || []) as BudgetConsumption[]
-  const objectifsSpecifiques = logframeItems?.map(l => l.intervention_label) || []
+  const objectifsSpecifiques = logframeData?.map((l: any) => l.intervention_label) || []
 
   return (
     <div className="p-4 md:p-6 pb-24 md:pb-6">
