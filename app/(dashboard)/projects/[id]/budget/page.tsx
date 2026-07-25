@@ -1,6 +1,7 @@
 import React from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { BudgetClient, BudgetConsumption } from './budget-client'
+import { getDisplayCurrency } from '@/lib/utils/currency'
 
 export default async function BudgetPage({ 
   params,
@@ -75,8 +76,7 @@ export default async function BudgetPage({
       .select('currency')
       .eq('id', id)
       .single()
-    const rawCurrency = resProject.data?.currency || 'FCFA'
-    projectCurrency = (rawCurrency === 'XOF' || rawCurrency === 'XAF') ? 'FCFA' : rawCurrency
+    projectCurrency = getDisplayCurrency(resProject.data?.currency)
 
     queryError = res.error || resFunding.error || resRawBudget.error || resOps.error || resLogframe.error || resProject.error
   } catch (err: any) {

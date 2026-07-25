@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Header } from '@/components/dashboard/Header'
 import { formatCurrency } from '@/lib/utils/format-currency'
+import { getDisplayCurrency } from '@/lib/utils/currency'
 import { CalendarDays, Wallet, Building2, AlignLeft, BarChart3, Users, Landmark, Clock, FileText } from 'lucide-react'
 import { format, differenceInMonths } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -79,7 +80,7 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
               </div>
               <h2 className="text-white/80 text-sm font-medium mb-1">Budget Global</h2>
               <p className="text-3xl font-bold tracking-tight">
-                {project.budget ? formatCurrency(project.budget, (project.currency === 'XOF' || project.currency === 'XAF') ? 'FCFA' : project.currency) : 'Non défini'}
+                {project.budget ? formatCurrency(project.budget, getDisplayCurrency(project.currency)) : 'Non défini'}
               </p>
             </div>
 

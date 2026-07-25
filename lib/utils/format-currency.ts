@@ -1,5 +1,7 @@
+import { getDisplayCurrency } from './currency'
+
 export function formatCurrency(amount: number | null | undefined, currency: string = 'FCFA', compact: boolean = false): string {
-  const displayCurrency = (currency === 'XOF' || currency === 'XAF') ? 'FCFA' : currency
+  const displayCurrency = getDisplayCurrency(currency)
   if (amount === null || amount === undefined || isNaN(amount)) return `0\u00A0${displayCurrency}`
   
   if (compact) {
