@@ -131,20 +131,55 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
         </div>
       </div>
 
-      {/* Top Summary Card */}
-      <div className="bg-white rounded-lg shadow-sm border border-border p-4 md:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-          <h3 className="text-lg md:text-xl font-semibold text-primary">Taux de consommation total du projet</h3>
-          <div className="text-3xl font-bold text-primary">
-            {Math.round(totalConsumptionRate)}% <span className="text-base font-normal text-text-secondary">consommé</span>
+      {/* Strategic Financial Summary Dashboard */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white p-5 rounded-xl border border-border shadow-sm flex flex-col justify-between">
+          <p className="text-sm font-medium text-text-secondary">Budget Total</p>
+          <p className="text-2xl font-bold text-primary mt-2">{formatCurrency(totalAllocated).replace('FCFA', '')}</p>
+        </div>
+        <div className="bg-white p-5 rounded-xl border border-border shadow-sm flex flex-col justify-between">
+          <div className="flex justify-between items-start">
+            <p className="text-sm font-medium text-text-secondary">Réalisé (Décaissé)</p>
+            <span className="bg-success/10 text-success-dark text-xs font-bold px-2 py-1 rounded">{totalAllocated > 0 ? Math.round((totalDecaisse / totalAllocated) * 100) : 0}%</span>
           </div>
+          <p className="text-2xl font-bold text-success-dark mt-2">{formatCurrency(totalDecaisse).replace('FCFA', '')}</p>
         </div>
-        <div className="w-full bg-surface-dim h-4 rounded-full overflow-hidden">
-          <div className="bg-primary h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(totalConsumptionRate, 100)}%` }}></div>
+        <div className="bg-white p-5 rounded-xl border border-border shadow-sm flex flex-col justify-between">
+          <div className="flex justify-between items-start">
+            <p className="text-sm font-medium text-text-secondary">Engagé (En cours)</p>
+            <span className="bg-warning/20 text-warning-dark text-xs font-bold px-2 py-1 rounded">{totalAllocated > 0 ? Math.round((totalEngage / totalAllocated) * 100) : 0}%</span>
+          </div>
+          <p className="text-2xl font-bold text-warning-dark mt-2">{formatCurrency(totalEngage).replace('FCFA', '')}</p>
         </div>
-        <div className="flex justify-between mt-2 text-sm text-text-secondary">
-          <span>{formatCurrency(totalConsumed)}</span>
-          <span>Budget Total: {formatCurrency(totalAllocated)}</span>
+        <div className="bg-white p-5 rounded-xl border border-border shadow-sm flex flex-col justify-between">
+          <div className="flex justify-between items-start">
+            <p className="text-sm font-medium text-text-secondary">Reste à décaisser (Solde)</p>
+            <span className="bg-surface-variant text-text-secondary text-xs font-bold px-2 py-1 rounded">{totalAllocated > 0 ? Math.round(((totalAllocated - totalConsumed) / totalAllocated) * 100) : 0}%</span>
+          </div>
+          <p className="text-2xl font-bold text-primary/80 mt-2">{formatCurrency(totalAllocated - totalConsumed).replace('FCFA', '')}</p>
+        </div>
+      </div>
+
+      {/* Visual Progress Bar Segmented */}
+      <div className="bg-white rounded-xl shadow-sm border border-border p-5">
+        <h3 className="text-sm font-semibold text-text-primary mb-3">Répartition de l'exécution budgétaire (Réalisé / Engagé / Reste)</h3>
+        <div className="w-full bg-surface-dim h-6 rounded-full overflow-hidden flex border border-border/50">
+          <div className="bg-success h-full transition-all duration-500" style={{ width: `${totalAllocated > 0 ? (totalDecaisse / totalAllocated) * 100 : 0}%` }} title={`Réalisé: ${formatCurrency(totalDecaisse)}`}></div>
+          <div className="bg-warning h-full transition-all duration-500" style={{ width: `${totalAllocated > 0 ? (totalEngage / totalAllocated) * 100 : 0}%` }} title={`Engagé: ${formatCurrency(totalEngage)}`}></div>
+        </div>
+        <div className="flex items-center gap-6 mt-4 text-xs font-medium">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-success"></div>
+            <span className="text-text-secondary">Réalisé ({totalAllocated > 0 ? Math.round((totalDecaisse / totalAllocated) * 100) : 0}%)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-warning"></div>
+            <span className="text-text-secondary">Engagé ({totalAllocated > 0 ? Math.round((totalEngage / totalAllocated) * 100) : 0}%)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-surface-dim border border-border"></div>
+            <span className="text-text-secondary">Reste ({totalAllocated > 0 ? Math.round(((totalAllocated - totalConsumed) / totalAllocated) * 100) : 0}%)</span>
+          </div>
         </div>
       </div>
 
