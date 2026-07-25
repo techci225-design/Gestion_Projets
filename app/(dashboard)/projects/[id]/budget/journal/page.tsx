@@ -63,9 +63,16 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
     attachments_count: attachmentCounts[op.id] || 0
   })) as OperationJournal[]
 
+  const { data: project } = await supabase
+    .from('projects')
+    .select('currency')
+    .eq('id', id)
+    .single()
+  const currency = project?.currency || 'FCFA'
+
   return (
     <div className="p-6 pb-24 md:pb-6">
-      <JournalClient items={items} projectId={id} budgetLines={budgetLines || []} fundingSources={fundingSources || []} />
+      <JournalClient items={items} projectId={id} budgetLines={budgetLines || []} fundingSources={fundingSources || []} currency={currency} />
     </div>
   )
 }

@@ -28,7 +28,7 @@ export interface OperationJournal {
   }
 }
 
-export function JournalClient({ items, projectId, budgetLines, fundingSources }: { items: OperationJournal[], projectId: string, budgetLines: any[], fundingSources: any[] }) {
+export function JournalClient({ items, projectId, budgetLines, fundingSources, currency = 'FCFA' }: { items: OperationJournal[], projectId: string, budgetLines: any[], fundingSources: any[], currency?: string }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedOperation, setSelectedOperation] = useState<OperationJournal | null>(null)
   const [activeTab, setActiveTab] = useState<'details' | 'docs' | 'comments'>('details')
@@ -129,9 +129,9 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources }:
                   <th className="p-4 whitespace-nowrap">Phase / WBS</th>
                   <th className="p-4">Ligne Budgétaire</th>
                   <th className="p-4">Statut</th>
-                  <th className="p-4 text-right whitespace-nowrap">Coût Prévu (FCFA)</th>
-                  <th className="p-4 text-right whitespace-nowrap">Coût Réel (FCFA)</th>
-                  <th className="p-4 text-right whitespace-nowrap">Écart (FCFA)</th>
+                  <th className="p-4 text-right font-medium">Coût Prévu ({currency})</th>
+                  <th className="p-4 text-right font-medium">Coût Réel ({currency})</th>
+                  <th className="p-4 text-right font-medium">Écart ({currency})</th>
                 </tr>
               </thead>
               <tbody className="text-text-primary">
@@ -170,19 +170,19 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources }:
                         {getStatusLabel(item.status)}
                       </span>
                     </td>
-                    <td className={`p-4 text-right font-mono ${item.status === 'annule' ? 'line-through' : ''}`}>
-                      {formatCurrency(item.planned_cost)}
+                    <td className="p-4 text-right font-mono text-text-secondary">
+                      {formatCurrency(item.planned_cost, currency).replace(currency, '')}
                     </td>
-                    <td className={`p-4 text-right font-mono ${item.status === 'annule' ? 'line-through text-text-secondary' : ''}`}>
-                      {item.actual_cost !== null && item.status === 'decaisse' ? formatCurrency(item.actual_cost) : '—'}
+                    <td className="p-4 text-right font-mono text-text-primary font-medium">
+                      {item.actual_cost !== null && item.status === 'decaisse' ? formatCurrency(item.actual_cost, currency).replace(currency, '') : '—'}
                     </td>
-                    <td className={`p-4 text-right font-mono font-medium ${
-                      item.status === 'annule' ? 'text-text-secondary line-through' :
-                      item.status === 'decaisse' ? (item.ecart_budgetaire >= 0 ? 'text-green-600' : 'text-red-600') : 'text-text-secondary'
-                    }`}>
-                      {item.status === 'decaisse' 
-                        ? (item.ecart_budgetaire > 0 ? '+' : '') + formatCurrency(item.ecart_budgetaire) 
-                        : '—'}
+                    <td className="p-4 text-right font-mono text-sm">
+                      {item.ecart_budgetaire !== null
+                        ? <span className={item.ecart_budgetaire > 0 ? 'text-success-dark' : item.ecart_budgetaire < 0 ? 'text-red-600' : 'text-text-secondary'}>
+                            {(item.ecart_budgetaire > 0 ? '+' : '') + formatCurrency(item.ecart_budgetaire, currency).replace(currency, '')}
+                          </span>
+                        : '—'
+                      }
                     </td>
                   </tr>
                 ))}
@@ -194,10 +194,11 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources }:
 
       {isModalOpen && (
         <AddOperationModal 
-          projectId={projectId}
-          budgetLines={budgetLines}
+          projectId={projectId} 
+          budgetLines={budgetLines} 
           fundingSources={fundingSources}
-          onClose={() => setIsModalOpen(false)}
+          currency={currency}
+          onClose={() => setIsModalOpen(false)} 
         />
       )}
 
@@ -251,27 +252,30 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources }:
                     </span>
                   </div>
                   <div>
-                    <h4 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-1">Coût Prévu</h4>
-                    <p className="font-mono text-text-primary">{formatCurrency(selectedOperation.planned_cost)}</p>
-                  </div>
-                  {selectedOperation.actual_cost !== null && (
-                    <div>
-                      <h4 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-1">Coût Réel</h4>
-                      <p className="font-mono text-text-primary">{formatCurrency(selectedOperation.actual_cost)}</p>
-                    </div>
-                  )}
-                  <div>
-                    <h4 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-1">Reste à Engager</h4>
-                    <p className="font-mono text-text-primary">{formatCurrency(selectedOperation.reste_a_engager)}</p>
+                    <p className="text-sm font-medium text-text-secondary">Coût Prévu ({currency})</p>
+                    <p className="font-mono text-text-primary">{formatCurrency(selectedOperation.planned_cost, currency)}</p>
                   </div>
                   <div>
-                    <h4 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-1">Écart</h4>
-                    <p className={`font-mono ${selectedOperation.ecart_budgetaire >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {selectedOperation.status === 'decaisse' 
-                        ? (selectedOperation.ecart_budgetaire > 0 ? '+' : '') + formatCurrency(selectedOperation.ecart_budgetaire)
-                        : '—'
-                      }
-                    </p>
+                    <p className="text-sm font-medium text-text-secondary">Coût Réel ({currency})</p>
+                    {selectedOperation.actual_cost !== null && selectedOperation.status === 'decaisse' ? (
+                      <p className="font-mono text-text-primary">{formatCurrency(selectedOperation.actual_cost, currency)}</p>
+                    ) : (
+                      <p className="text-text-secondary italic">Non renseigné</p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-text-secondary">Reste à engager ({currency})</p>
+                    <p className="font-mono text-text-primary">{formatCurrency(selectedOperation.reste_a_engager, currency)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-text-secondary">Écart Budgétaire ({currency})</p>
+                    {selectedOperation.ecart_budgetaire !== null ? (
+                      <p className={`font-mono font-medium ${selectedOperation.ecart_budgetaire > 0 ? 'text-success' : selectedOperation.ecart_budgetaire < 0 ? 'text-red-600' : 'text-text-primary'}`}>
+                        {(selectedOperation.ecart_budgetaire > 0 ? '+' : '') + formatCurrency(selectedOperation.ecart_budgetaire, currency)}
+                      </p>
+                    ) : (
+                      <p className="text-text-secondary">—</p>
+                    )}
                   </div>
                 </div>
               </div>
