@@ -15,17 +15,21 @@ select
     else (coalesce(sum(oj.montant_engage),0) + coalesce(sum(oj.montant_decaisse),0))
          / bl.initial_allocated_amount
   end as taux_consommation,
-  case
-    when bl.initial_allocated_amount = 0 then 'neutre'
-    when (coalesce(sum(oj.montant_engage),0) + coalesce(sum(oj.montant_decaisse),0))
-         / bl.initial_allocated_amount >= 1 then 'rouge'
-    when (coalesce(sum(oj.montant_engage),0) + coalesce(sum(oj.montant_decaisse),0))
-         / bl.initial_allocated_amount >= 0.8 then 'orange'
-    else 'vert'
-  end as niveau_alerte
-from budget_lines bl
-left join operations_journal oj on oj.budget_line_id = bl.id
-group by bl.id, bl.project_id, bl.code, bl.label, bl.initial_allocated_amount;
+        case
+          when bl.initial_allocated_amount = 0 then 'neutre'
+          when (coalesce(sum(oj.montant_engage),0) + coalesce(sum(oj.montant_decaisse),0))
+               / bl.initial_allocated_amount >= 1 then 'rouge'
+          when (coalesce(sum(oj.montant_engage),0) + coalesce(sum(oj.montant_decaisse),0))
+               / bl.initial_allocated_amount >= 0.8 then 'orange'
+          else 'vert'
+        end as niveau_alerte,
+        bl.responsible,
+        bl.unit,
+        bl.quantity,
+        bl.unit_cost
+      from budget_lines bl
+      left join operations_journal oj on oj.budget_line_id = bl.id
+      group by bl.id, bl.project_id, bl.code, bl.label, bl.initial_allocated_amount, bl.responsible, bl.unit, bl.quantity, bl.unit_cost;
 
 
 -- Vue EVM : recalculée dynamiquement selon projects.evm_control_date (équivalent cellule P1)
