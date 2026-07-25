@@ -125,8 +125,8 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
 
   const totalBudget = data.reduce((acc, curr) => acc + Number(curr.budget_planned), 0)
 
-  // Generate a wider array of years for the dropdown (from 2023 to 2035)
-  const years = Array.from({ length: 13 }, (_, i) => 2023 + i)
+  // Generate an array of years from 2010 to 2030
+  const years = Array.from({ length: 21 }, (_, i) => 2010 + i)
 
   return (
     <div className="space-y-6">
