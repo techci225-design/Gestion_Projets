@@ -246,9 +246,9 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
                   <th className="p-4 uppercase text-xs tracking-wider">Rubrique Budgétaire</th>
                   <th className="p-4 uppercase text-xs tracking-wider text-center">Unité</th>
                   <th className="p-4 uppercase text-xs tracking-wider text-right">Quantité</th>
-                  <th className="p-4 uppercase text-xs tracking-wider text-right">Coût unitaire ($)</th>
-                  <th className="p-4 uppercase text-xs tracking-wider text-right">Coût Total ($)</th>
-                  <th className="p-4 uppercase text-xs tracking-wider text-right">Financement Bailleur ($)</th>
+                  <th className="p-4 uppercase text-xs tracking-wider text-right">Coût unitaire ({currency})</th>
+                  <th className="p-4 uppercase text-xs tracking-wider text-right">Coût Total ({currency})</th>
+                  <th className="p-4 uppercase text-xs tracking-wider text-right">Financement Bailleur ({currency})</th>
                   <th className="p-4 w-12"></th>
                 </tr>
               </thead>
