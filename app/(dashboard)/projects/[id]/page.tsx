@@ -23,6 +23,15 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
     notFound()
   }
 
+  // Fetch funding sources to calculate true total budget
+  const { data: fundingSources } = await supabase
+    .from('funding_sources')
+    .select('amount')
+    .eq('project_id', resolvedParams.id)
+
+  const totalFunding = fundingSources?.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0) || 0
+  const displayBudget = totalFunding > 0 ? totalFunding : (project.budget || 0)
+
   // Fetch user for Header
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user?.id).single()
@@ -80,7 +89,7 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
               </div>
               <h2 className="text-white/80 text-sm font-medium mb-1">Budget Global</h2>
               <p className="text-3xl font-bold tracking-tight">
-                {project.budget ? formatCurrency(project.budget, getDisplayCurrency(project.currency)) : 'Non défini'}
+                {displayBudget > 0 ? formatCurrency(displayBudget, getDisplayCurrency(project.currency)) : 'Non défini'}
               </p>
             </div>
 

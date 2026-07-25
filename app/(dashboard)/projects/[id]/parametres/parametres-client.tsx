@@ -3,6 +3,7 @@
 import React, { useState, useTransition } from 'react'
 import { Plus, Trash2, Wallet, Layers, FileText, CheckSquare, Settings, AlertTriangle } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/format-currency'
+import { getDisplayCurrency } from '@/lib/utils/currency'
 import { addFundingSource, deleteFundingSource } from '@/lib/actions/parametres.actions'
 import { updateProject, deleteProject } from '@/lib/actions/projects.actions'
 import { useRouter } from 'next/navigation'
@@ -27,6 +28,7 @@ interface ParametresClientProps {
 export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTasks, userRole, project, members = [], invitations = [] }: ParametresClientProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<'general' | 'bailleurs' | 'budget' | 'wbs' | 'statuts' | 'membres'>('general')
+  const displayCurrency = getDisplayCurrency(project?.currency)
   
   // Modals state
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false)
@@ -267,7 +269,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
                       <div className="space-y-2">
-                        <label className="block text-sm font-medium text-text-primary">Budget global ($ US)</label>
+                        <label className="block text-sm font-medium text-text-primary">Budget global ({displayCurrency})</label>
                         <input 
                           type="number" 
                           value={formData.budget}
@@ -276,6 +278,11 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                           className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:border-primary disabled:opacity-50"
                           placeholder="30000000"
                         />
+                        {fundingSources?.length > 0 && (
+                          <p className="text-[11px] text-text-secondary leading-tight mt-1">
+                            Note : Des sources de financement étant définies, le budget global affiché correspondra à leur total.
+                          </p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-text-primary">Financement / Bailleur</label>
