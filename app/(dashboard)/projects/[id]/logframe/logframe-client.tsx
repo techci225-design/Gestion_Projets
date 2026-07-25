@@ -361,15 +361,24 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                       const isTopLevel = ind.level === 'objectif_global'
                       const isMidLevel = ind.level === 'objectif_specifique'
 
-                      // ALWAYS render top/mid level items as full-width section headers in the Suivi tab
-                      if (isTopLevel || isMidLevel) {
+                      // Don't render Objectif Global row in Suivi tab, just its children
+                      if (isTopLevel) {
                         return (
                           <React.Fragment key={ind.id}>
-                            <tr className={`border-b border-blue-200 ${isTopLevel ? 'bg-[#dbeafe]' : 'bg-[#eff6ff]'}`}>
+                            {renderSuiviRows(ind.id, depth)}
+                          </React.Fragment>
+                        )
+                      }
+
+                      // ALWAYS render mid level items as full-width section headers in the Suivi tab
+                      if (isMidLevel) {
+                        return (
+                          <React.Fragment key={ind.id}>
+                            <tr className="border-b border-blue-200 bg-[#eff6ff]">
                               <td colSpan={6} className="p-3" style={{ paddingLeft: `${Math.max(0.75, depth * 1.5)}rem` }}>
                                 <div className="flex items-center justify-between group">
                                   <div className="font-bold text-blue-900">
-                                    {levelLabels[ind.level]} : {ind.intervention_label}
+                                    {ind.intervention_label}
                                   </div>
                                   <div className="flex items-center">
                                     <button onClick={() => openEditModal(ind)} className="p-1.5 text-blue-600 hover:bg-blue-100 rounded ml-2" title="Modifier">
@@ -401,11 +410,6 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                                 <div>
                                   <div className="text-[10px] font-bold uppercase tracking-wider mb-1 text-blue-600">{levelLabels[ind.level]}</div>
                                   <div className="font-medium text-text-primary">{ind.intervention_label}</div>
-                                  {ind.indicator ? (
-                                    <div className="text-sm text-text-secondary mt-1 italic">Ind: {ind.indicator}</div>
-                                  ) : (
-                                    <div className="text-sm text-orange-500 mt-1 italic">Aucun indicateur défini</div>
-                                  )}
                                 </div>
                                 <div className="flex flex-col items-end ml-2">
                                   <button onClick={() => openEditModal(ind)} className="p-1.5 text-blue-600 hover:bg-blue-50 bg-white/50 rounded" title="Saisir les données de suivi">
