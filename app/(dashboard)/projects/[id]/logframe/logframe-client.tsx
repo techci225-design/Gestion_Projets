@@ -259,6 +259,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
   }
 
   const currentLevel = parentForNew ? parentForNew.level : (editingItem ? editingItem.level : 'objectif_global')
+  const isEditing = !!editingItem
 
   return (
     <div className="space-y-6">
