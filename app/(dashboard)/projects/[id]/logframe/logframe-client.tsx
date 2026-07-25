@@ -381,19 +381,6 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                                   <div className="font-bold text-blue-900">
                                     {ind.intervention_label}
                                   </div>
-                                  <div className="flex items-center">
-                                    <button onClick={() => openEditModal(ind)} className="p-1.5 text-blue-600 hover:bg-blue-100 rounded ml-2" title="Modifier">
-                                      <Edit2 className="w-4 h-4" />
-                                    </button>
-                                    {nextLevel[ind.level] && nextLevel[ind.level] !== 'activite' && (
-                                      <button 
-                                        onClick={() => openAddModal(ind.id, nextLevel[ind.level] as LogframeLevel)}
-                                        className="text-[10px] font-medium text-blue-700 hover:text-blue-900 hover:bg-blue-100 px-2 py-1.5 rounded flex items-center gap-1 ml-1"
-                                      >
-                                        <Plus className="w-3 h-3" /> Ajouter
-                                      </button>
-                                    )}
-                                  </div>
                                 </div>
                               </td>
                             </tr>
