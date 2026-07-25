@@ -17,6 +17,7 @@ export default async function BudgetPage({
   let fundingData = null
   let operationsData = null
   let logframeData = null
+  let projectCurrency = 'FCFA'
   let queryError = null
 
   try {
@@ -74,7 +75,7 @@ export default async function BudgetPage({
       .select('currency')
       .eq('id', id)
       .single()
-    const currency = resProject.data?.currency || 'FCFA'
+    projectCurrency = resProject.data?.currency || 'FCFA'
 
     queryError = res.error || resFunding.error || resRawBudget.error || resOps.error || resLogframe.error || resProject.error
   } catch (err: any) {
@@ -102,7 +103,7 @@ export default async function BudgetPage({
         operations={operationsData || []}
         objectifsSpecifiques={objectifsSpecifiques}
         projectId={id}
-        currency={currency}
+        currency={projectCurrency}
         isNewProject={isNewProject === 'true'}
       />
     </div>
