@@ -48,6 +48,48 @@ export async function createBudgetLine(data: z.infer<typeof budgetLineSchema>) {
   return { data: result }
 }
 
+const updateBudgetLineSchema = budgetLineSchema.extend({
+  id: z.string().uuid()
+})
+
+export async function updateBudgetLine(data: z.infer<typeof updateBudgetLineSchema>) {
+  const parsed = updateBudgetLineSchema.safeParse(data)
+  if (!parsed.success) {
+    return { error: 'Invalid data', details: parsed.error.issues }
+  }
+
+  try {
+    await requireRole(parsed.data.project_id, ['owner', 'comptable'])
+  } catch (error: any) {
+    return { error: error.message }
+  }
+
+  const supabase = await createClient()
+
+  const { data: result, error } = await supabase
+    .from('budget_lines')
+    .update({
+      code: parsed.data.code,
+      label: parsed.data.label,
+      unit: parsed.data.unit,
+      quantity: parsed.data.quantity,
+      unit_cost: parsed.data.unit_cost,
+      initial_allocated_amount: parsed.data.initial_allocated_amount,
+      responsible: parsed.data.responsible
+    })
+    .eq('id', parsed.data.id)
+    .eq('project_id', parsed.data.project_id)
+    .select()
+    .single()
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath(`/projects/${parsed.data.project_id}/budget`)
+  return { data: result }
+}
+
 export async function deleteBudgetLine(projectId: string, budgetLineId: string) {
   try {
     await requireRole(projectId, ['owner', 'comptable'])

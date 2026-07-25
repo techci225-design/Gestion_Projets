@@ -1,9 +1,10 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Plus, Download, CheckCircle2, WalletCards, Trash2, AlertTriangle } from 'lucide-react'
+import { Plus, Download, CheckCircle2, WalletCards, Trash2, AlertTriangle, Pencil } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { AddBudgetModal } from './add-budget-modal'
+import { EditBudgetModal } from './edit-budget-modal'
 import { BurnRateChart } from '@/components/dashboard/BurnRateChart'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { deleteBudgetLine } from '@/lib/actions/budget.actions'
@@ -28,6 +29,7 @@ export interface BudgetConsumption {
 
 export function BudgetClient({ items, fundingSources, operations, objectifsSpecifiques = [], projectId, currency = 'FCFA', isNewProject }: { items: BudgetConsumption[], fundingSources?: any[], operations?: any[], objectifsSpecifiques?: string[], projectId: string, currency?: string, isNewProject?: boolean }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingBudgetLine, setEditingBudgetLine] = useState<BudgetConsumption | null>(null)
   const searchParams = useSearchParams()
   const router = useRouter()
   const [showBanner, setShowBanner] = useState(isNewProject)
@@ -281,7 +283,14 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
                           <td className="p-4 text-right font-mono text-text-secondary">{item.unit_cost ? formatCurrency(item.unit_cost, currency).replace(currency, '') : '-'}</td>
                           <td className="p-4 text-right font-mono font-medium">{formatCurrency(item.initial_allocated_amount, currency).replace(currency, '')}</td>
                           <td className="p-4 text-right font-mono text-primary/80">{formatCurrency(item.initial_allocated_amount, currency).replace(currency, '')}</td>
-                          <td className="p-4 text-right">
+                          <td className="p-4 text-right flex items-center justify-end gap-1">
+                            <button 
+                              onClick={() => setEditingBudgetLine(item)}
+                              className="p-1.5 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                              title="Modifier la ligne"
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </button>
                             <button 
                               onClick={() => handleDelete(item.budget_line_id)}
                               disabled={isDeleting === item.budget_line_id}
@@ -357,6 +366,15 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
           projectId={projectId}
           currency={currency}
           onClose={() => setIsModalOpen(false)}
+        />
+      )}
+
+      {editingBudgetLine && (
+        <EditBudgetModal
+          projectId={projectId}
+          currency={currency}
+          budgetLine={editingBudgetLine}
+          onClose={() => setEditingBudgetLine(null)}
         />
       )}
     </div>
