@@ -75,7 +75,8 @@ export default async function BudgetPage({
       .select('currency')
       .eq('id', id)
       .single()
-    projectCurrency = resProject.data?.currency || 'FCFA'
+    const rawCurrency = resProject.data?.currency || 'FCFA'
+    projectCurrency = (rawCurrency === 'XOF' || rawCurrency === 'XAF') ? 'FCFA' : rawCurrency
 
     queryError = res.error || resFunding.error || resRawBudget.error || resOps.error || resLogframe.error || resProject.error
   } catch (err: any) {

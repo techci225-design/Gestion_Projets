@@ -68,7 +68,8 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
     .select('currency')
     .eq('id', id)
     .single()
-  const currency = project?.currency || 'FCFA'
+  const rawCurrency = project?.currency || 'FCFA'
+  const currency = (rawCurrency === 'XOF' || rawCurrency === 'XAF') ? 'FCFA' : rawCurrency
 
   return (
     <div className="p-6 pb-24 md:pb-6">

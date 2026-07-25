@@ -1,12 +1,13 @@
 export function formatCurrency(amount: number | null | undefined, currency: string = 'FCFA', compact: boolean = false): string {
-  if (amount === null || amount === undefined || isNaN(amount)) return `0\u00A0${currency}`
+  const displayCurrency = (currency === 'XOF' || currency === 'XAF') ? 'FCFA' : currency
+  if (amount === null || amount === undefined || isNaN(amount)) return `0\u00A0${displayCurrency}`
   
   if (compact) {
     if (Math.abs(amount) >= 1_000_000_000) {
-      return `${(amount / 1_000_000_000).toLocaleString('fr-FR', { maximumFractionDigits: 1 })}\u00A0Md\u00A0${currency}`
+      return `${(amount / 1_000_000_000).toLocaleString('fr-FR', { maximumFractionDigits: 1 })}\u00A0Md\u00A0${displayCurrency}`
     }
     if (Math.abs(amount) >= 1_000_000) {
-      return `${(amount / 1_000_000).toLocaleString('fr-FR', { maximumFractionDigits: 1 })}\u00A0M\u00A0${currency}`
+      return `${(amount / 1_000_000).toLocaleString('fr-FR', { maximumFractionDigits: 1 })}\u00A0M\u00A0${displayCurrency}`
     }
   }
 
@@ -21,5 +22,5 @@ export function formatCurrency(amount: number | null | undefined, currency: stri
   formatted = formatted.replace(/\u202F|\s/g, '\u00A0')
 
   // Explicitly ensure the currency is appended correctly with a non-breaking space
-  return `${formatted}\u00A0${currency}`
+  return `${formatted}\u00A0${displayCurrency}`
 }
