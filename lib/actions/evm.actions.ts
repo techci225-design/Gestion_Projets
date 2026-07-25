@@ -80,3 +80,65 @@ export async function createEvmTask(data: z.infer<typeof evmTaskSchema>) {
   revalidatePath(`/projects/${parsed.data.project_id}/evm`)
   return { data: result }
 }
+
+const updateEvmTaskSchema = evmTaskSchema.extend({
+  id: z.string().uuid()
+})
+
+export async function updateEvmTask(data: z.infer<typeof updateEvmTaskSchema>) {
+  const parsed = updateEvmTaskSchema.safeParse(data)
+  if (!parsed.success) {
+    return { error: 'Invalid data', details: parsed.error.issues }
+  }
+
+  try {
+    await requireRole(parsed.data.project_id, ['owner', 'chef_projet', 'consultant'])
+  } catch (error: any) {
+    return { error: error.message }
+  }
+
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('wbs_tasks')
+    .update({
+      code: parsed.data.code,
+      description: parsed.data.description,
+      responsible: parsed.data.responsible,
+      date_start: parsed.data.date_start,
+      date_end: parsed.data.date_end,
+      budget_allocated: parsed.data.budget_allocated,
+      percent_complete: parsed.data.percent_complete,
+      actual_cost: parsed.data.actual_cost
+    })
+    .eq('id', parsed.data.id)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath(`/projects/${parsed.data.project_id}/evm`)
+  return { success: true }
+}
+
+export async function deleteEvmTask(projectId: string, taskId: string) {
+  try {
+    await requireRole(projectId, ['owner', 'chef_projet'])
+  } catch (error: any) {
+    return { error: error.message }
+  }
+
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('wbs_tasks')
+    .delete()
+    .eq('id', taskId)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath(`/projects/${projectId}/evm`)
+  return { success: true }
+}

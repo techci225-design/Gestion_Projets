@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Plus, Save } from 'lucide-react'
-import { updateEvmDate } from '@/lib/actions/evm.actions'
+import { Plus, Save, Pencil, Trash2 } from 'lucide-react'
+import { updateEvmDate, deleteEvmTask } from '@/lib/actions/evm.actions'
 import { createEvmSnapshot } from '@/lib/actions/evm-snapshots.actions'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { AddEvmTaskModal } from './add-evm-task-modal'
+import { EditEvmTaskModal } from './edit-evm-task-modal'
 import { EvmHistory } from './evm-history'
 import { ImportTasksButton } from '@/components/dashboard/ImportTasksButton'
 import { EvmAiAnalysis } from '@/components/dashboard/evm-ai-analysis'
@@ -48,6 +49,8 @@ export function EvmClient({
   const [isPending, startTransition] = useTransition()
   const [controlDate, setControlDate] = useState(project.evm_control_date || new Date().toISOString().split('T')[0])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [taskToEdit, setTaskToEdit] = useState<any | null>(null)
+  const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [selectedResponsable, setSelectedResponsable] = useState('Tous les responsables')
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
@@ -58,6 +61,16 @@ export function EvmClient({
     startTransition(() => {
       updateEvmDate(projectId, newDate)
     })
+  }
+
+  const handleDelete = async (taskId: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')) return
+    setIsDeleting(taskId)
+    const res = await deleteEvmTask(projectId, taskId)
+    setIsDeleting(null)
+    if (res?.error) {
+      alert(res.error)
+    }
   }
 
   const [isSaving, setIsSaving] = useState(false)
@@ -215,6 +228,7 @@ export function EvmClient({
                 <th className="p-4 text-xs font-medium text-text-secondary w-32 text-right">Coût Réel</th>
                 <th className="p-4 text-xs font-medium text-text-secondary w-24 text-center">CPI</th>
                 <th className="p-4 text-xs font-medium text-text-secondary w-24 text-center">SPI</th>
+                <th className="p-4 text-xs font-medium text-text-secondary w-20 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="text-sm text-text-primary">
@@ -244,6 +258,25 @@ export function EvmClient({
                     </td>
                     <td className="p-4 text-center">
                       <AlertBadge value={Number(item.spi)} />
+                    </td>
+                    <td className="p-4 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <button 
+                          onClick={() => setTaskToEdit(item)}
+                          className="p-1.5 text-text-secondary hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                          title="Modifier"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(item.id)}
+                          disabled={isDeleting === item.id}
+                          className="p-1.5 text-danger hover:bg-danger/10 rounded-lg transition-colors disabled:opacity-50"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 )
@@ -288,6 +321,15 @@ export function EvmClient({
         onClose={() => setIsModalOpen(false)} 
         projectId={projectId} 
       />
+
+      {taskToEdit && (
+        <EditEvmTaskModal 
+          isOpen={!!taskToEdit} 
+          onClose={() => setTaskToEdit(null)} 
+          projectId={projectId}
+          task={taskToEdit}
+        />
+      )}
     </div>
   )
 }
