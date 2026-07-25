@@ -9,12 +9,18 @@ async function check() {
   });
   try {
     await client.connect();
+    
+    const email = 'pepson201920@gmail.com';
     const res = await client.query(`
-      SELECT column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_name = 'logframe_items'
-    `);
-    console.log("Columns:", res.rows.map(r => r.column_name).join(', '));
+      SELECT o.id, o.name, om.org_role, o.created_at
+      FROM organization_members om
+      JOIN organizations o ON om.organization_id = o.id
+      JOIN profiles p ON om.user_id = p.id
+      WHERE p.email = $1
+    `, [email]);
+    
+    console.log(`All orgs for ${email}:`, res.rows);
+    
   } catch (err) {
     console.error("Failed", err);
   } finally {

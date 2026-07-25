@@ -10,11 +10,13 @@ async function check() {
   try {
     await client.connect();
     const res = await client.query(`
-      SELECT column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_name = 'logframe_items'
+      SELECT o.id, o.name, COUNT(om.user_id) as members_count
+      FROM organizations o
+      LEFT JOIN organization_members om ON o.id = om.organization_id
+      GROUP BY o.id, o.name
+      ORDER BY members_count DESC
     `);
-    console.log("Columns:", res.rows.map(r => r.column_name).join(', '));
+    res.rows.forEach(r => console.log(`${r.name} (${r.id}): ${r.members_count} members`));
   } catch (err) {
     console.error("Failed", err);
   } finally {

@@ -9,12 +9,16 @@ async function check() {
   });
   try {
     await client.connect();
+    
+    const orgId = 'caac3384-fd5d-4bc6-8b1e-45616eccd7a9';
     const res = await client.query(`
-      SELECT column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_name = 'logframe_items'
-    `);
-    console.log("Columns:", res.rows.map(r => r.column_name).join(', '));
+      SELECT id, name
+      FROM projects
+      WHERE organization_id = $1
+    `, [orgId]);
+    
+    console.log(`Projects of Groupe 3:`, res.rows);
+
   } catch (err) {
     console.error("Failed", err);
   } finally {

@@ -10,11 +10,14 @@ async function check() {
   try {
     await client.connect();
     const res = await client.query(`
-      SELECT column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_name = 'logframe_items'
+      SELECT id, parent_id, level, intervention_label, indicator 
+      FROM logframe_items 
+      ORDER BY created_at ASC
     `);
-    console.log("Columns:", res.rows.map(r => r.column_name).join(', '));
+    console.log("Logframe items:");
+    res.rows.forEach(r => {
+      console.log(`${r.level}: ${r.intervention_label} | Ind: ${r.indicator} (parent: ${r.parent_id})`);
+    });
   } catch (err) {
     console.error("Failed", err);
   } finally {

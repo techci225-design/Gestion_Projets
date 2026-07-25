@@ -215,6 +215,9 @@ export async function updateProject(projectId: string, payload: {
   description?: string
   status: string
   evm_control_date?: string
+  budget?: string | number
+  funder?: string
+  implementing_agency?: string
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -273,7 +276,10 @@ export async function updateProject(projectId: string, payload: {
       end_date: payload.end_date,
       description: payload.description,
       status: payload.status,
-      evm_control_date: payload.evm_control_date
+      evm_control_date: payload.evm_control_date,
+      budget: payload.budget ? Number(payload.budget) : null,
+      funder: payload.funder || null,
+      implementing_agency: payload.implementing_agency || null
     })
     .eq('id', projectId)
 

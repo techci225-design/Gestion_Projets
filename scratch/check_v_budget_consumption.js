@@ -9,12 +9,15 @@ async function check() {
   });
   try {
     await client.connect();
-    const res = await client.query(`
+    
+    console.log("--- v_budget_consumption ---");
+    const res1 = await client.query(`
       SELECT column_name, data_type 
       FROM information_schema.columns 
-      WHERE table_name = 'logframe_items'
+      WHERE table_name = 'v_budget_consumption'
     `);
-    console.log("Columns:", res.rows.map(r => r.column_name).join(', '));
+    console.table(res1.rows);
+
   } catch (err) {
     console.error("Failed", err);
   } finally {

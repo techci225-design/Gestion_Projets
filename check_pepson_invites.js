@@ -9,12 +9,15 @@ async function check() {
   });
   try {
     await client.connect();
-    const res = await client.query(`
-      SELECT column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_name = 'logframe_items'
-    `);
-    console.log("Columns:", res.rows.map(r => r.column_name).join(', '));
+    
+    const email = 'pepson201920@gmail.com';
+    const res2 = await client.query(`
+      SELECT organization_id, status
+      FROM invitations
+      WHERE invited_email = $1
+    `, [email]);
+    console.log(`Invites for ${email}:`, res2.rows);
+
   } catch (err) {
     console.error("Failed", err);
   } finally {

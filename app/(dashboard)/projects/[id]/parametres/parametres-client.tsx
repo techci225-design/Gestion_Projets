@@ -50,7 +50,10 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
     end_date: project?.end_date || '',
     description: project?.description || '',
     status: project?.status || 'actif',
-    evm_control_date: project?.evm_control_date ? new Date(project.evm_control_date).toISOString().split('T')[0] : ''
+    evm_control_date: project?.evm_control_date ? new Date(project.evm_control_date).toISOString().split('T')[0] : '',
+    budget: project?.budget || '',
+    funder: project?.funder || '',
+    implementing_agency: project?.implementing_agency || ''
   })
 
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
@@ -257,6 +260,48 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                       required
                     />
                   </div>
+
+                  <div className="space-y-2 md:col-span-2 border-t border-border pt-4 mt-2">
+                    <h4 className="font-medium text-text-primary text-sm flex items-center gap-2">
+                      <Wallet className="w-4 h-4 text-primary" /> Gouvernance et Finances
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-text-primary">Budget global ($ US)</label>
+                        <input 
+                          type="number" 
+                          value={formData.budget}
+                          onChange={e => setFormData({...formData, budget: e.target.value})}
+                          disabled={isPending}
+                          className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:border-primary disabled:opacity-50"
+                          placeholder="30000000"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-text-primary">Financement / Bailleur</label>
+                        <input 
+                          type="text" 
+                          value={formData.funder}
+                          onChange={e => setFormData({...formData, funder: e.target.value})}
+                          disabled={isPending}
+                          className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:border-primary disabled:opacity-50"
+                          placeholder="Ex: BID via FAES"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-text-primary">Maître d'œuvre</label>
+                        <input 
+                          type="text" 
+                          value={formData.implementing_agency}
+                          onChange={e => setFormData({...formData, implementing_agency: e.target.value})}
+                          disabled={isPending}
+                          className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:border-primary disabled:opacity-50"
+                          placeholder="Ex: MEF"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="space-y-2 md:col-span-2 border-t border-border pt-4 mt-2">
                     <h4 className="font-medium text-text-primary text-sm flex items-center gap-2">
                       <Settings className="w-4 h-4 text-primary" /> Paramètres EVM

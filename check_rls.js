@@ -10,11 +10,11 @@ async function check() {
   try {
     await client.connect();
     const res = await client.query(`
-      SELECT column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_name = 'logframe_items'
+      SELECT cmd, roles, qual, with_check 
+      FROM pg_policies 
+      WHERE tablename = 'logframe_items';
     `);
-    console.log("Columns:", res.rows.map(r => r.column_name).join(', '));
+    console.log("Policies:", res.rows);
   } catch (err) {
     console.error("Failed", err);
   } finally {

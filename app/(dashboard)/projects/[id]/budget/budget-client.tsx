@@ -20,9 +20,13 @@ export interface BudgetConsumption {
   solde_disponible: number
   taux_consommation: number
   niveau_alerte: 'vert' | 'orange' | 'rouge' | 'neutre'
+  unit?: string
+  quantity?: number
+  unit_cost?: number
+  funding_source_id?: string
 }
 
-export function BudgetClient({ items, fundingSources, operations, projectId, isNewProject }: { items: BudgetConsumption[], fundingSources?: any[], operations?: any[], projectId: string, isNewProject?: boolean }) {
+export function BudgetClient({ items, fundingSources, operations, objectifsSpecifiques = [], projectId, isNewProject }: { items: BudgetConsumption[], fundingSources?: any[], operations?: any[], objectifsSpecifiques?: string[], projectId: string, isNewProject?: boolean }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -197,18 +201,18 @@ export function BudgetClient({ items, fundingSources, operations, projectId, isN
             Ajouter une ligne budgétaire
           </button>
         </div>
-      ) : (
         <div className="bg-white rounded-lg shadow-sm border border-border overflow-hidden">
           <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-left border-collapse text-sm">
-              <thead className="bg-surface-dim border-b border-border text-text-secondary font-medium">
+              <thead className="bg-primary/5 border-b border-border text-primary font-bold">
                 <tr>
-                  <th className="p-4">Ligne Budgétaire</th>
-                  <th className="p-4 text-right">Budget Initial (FCFA)</th>
-                  <th className="p-4 text-right">Cumul Engagé (FCFA)</th>
-                  <th className="p-4 text-right">Cumul Décaissé (FCFA)</th>
-                  <th className="p-4 text-right">Solde Disponible (FCFA)</th>
-                  <th className="p-4 w-48">Taux de Consommation (%)</th>
+                  <th className="p-4 uppercase text-xs tracking-wider">Code</th>
+                  <th className="p-4 uppercase text-xs tracking-wider">Rubrique Budgétaire</th>
+                  <th className="p-4 uppercase text-xs tracking-wider text-center">Unité</th>
+                  <th className="p-4 uppercase text-xs tracking-wider text-right">Quantité</th>
+                  <th className="p-4 uppercase text-xs tracking-wider text-right">Coût unitaire ($)</th>
+                  <th className="p-4 uppercase text-xs tracking-wider text-right">Coût Total ($)</th>
+                  <th className="p-4 uppercase text-xs tracking-wider text-right">Financement Bailleur ($)</th>
                   <th className="p-4 w-12"></th>
                 </tr>
               </thead>
@@ -216,32 +220,31 @@ export function BudgetClient({ items, fundingSources, operations, projectId, isN
                 {sortedKeys.map(key => {
                   const groupItems = categories[key]
                   const groupAlloc = groupItems.reduce((acc, i) => acc + Number(i.initial_allocated_amount), 0)
-                  const groupEngage = groupItems.reduce((acc, i) => acc + Number(i.total_engage), 0)
-                  const groupDecaisse = groupItems.reduce((acc, i) => acc + Number(i.total_decaisse), 0)
-                  const groupSolde = groupAlloc - groupEngage - groupDecaisse
+                  
+                  // Compute objective name based on key (e.g. key "1" -> Objectif index 0)
+                  const objIndex = parseInt(key) - 1
+                  const objectifName = (!isNaN(objIndex) && objIndex >= 0 && objIndex < objectifsSpecifiques.length) 
+                    ? objectifsSpecifiques[objIndex] 
+                    : `Catégorie ${key}`
                   
                   return (
                     <React.Fragment key={key}>
-                      <tr className="bg-slate-50 border-b border-border/50 font-bold text-text-primary">
-                        <td className="p-4" colSpan={7}>{key}. Catégorie {key}</td>
+                      <tr className="bg-primary/10 border-b border-border/50 font-bold text-primary">
+                        <td className="p-4 text-center">{key}</td>
+                        <td className="p-4 uppercase" colSpan={4}>{key}. {objectifName}</td>
+                        <td className="p-4 text-right">{formatCurrency(groupAlloc).replace('FCFA', '')}</td>
+                        <td className="p-4 text-right">{formatCurrency(groupAlloc).replace('FCFA', '')}</td>
+                        <td className="p-4"></td>
                       </tr>
                       {groupItems.map((item, idx) => (
-                        <tr key={item.budget_line_id} className={`border-b border-border/30 h-10 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
-                          <td className="p-4 pl-8">{item.code} {item.label}</td>
-                          <td className="p-4 text-right font-mono">{formatCurrency(item.initial_allocated_amount)}</td>
-                          <td className="p-4 text-right font-mono">{formatCurrency(item.total_engage)}</td>
-                          <td className="p-4 text-right font-mono">{formatCurrency(item.total_decaisse)}</td>
-                          <td className="p-4 text-right font-mono">{formatCurrency(item.solde_disponible)}</td>
-                          <td className="p-4">
-                            <div className="flex items-center gap-2">
-                              <div className="w-full bg-surface-dim h-2 rounded-full overflow-hidden">
-                                <div className={`${getAlertBarColor(item.niveau_alerte)} h-full`} style={{ width: `${Math.min(item.taux_consommation * 100, 100)}%` }}></div>
-                              </div>
-                              <span className={`font-mono text-xs w-10 text-right ${item.niveau_alerte === 'rouge' ? 'text-danger' : 'text-text-primary'}`}>
-                                {Math.round(item.taux_consommation * 100)}%
-                              </span>
-                            </div>
-                          </td>
+                        <tr key={item.budget_line_id} className={`border-b border-border/30 h-10 hover:bg-slate-50 transition-colors`}>
+                          <td className="p-4 text-center font-medium text-text-secondary">{item.code}</td>
+                          <td className="p-4">{item.label}</td>
+                          <td className="p-4 text-center text-text-secondary">{item.unit || '-'}</td>
+                          <td className="p-4 text-right font-mono text-text-secondary">{item.quantity || '-'}</td>
+                          <td className="p-4 text-right font-mono text-text-secondary">{item.unit_cost ? formatCurrency(item.unit_cost).replace('FCFA', '') : '-'}</td>
+                          <td className="p-4 text-right font-mono font-medium">{formatCurrency(item.initial_allocated_amount).replace('FCFA', '')}</td>
+                          <td className="p-4 text-right font-mono text-primary/80">{formatCurrency(item.initial_allocated_amount).replace('FCFA', '')}</td>
                           <td className="p-4 text-right">
                             <button 
                               onClick={() => handleDelete(item.budget_line_id)}
@@ -254,19 +257,18 @@ export function BudgetClient({ items, fundingSources, operations, projectId, isN
                           </td>
                         </tr>
                       ))}
-                      <tr className="bg-surface-dim/30 border-b-2 border-border/50 font-medium h-10">
-                        <td className="p-4 text-right">Sous-total Catégorie {key}</td>
-                        <td className="p-4 text-right font-mono">{formatCurrency(groupAlloc)}</td>
-                        <td className="p-4 text-right font-mono">{formatCurrency(groupEngage)}</td>
-                        <td className="p-4 text-right font-mono">{formatCurrency(groupDecaisse)}</td>
-                        <td className="p-4 text-right font-mono">{formatCurrency(groupSolde)}</td>
-                        <td className="p-4 text-right font-mono text-xs pr-6">—</td>
-                        <td className="p-4"></td>
-                      </tr>
                     </React.Fragment>
                   )
                 })}
               </tbody>
+              <tfoot className="bg-surface-dim font-bold text-primary">
+                <tr>
+                  <td className="p-4" colSpan={5}>TOTAL GÉNÉRAL:</td>
+                  <td className="p-4 text-right text-lg">{formatCurrency(totalAllocated).replace('FCFA', '')}</td>
+                  <td className="p-4 text-right text-lg">{formatCurrency(totalAllocated).replace('FCFA', '')}</td>
+                  <td className="p-4"></td>
+                </tr>
+              </tfoot>
             </table>
           </div>
 
@@ -276,26 +278,33 @@ export function BudgetClient({ items, fundingSources, operations, projectId, isN
               const groupItems = categories[key]
               return (
                 <div key={key} className="space-y-4">
-                  <h3 className="font-bold text-on-surface bg-surface-container-low p-2 rounded-lg">{key}. Catégorie {key}</h3>
+                  <h3 className="font-bold text-on-surface bg-primary/10 text-primary p-3 rounded-lg">
+                    {key}. {(() => {
+                      const objIndex = parseInt(key) - 1
+                      return (!isNaN(objIndex) && objIndex >= 0 && objIndex < objectifsSpecifiques.length) 
+                        ? objectifsSpecifiques[objIndex] 
+                        : `Catégorie ${key}`
+                    })()}
+                  </h3>
                   {groupItems.map(item => (
                     <div key={item.budget_line_id} className="bg-surface p-4 rounded-xl shadow-sm border border-border">
-                      <h4 className="font-semibold text-on-surface mb-2">{item.code} {item.label}</h4>
-                      <div className="flex items-center gap-2 mb-4">
-                        <div className="w-full bg-surface-dim h-2 rounded-full overflow-hidden">
-                          <div className={`${getAlertBarColor(item.niveau_alerte)} h-full`} style={{ width: `${Math.min(item.taux_consommation * 100, 100)}%` }}></div>
-                        </div>
-                        <span className={`font-mono text-xs font-bold ${item.niveau_alerte === 'rouge' ? 'text-danger' : 'text-primary'}`}>
-                          {Math.round(item.taux_consommation * 100)}%
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
+                      <h4 className="font-semibold text-text-primary mb-3">{item.code} {item.label}</h4>
+                      <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-sm mb-4">
                         <div>
-                          <p className="text-on-surface-variant text-xs">Initial</p>
-                          <p className="font-mono font-medium">{formatCurrency(item.initial_allocated_amount)}</p>
+                          <p className="text-text-secondary text-xs">Unité / Qté</p>
+                          <p className="font-medium text-text-primary">{item.unit || '-'} ({item.quantity || '-'})</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-on-surface-variant text-xs">Solde</p>
-                          <p className="font-mono font-bold text-primary">{formatCurrency(item.solde_disponible)}</p>
+                          <p className="text-text-secondary text-xs">Coût unitaire ($)</p>
+                          <p className="font-mono text-text-primary">{item.unit_cost ? formatCurrency(item.unit_cost).replace('FCFA', '') : '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-text-secondary text-xs">Financement ($)</p>
+                          <p className="font-mono font-medium text-primary/80">{formatCurrency(item.initial_allocated_amount).replace('FCFA', '')}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-text-secondary text-xs">Coût Total ($)</p>
+                          <p className="font-mono font-bold text-text-primary">{formatCurrency(item.initial_allocated_amount).replace('FCFA', '')}</p>
                         </div>
                       </div>
                     </div>

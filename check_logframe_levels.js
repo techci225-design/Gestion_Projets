@@ -10,11 +10,10 @@ async function check() {
   try {
     await client.connect();
     const res = await client.query(`
-      SELECT column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_name = 'logframe_items'
+      SELECT DISTINCT level 
+      FROM logframe_items 
     `);
-    console.log("Columns:", res.rows.map(r => r.column_name).join(', '));
+    console.log("Distinct levels in DB:", res.rows.map(r => r.level));
   } catch (err) {
     console.error("Failed", err);
   } finally {

@@ -6,8 +6,8 @@ import dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
 
 async function run() {
-  const connectionString = process.env.DATABASE_URL
-  const client = new Client({ connectionString })
+  const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL
+  const client = new Client({ connectionString, ssl: { rejectUnauthorized: false } })
   await client.connect()
 
   const file = process.argv[2] || 'supabase/migrations/20260722000007_ai_analyses.sql'

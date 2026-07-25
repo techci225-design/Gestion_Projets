@@ -10,11 +10,14 @@ async function check() {
   try {
     await client.connect();
     const res = await client.query(`
-      SELECT column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_name = 'logframe_items'
+      SELECT o.id, o.name, o.created_at, p.email
+      FROM organizations o
+      LEFT JOIN organization_members om ON o.id = om.organization_id AND om.org_role = 'owner'
+      LEFT JOIN profiles p ON om.user_id = p.id
+      ORDER BY o.created_at DESC
+      LIMIT 10
     `);
-    console.log("Columns:", res.rows.map(r => r.column_name).join(', '));
+    res.rows.forEach(r => console.log(`${r.name} created by ${r.email} at ${r.created_at}`));
   } catch (err) {
     console.error("Failed", err);
   } finally {

@@ -9,12 +9,23 @@ async function check() {
   });
   try {
     await client.connect();
-    const res = await client.query(`
+    
+    console.log("--- funding_sources ---");
+    const res1 = await client.query(`
       SELECT column_name, data_type 
       FROM information_schema.columns 
-      WHERE table_name = 'logframe_items'
+      WHERE table_name = 'funding_sources'
     `);
-    console.log("Columns:", res.rows.map(r => r.column_name).join(', '));
+    console.table(res1.rows);
+
+    console.log("--- budget_lines ---");
+    const res2 = await client.query(`
+      SELECT column_name, data_type 
+      FROM information_schema.columns 
+      WHERE table_name = 'budget_lines'
+    `);
+    console.table(res2.rows);
+
   } catch (err) {
     console.error("Failed", err);
   } finally {

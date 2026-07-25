@@ -9,12 +9,15 @@ async function check() {
   });
   try {
     await client.connect();
+    
     const res = await client.query(`
-      SELECT column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_name = 'logframe_items'
+      SELECT name, created_at
+      FROM projects
+      WHERE id = 'c94bc799-fd38-4140-9039-5faf496d3a4d'
     `);
-    console.log("Columns:", res.rows.map(r => r.column_name).join(', '));
+    
+    console.log(`Project:`, res.rows[0]);
+
   } catch (err) {
     console.error("Failed", err);
   } finally {

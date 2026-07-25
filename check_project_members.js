@@ -9,12 +9,17 @@ async function check() {
   });
   try {
     await client.connect();
+    
+    const projectId = 'c94bc799-fd38-4140-9039-5faf496d3a4d';
     const res = await client.query(`
-      SELECT column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_name = 'logframe_items'
-    `);
-    console.log("Columns:", res.rows.map(r => r.column_name).join(', '));
+      SELECT p.email, pm.role
+      FROM project_members pm
+      JOIN profiles p ON pm.user_id = p.id
+      WHERE pm.project_id = $1
+    `, [projectId]);
+    
+    console.log(`Members of Project EDUCATIF EN HAITI:`, res.rows);
+
   } catch (err) {
     console.error("Failed", err);
   } finally {

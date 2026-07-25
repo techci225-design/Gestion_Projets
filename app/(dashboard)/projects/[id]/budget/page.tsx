@@ -32,6 +32,26 @@ export default async function BudgetPage({
       .eq('project_id', id)
     fundingData = resFunding.data
 
+    const resRawBudget = await supabase
+      .from('budget_lines')
+      .select('*')
+      .eq('project_id', id)
+    const rawBudget = resRawBudget.data || []
+    
+    // Merge raw budget fields into budgetData
+    if (budgetData && rawBudget) {
+      budgetData = budgetData.map((item: any) => {
+        const raw = rawBudget.find((r: any) => r.id === item.budget_line_id)
+        return {
+          ...item,
+          unit: raw?.unit,
+          quantity: raw?.quantity,
+          unit_cost: raw?.unit_cost,
+          funding_source_id: raw?.funding_source_id,
+        }
+      })
+    }
+
     const resOps = await supabase
       .from('operations_journal')
       .select('*')
@@ -40,7 +60,15 @@ export default async function BudgetPage({
       .order('created_at', { ascending: true })
     operationsData = resOps.data
 
-    queryError = res.error || resFunding.error || resOps.error
+    const resLogframe = await supabase
+      .from('logframe_items')
+      .select('intervention_label, created_at')
+      .eq('project_id', id)
+      .eq('level', 'objectif_specifique')
+      .order('created_at', { ascending: true })
+    const logframeItems = resLogframe.data || []
+
+    queryError = res.error || resFunding.error || resRawBudget.error || resOps.error || resLogframe.error
   } catch (err: any) {
     queryError = { message: err.message || 'Erreur de connexion à la base de données' }
   }
@@ -56,6 +84,7 @@ export default async function BudgetPage({
   }
 
   const items = (budgetData || []) as BudgetConsumption[]
+  const objectifsSpecifiques = logframeItems?.map(l => l.intervention_label) || []
 
   return (
     <div className="p-4 md:p-6 pb-24 md:pb-6">
@@ -63,6 +92,7 @@ export default async function BudgetPage({
         items={items} 
         fundingSources={fundingData || []} 
         operations={operationsData || []}
+        objectifsSpecifiques={objectifsSpecifiques}
         projectId={id} 
         isNewProject={isNewProject === 'true'}
       />

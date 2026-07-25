@@ -9,12 +9,15 @@ async function check() {
   });
   try {
     await client.connect();
+    
+    console.log("--- logframe_items ---");
     const res = await client.query(`
       SELECT column_name, data_type 
       FROM information_schema.columns 
       WHERE table_name = 'logframe_items'
     `);
-    console.log("Columns:", res.rows.map(r => r.column_name).join(', '));
+    console.table(res.rows);
+
   } catch (err) {
     console.error("Failed", err);
   } finally {

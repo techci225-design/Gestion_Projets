@@ -9,12 +9,16 @@ async function check() {
   });
   try {
     await client.connect();
+    
     const res = await client.query(`
-      SELECT column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_name = 'logframe_items'
+      SELECT invited_email, status, created_at, updated_at
+      FROM invitations
+      WHERE organization_id = 'caac3384-fd5d-4bc6-8b1e-45616eccd7a9'
+      ORDER BY created_at DESC
     `);
-    console.log("Columns:", res.rows.map(r => r.column_name).join(', '));
+    
+    console.log(`Invites for Groupe 3:`, res.rows);
+
   } catch (err) {
     console.error("Failed", err);
   } finally {

@@ -3,22 +3,26 @@ const dotenv = require('dotenv');
 
 dotenv.config({ path: '.env.local' });
 
-async function check() {
+async function run() {
   const client = new Client({
     connectionString: process.env.DIRECT_URL,
   });
   try {
     await client.connect();
-    const res = await client.query(`
-      SELECT column_name, data_type 
-      FROM information_schema.columns 
-      WHERE table_name = 'logframe_items'
+    
+    await client.query(`
+      ALTER TABLE logframe_items 
+      ADD COLUMN IF NOT EXISTS s1_value text,
+      ADD COLUMN IF NOT EXISTS s2_value text,
+      ADD COLUMN IF NOT EXISTS s3_value text;
     `);
-    console.log("Columns:", res.rows.map(r => r.column_name).join(', '));
+    
+    console.log("Columns added successfully");
+    
   } catch (err) {
     console.error("Failed", err);
   } finally {
     await client.end();
   }
 }
-check();
+run();

@@ -12,9 +12,9 @@ async function check() {
     const res = await client.query(`
       SELECT column_name, data_type 
       FROM information_schema.columns 
-      WHERE table_name = 'logframe_items'
+      WHERE table_name = 'projects'
     `);
-    console.log("Columns:", res.rows.map(r => r.column_name).join(', '));
+    console.table(res.rows);
   } catch (err) {
     console.error("Failed", err);
   } finally {

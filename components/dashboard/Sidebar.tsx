@@ -33,7 +33,7 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
   const projectId = isProjectRoute ? segments[2] : null
 
   const projectLinks = [
-    { name: 'Tableau de bord', href: `/projects/${projectId}`, icon: TrendingUp },
+    { name: 'Vue d\'ensemble', href: `/projects/${projectId}`, icon: Home },
     { name: 'Paramètres du projet', href: `/projects/${projectId}/parametres`, icon: Settings },
     { name: 'Cadre Logique', href: `/projects/${projectId}/logframe`, icon: FolderTree },
     { name: 'PTBA', href: `/projects/${projectId}/ptba`, icon: CalendarDays },
