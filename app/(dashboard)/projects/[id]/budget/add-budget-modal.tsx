@@ -6,15 +6,27 @@ import { createBudgetLine } from '@/lib/actions/budget.actions'
 import { useRouter } from 'next/navigation'
 
 export function AddBudgetModal({ 
-  projectId, 
+  projectId,
+  currency = 'FCFA',
   onClose
 }: { 
   projectId: string
+  currency?: string
   onClose: () => void 
 }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [qty, setQty] = useState<number | ''>('')
+  const [unitCost, setUnitCost] = useState<number | ''>('')
+  const [allocatedAmount, setAllocatedAmount] = useState<number | ''>('')
+
+  // Auto-calculate allocated amount when qty and unit cost change
+  React.useEffect(() => {
+    if (qty !== '' && unitCost !== '') {
+      setAllocatedAmount(Number(qty) * Number(unitCost))
+    }
+  }, [qty, unitCost])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -67,8 +79,8 @@ export function AddBudgetModal({
               <input required type="text" name="code" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="ex: 1.1" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">Budget Initial Alloué (FCFA)</label>
-              <input required type="number" min="0" step="1" name="initial_allocated_amount" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+              <label className="block text-sm font-medium text-text-primary mb-1">Budget Initial Alloué ({currency})</label>
+              <input required type="number" min="0" step="any" name="initial_allocated_amount" value={allocatedAmount} onChange={(e) => setAllocatedAmount(e.target.value ? Number(e.target.value) : '')} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
           </div>
 
@@ -90,11 +102,11 @@ export function AddBudgetModal({
             </div>
             <div>
               <label className="block text-sm font-medium text-text-primary mb-1">Quantité</label>
-              <input type="number" min="0" step="any" name="quantity" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+              <input type="number" min="0" step="any" name="quantity" value={qty} onChange={(e) => setQty(e.target.value ? Number(e.target.value) : '')} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">Coût unitaire (FCFA)</label>
-              <input type="number" min="0" step="1" name="unit_cost" className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+              <label className="block text-sm font-medium text-text-primary mb-1">Coût unitaire ({currency})</label>
+              <input type="number" min="0" step="any" name="unit_cost" value={unitCost} onChange={(e) => setUnitCost(e.target.value ? Number(e.target.value) : '')} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
           </div>
 

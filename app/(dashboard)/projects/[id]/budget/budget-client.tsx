@@ -26,7 +26,7 @@ export interface BudgetConsumption {
   funding_source_id?: string
 }
 
-export function BudgetClient({ items, fundingSources, operations, objectifsSpecifiques = [], projectId, isNewProject }: { items: BudgetConsumption[], fundingSources?: any[], operations?: any[], objectifsSpecifiques?: string[], projectId: string, isNewProject?: boolean }) {
+export function BudgetClient({ items, fundingSources, operations, objectifsSpecifiques = [], projectId, currency = 'FCFA', isNewProject }: { items: BudgetConsumption[], fundingSources?: any[], operations?: any[], objectifsSpecifiques?: string[], projectId: string, currency?: string, isNewProject?: boolean }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -135,28 +135,28 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-xl border border-border shadow-sm flex flex-col justify-between">
           <p className="text-sm font-medium text-text-secondary">Budget Total</p>
-          <p className="text-2xl font-bold text-primary mt-2">{formatCurrency(totalAllocated).replace('FCFA', '')}</p>
+          <p className="text-2xl font-bold text-primary mt-2">{formatCurrency(totalAllocated, currency).replace(currency, '')}</p>
         </div>
         <div className="bg-white p-5 rounded-xl border border-border shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-start">
             <p className="text-sm font-medium text-text-secondary">Réalisé (Décaissé)</p>
             <span className="bg-success/10 text-success-dark text-xs font-bold px-2 py-1 rounded">{totalAllocated > 0 ? Math.round((totalDecaisse / totalAllocated) * 100) : 0}%</span>
           </div>
-          <p className="text-2xl font-bold text-success-dark mt-2">{formatCurrency(totalDecaisse).replace('FCFA', '')}</p>
+          <p className="text-2xl font-bold text-success-dark mt-2">{formatCurrency(totalDecaisse, currency).replace(currency, '')}</p>
         </div>
         <div className="bg-white p-5 rounded-xl border border-border shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-start">
             <p className="text-sm font-medium text-text-secondary">Engagé (En cours)</p>
             <span className="bg-warning/20 text-warning-dark text-xs font-bold px-2 py-1 rounded">{totalAllocated > 0 ? Math.round((totalEngage / totalAllocated) * 100) : 0}%</span>
           </div>
-          <p className="text-2xl font-bold text-warning-dark mt-2">{formatCurrency(totalEngage).replace('FCFA', '')}</p>
+          <p className="text-2xl font-bold text-warning-dark mt-2">{formatCurrency(totalEngage, currency).replace(currency, '')}</p>
         </div>
         <div className="bg-white p-5 rounded-xl border border-border shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-start">
             <p className="text-sm font-medium text-text-secondary">Reste à décaisser (Solde)</p>
             <span className="bg-surface-variant text-text-secondary text-xs font-bold px-2 py-1 rounded">{totalAllocated > 0 ? Math.round(((totalAllocated - totalConsumed) / totalAllocated) * 100) : 0}%</span>
           </div>
-          <p className="text-2xl font-bold text-primary/80 mt-2">{formatCurrency(totalAllocated - totalConsumed).replace('FCFA', '')}</p>
+          <p className="text-2xl font-bold text-primary/80 mt-2">{formatCurrency(totalAllocated - totalConsumed, currency).replace(currency, '')}</p>
         </div>
       </div>
 
@@ -164,8 +164,8 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
       <div className="bg-white rounded-xl shadow-sm border border-border p-5">
         <h3 className="text-sm font-semibold text-text-primary mb-3">Répartition de l'exécution budgétaire (Réalisé / Engagé / Reste)</h3>
         <div className="w-full bg-surface-dim h-6 rounded-full overflow-hidden flex border border-border/50">
-          <div className="bg-success h-full transition-all duration-500" style={{ width: `${totalAllocated > 0 ? (totalDecaisse / totalAllocated) * 100 : 0}%` }} title={`Réalisé: ${formatCurrency(totalDecaisse)}`}></div>
-          <div className="bg-warning h-full transition-all duration-500" style={{ width: `${totalAllocated > 0 ? (totalEngage / totalAllocated) * 100 : 0}%` }} title={`Engagé: ${formatCurrency(totalEngage)}`}></div>
+          <div className="bg-success h-full transition-all duration-500" style={{ width: `${totalAllocated > 0 ? (totalDecaisse / totalAllocated) * 100 : 0}%` }} title={`Réalisé: ${formatCurrency(totalDecaisse, currency)}`}></div>
+          <div className="bg-warning h-full transition-all duration-500" style={{ width: `${totalAllocated > 0 ? (totalEngage / totalAllocated) * 100 : 0}%` }} title={`Engagé: ${formatCurrency(totalEngage, currency)}`}></div>
         </div>
         <div className="flex items-center gap-6 mt-4 text-xs font-medium">
           <div className="flex items-center gap-2">
@@ -278,9 +278,9 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
                           <td className="p-4">{item.label}</td>
                           <td className="p-4 text-center text-text-secondary">{item.unit || '-'}</td>
                           <td className="p-4 text-right font-mono text-text-secondary">{item.quantity || '-'}</td>
-                          <td className="p-4 text-right font-mono text-text-secondary">{item.unit_cost ? formatCurrency(item.unit_cost).replace('FCFA', '') : '-'}</td>
-                          <td className="p-4 text-right font-mono font-medium">{formatCurrency(item.initial_allocated_amount).replace('FCFA', '')}</td>
-                          <td className="p-4 text-right font-mono text-primary/80">{formatCurrency(item.initial_allocated_amount).replace('FCFA', '')}</td>
+                          <td className="p-4 text-right font-mono text-text-secondary">{item.unit_cost ? formatCurrency(item.unit_cost, currency).replace(currency, '') : '-'}</td>
+                          <td className="p-4 text-right font-mono font-medium">{formatCurrency(item.initial_allocated_amount, currency).replace(currency, '')}</td>
+                          <td className="p-4 text-right font-mono text-primary/80">{formatCurrency(item.initial_allocated_amount, currency).replace(currency, '')}</td>
                           <td className="p-4 text-right">
                             <button 
                               onClick={() => handleDelete(item.budget_line_id)}
@@ -300,8 +300,8 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
               <tfoot className="bg-surface-dim font-bold text-primary">
                 <tr>
                   <td className="p-4" colSpan={5}>TOTAL GÉNÉRAL:</td>
-                  <td className="p-4 text-right text-lg">{formatCurrency(totalAllocated).replace('FCFA', '')}</td>
-                  <td className="p-4 text-right text-lg">{formatCurrency(totalAllocated).replace('FCFA', '')}</td>
+                  <td className="p-4 text-right text-lg">{formatCurrency(totalAllocated, currency).replace(currency, '')}</td>
+                  <td className="p-4 text-right text-lg">{formatCurrency(totalAllocated, currency).replace(currency, '')}</td>
                   <td className="p-4"></td>
                 </tr>
               </tfoot>
@@ -331,16 +331,16 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
                           <p className="font-medium text-text-primary">{item.unit || '-'} ({item.quantity || '-'})</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-text-secondary text-xs">Coût unitaire ($)</p>
-                          <p className="font-mono text-text-primary">{item.unit_cost ? formatCurrency(item.unit_cost).replace('FCFA', '') : '-'}</p>
+                          <p className="text-text-secondary text-xs">Coût unitaire ({currency})</p>
+                          <p className="font-mono text-text-primary">{item.unit_cost ? formatCurrency(item.unit_cost, currency).replace(currency, '') : '-'}</p>
                         </div>
                         <div>
-                          <p className="text-text-secondary text-xs">Financement ($)</p>
-                          <p className="font-mono font-medium text-primary/80">{formatCurrency(item.initial_allocated_amount).replace('FCFA', '')}</p>
+                          <p className="text-text-secondary text-xs">Financement ({currency})</p>
+                          <p className="font-mono font-medium text-primary/80">{formatCurrency(item.initial_allocated_amount, currency).replace(currency, '')}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-text-secondary text-xs">Coût Total ($)</p>
-                          <p className="font-mono font-bold text-text-primary">{formatCurrency(item.initial_allocated_amount).replace('FCFA', '')}</p>
+                          <p className="text-text-secondary text-xs">Coût Total ({currency})</p>
+                          <p className="font-mono font-bold text-text-primary">{formatCurrency(item.initial_allocated_amount, currency).replace(currency, '')}</p>
                         </div>
                       </div>
                     </div>
@@ -355,6 +355,7 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
       {isModalOpen && (
         <AddBudgetModal 
           projectId={projectId}
+          currency={currency}
           onClose={() => setIsModalOpen(false)}
         />
       )}

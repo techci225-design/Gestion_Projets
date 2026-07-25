@@ -69,7 +69,14 @@ export default async function BudgetPage({
       .order('created_at', { ascending: true })
     logframeData = resLogframe.data || []
 
-    queryError = res.error || resFunding.error || resRawBudget.error || resOps.error || resLogframe.error
+    const resProject = await supabase
+      .from('projects')
+      .select('currency')
+      .eq('id', id)
+      .single()
+    const currency = resProject.data?.currency || 'FCFA'
+
+    queryError = res.error || resFunding.error || resRawBudget.error || resOps.error || resLogframe.error || resProject.error
   } catch (err: any) {
     queryError = { message: err.message || 'Erreur de connexion à la base de données' }
   }
@@ -94,7 +101,8 @@ export default async function BudgetPage({
         fundingSources={fundingData || []} 
         operations={operationsData || []}
         objectifsSpecifiques={objectifsSpecifiques}
-        projectId={id} 
+        projectId={id}
+        currency={currency}
         isNewProject={isNewProject === 'true'}
       />
     </div>
