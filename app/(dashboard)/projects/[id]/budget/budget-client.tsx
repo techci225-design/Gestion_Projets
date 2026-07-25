@@ -201,6 +201,7 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
             Ajouter une ligne budgétaire
           </button>
         </div>
+      ) : (
         <div className="bg-white rounded-lg shadow-sm border border-border overflow-hidden">
           <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-left border-collapse text-sm">
