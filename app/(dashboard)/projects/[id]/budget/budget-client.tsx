@@ -249,8 +249,9 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
                   <th className="p-4 uppercase text-xs tracking-wider text-center">Unité</th>
                   <th className="p-4 uppercase text-xs tracking-wider text-right">Quantité</th>
                   <th className="p-4 uppercase text-xs tracking-wider text-right">Coût unitaire ({currency})</th>
-                  <th className="p-4 uppercase text-xs tracking-wider text-right">Coût Total ({currency})</th>
-                  <th className="p-4 uppercase text-xs tracking-wider text-right">Financement Bailleur ({currency})</th>
+                  <th className="p-4 uppercase text-xs tracking-wider text-right">Budget Alloué ({currency})</th>
+                  <th className="p-4 uppercase text-xs tracking-wider text-right">Coût Réel (Décaissé)</th>
+                  <th className="p-4 uppercase text-xs tracking-wider text-right">Écart (Solde)</th>
                   <th className="p-4 w-12"></th>
                 </tr>
               </thead>
@@ -271,7 +272,8 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
                         <td className="p-4 text-center">{key}</td>
                         <td className="p-4 uppercase" colSpan={4}>{key}. {objectifName}</td>
                         <td className="p-4 text-right">{formatCurrency(groupAlloc).replace('FCFA', '')}</td>
-                        <td className="p-4 text-right">{formatCurrency(groupAlloc).replace('FCFA', '')}</td>
+                        <td className="p-4 text-right">{formatCurrency(groupItems.reduce((acc, i) => acc + Number(i.total_decaisse || 0), 0)).replace('FCFA', '')}</td>
+                        <td className="p-4 text-right">{formatCurrency(groupItems.reduce((acc, i) => acc + Number(i.solde_disponible || 0), 0)).replace('FCFA', '')}</td>
                         <td className="p-4"></td>
                       </tr>
                       {groupItems.map((item, idx) => (
@@ -282,7 +284,10 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
                           <td className="p-4 text-right font-mono text-text-secondary">{item.quantity || '-'}</td>
                           <td className="p-4 text-right font-mono text-text-secondary">{item.unit_cost ? formatCurrency(item.unit_cost, currency).replace(currency, '') : '-'}</td>
                           <td className="p-4 text-right font-mono font-medium">{formatCurrency(item.initial_allocated_amount, currency).replace(currency, '')}</td>
-                          <td className="p-4 text-right font-mono text-primary/80">{formatCurrency(item.initial_allocated_amount, currency).replace(currency, '')}</td>
+                          <td className="p-4 text-right font-mono text-text-secondary">{formatCurrency(item.total_decaisse || 0, currency).replace(currency, '')}</td>
+                          <td className={`p-4 text-right font-mono font-medium ${item.solde_disponible < 0 ? 'text-danger' : 'text-success-dark'}`}>
+                            {formatCurrency(item.solde_disponible || 0, currency).replace(currency, '')}
+                          </td>
                           <td className="p-4 text-right flex items-center justify-end gap-1">
                             <button 
                               onClick={() => setEditingBudgetLine(item)}
@@ -308,9 +313,10 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
               </tbody>
               <tfoot className="bg-surface-dim font-bold text-primary">
                 <tr>
-                  <td className="p-4" colSpan={5}>TOTAL GÉNÉRAL:</td>
-                  <td className="p-4 text-right text-lg">{formatCurrency(totalAllocated, currency).replace(currency, '')}</td>
-                  <td className="p-4 text-right text-lg">{formatCurrency(totalAllocated, currency).replace(currency, '')}</td>
+                  <td colSpan={5} className="p-4 text-right">TOTAL GLOBAL :</td>
+                  <td className="p-4 text-right">{formatCurrency(totalAllocated, currency).replace(currency, '')}</td>
+                  <td className="p-4 text-right">{formatCurrency(totalDecaisse, currency).replace(currency, '')}</td>
+                  <td className="p-4 text-right">{formatCurrency(totalAllocated - totalConsumed, currency).replace(currency, '')}</td>
                   <td className="p-4"></td>
                 </tr>
               </tfoot>
