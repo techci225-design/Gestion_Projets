@@ -199,6 +199,14 @@ export async function createProjectWithBudget(payload: any) {
       return { error: error.message }
     }
 
+    // Update with extra fields that the RPC doesn't handle natively
+    if (payload.funder || payload.implementing_agency) {
+      await adminClient.from('projects').update({
+        funder: payload.funder || null,
+        implementing_agency: payload.implementing_agency || null
+      }).eq('id', projectId)
+    }
+
     revalidatePath('/projects')
     return { success: true, projectId }
   } catch (err: any) {

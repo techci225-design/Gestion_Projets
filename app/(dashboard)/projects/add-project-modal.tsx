@@ -20,6 +20,8 @@ export function AddProjectModal() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [description, setDescription] = useState('')
+  const [funder, setFunder] = useState('')
+  const [implementingAgency, setImplementingAgency] = useState('')
   const [currency, setCurrency] = useState('FCFA')
 
   // Step 2: Funding
@@ -37,7 +39,7 @@ export function AddProjectModal() {
   const diff = totalFunding - totalBudget
 
   // Validations
-  const canGoStep2 = name.trim() !== '' && code.trim() !== '' && startDate !== '' && endDate !== ''
+  const canGoStep2 = name.trim() !== '' && code.trim() !== '' && startDate !== '' && endDate !== '' && description.trim() !== '' && funder.trim() !== '' && implementingAgency.trim() !== ''
   const canGoStep3 = fundingSources.some(fs => fs.name.trim() !== '' && fs.amount > 0)
   const canSubmit = budgetLines.some(bl => bl.funding_source_id !== '' && bl.amount > 0)
 
@@ -52,6 +54,8 @@ export function AddProjectModal() {
         start_date: startDate,
         end_date: endDate,
         description,
+        funder,
+        implementing_agency: implementingAgency,
         currency,
         funding_sources: fundingSources.filter(fs => fs.name.trim() !== '' && fs.amount > 0),
         budget_lines: budgetLines
@@ -75,6 +79,7 @@ export function AddProjectModal() {
         // Reset state
         setStep(1)
         setName(''); setCode(''); setStartDate(''); setEndDate(''); setDescription('');
+        setFunder(''); setImplementingAgency('');
         setFundingSources([{ id: '1', name: '', type: 'bailleur', amount: 0 }])
         setBudgetLines([{ id: '1', code: '', label: '', amount: 0, funding_source_id: '' }])
         setIsOpen(false)
@@ -217,8 +222,18 @@ export function AddProjectModal() {
                       <option value="USD">USD ($)</option>
                     </select>
                   </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-text-primary mb-1">Financement / Bailleur principal *</label>
+                      <input type="text" value={funder} onChange={e => setFunder(e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Ex: Banque Mondiale" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-text-primary mb-1">Maître d'œuvre *</label>
+                      <input type="text" value={implementingAgency} onChange={e => setImplementingAgency(e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Ex: Ministère de la Santé" />
+                    </div>
+                  </div>
                   <div>
-                    <label className="block text-sm font-medium text-text-primary mb-1">Description (Optionnel)</label>
+                    <label className="block text-sm font-medium text-text-primary mb-1">Description *</label>
                     <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none" placeholder="Description courte du projet..." />
                   </div>
                 </div>
