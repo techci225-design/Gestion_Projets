@@ -113,14 +113,13 @@ export function UsersClient({ users }: { users: any[] }) {
                   Aucun utilisateur trouvé
                 </td>
               </tr>
-            ) : filteredUsers.map(user => {
-              const initials = (user.full_name || user.email || '?').charAt(0).toUpperCase()
-              
+            ) : filteredUsers.map((user, index) => {
+              const isLastItems = index >= filteredUsers.length - 2 && filteredUsers.length > 2;
               return (
                 <tr key={user.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-3 py-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">
-                      {initials}
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                      {user.full_name ? user.full_name.charAt(0).toUpperCase() : (user.email || '?').charAt(0).toUpperCase()}
                     </div>
                   </td>
                   <td className="px-3 py-3">
@@ -131,40 +130,43 @@ export function UsersClient({ users }: { users: any[] }) {
                   <td className="px-3 py-3">
                     {user.organization_name ? (
                       <div>
-                        <div className="font-medium text-gray-900 truncate max-w-[120px]">{user.organization_name}</div>
-                        <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase whitespace-nowrap ${
+                        <div className="font-medium text-gray-900 text-xs truncate max-w-[120px]">{user.organization_name}</div>
+                        <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium mt-1 ${
                           user.organization_plan === 'trial' ? 'bg-orange-50 text-orange-700' :
                           user.organization_plan === 'pro' ? 'bg-blue-50 text-blue-700' :
                           'bg-purple-50 text-purple-700'
                         }`}>
-                          {user.organization_plan}
+                          {user.organization_plan?.toUpperCase()}
                         </span>
                       </div>
                     ) : (
-                      <span className="text-gray-400 italic">Aucune</span>
+                      <span className="text-gray-400 text-xs italic">Aucune</span>
                     )}
                   </td>
                   <td className="px-3 py-3">
-                    {user.org_role ? (
-                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase whitespace-nowrap border ${
-                        user.org_role === 'owner' ? 'bg-green-50 text-green-700 border-green-200' :
-                        user.org_role === 'admin' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                        'bg-gray-50 text-gray-700 border-gray-200'
-                      }`}>
-                        {user.org_role}
-                      </span>
-                    ) : '-'}
+                    <span className={`px-2 py-1 rounded-full text-[10px] font-medium border ${
+                      user.org_role === 'owner' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                      user.org_role === 'admin' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                      user.org_role ? 'bg-gray-50 text-gray-700 border-gray-200' :
+                      'bg-transparent text-gray-400 border-transparent'
+                    }`}>
+                      {user.org_role === 'owner' ? 'Propriétaire' : 
+                       user.org_role === 'admin' ? 'Admin' : 
+                       user.org_role === 'user' ? 'Utilisateur' : '-'}
+                    </span>
                   </td>
-                  <td className="px-3 py-3 text-center font-medium text-gray-900">
-                    {user.nb_projects || 0}
+                  <td className="px-3 py-3 text-center">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">
+                      {user.nb_projects || 0}
+                    </span>
                   </td>
-                  <td className="px-3 py-3 text-center font-medium text-gray-900">
+                  <td className="px-3 py-3 text-center">
                     {user.pending_invitations > 0 ? (
-                      <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
-                        {user.pending_invitations} en attente
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-medium border border-amber-200">
+                        <Mail className="w-3 h-3" /> {user.pending_invitations}
                       </span>
                     ) : (
-                      <span className="text-gray-400">0</span>
+                      <span className="text-gray-400 text-xs">-</span>
                     )}
                   </td>
                   <td className="px-3 py-3 text-gray-500 whitespace-nowrap text-xs">
@@ -176,7 +178,7 @@ export function UsersClient({ users }: { users: any[] }) {
                       <button className="p-1.5 text-gray-400 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors">
                         <MoreVertical className="w-4 h-4" />
                       </button>
-                      <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 py-1">
+                      <div className={`absolute right-0 ${isLastItems ? 'bottom-full mb-1' : 'top-full mt-1'} w-56 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 py-1`}>
                         {user.organization_id && (
                           <button 
                             onClick={() => handleViewProjects(user.organization_id)}

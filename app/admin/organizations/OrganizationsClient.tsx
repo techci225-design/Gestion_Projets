@@ -96,7 +96,11 @@ export function OrganizationsClient({ orgs }: { orgs: any[] }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {orgs.map(org => (
+            {orgs.map((org, index) => {
+              // Si c'est l'un des deux derniers éléments (et qu'il y en a plus de 2), on ouvre le menu vers le haut
+              const isLastItems = index >= orgs.length - 2 && orgs.length > 2;
+              
+              return (
               <tr key={org.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4">
                   <div className="font-medium text-gray-900">{org.name}</div>
@@ -142,7 +146,7 @@ export function OrganizationsClient({ orgs }: { orgs: any[] }) {
                       <button className="p-1.5 text-gray-400 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors">
                         <MoreVertical className="w-4 h-4" />
                       </button>
-                      <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10 py-1">
+                      <div className={`absolute right-0 ${isLastItems ? 'bottom-full mb-1' : 'top-full mt-1'} w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 py-1`}>
                         <button 
                           onClick={() => openPlanModal(org)}
                           className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
@@ -170,7 +174,7 @@ export function OrganizationsClient({ orgs }: { orgs: any[] }) {
                   </div>
                 </td>
               </tr>
-            ))}
+            )})}
           </tbody>
         </table>
       </div>
