@@ -153,8 +153,16 @@ export async function deleteAdminUser(userId: string) {
   // Manual cleanup to prevent foreign key constraint violations
   await adminClient.from('project_members').delete().eq('user_id', userId)
   await adminClient.from('organization_members').delete().eq('user_id', userId)
-  // audit_log might reference profiles/users, we can optionally clear it or just delete profiles
-  await adminClient.from('profiles').delete().eq('id', userId)
+  
+  // Clean up audit logs and invitations where this user was involved
+  await adminClient.from('audit_log').delete().eq('user_id', userId)
+  await adminClient.from('invitations').delete().eq('invited_by', userId)
+
+  // Finally delete from profiles
+  const { error: profileErr } = await adminClient.from('profiles').delete().eq('id', userId)
+  if (profileErr) {
+    console.error('Erreur suppression profile:', profileErr)
+  }
 
   // Delete from Auth system
   const { error } = await adminClient.auth.admin.deleteUser(userId)
