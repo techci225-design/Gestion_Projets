@@ -256,10 +256,6 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
           {canCreateProject && <AddProjectModal />}
         </div>
 
-        {checklistState && (
-          <GettingStartedGuide state={checklistState} />
-        )}
-
         {projectsError ? (
           <div className="p-4 bg-danger/10 text-danger rounded-md border border-danger/20">
             Erreur lors du chargement des projets: {projectsError.message}
