@@ -126,6 +126,7 @@ export function UsersClient({ users }: { users: any[] }) {
                   <td className="px-3 py-3">
                     <div className="font-medium text-gray-900 truncate max-w-[150px]">{user.full_name || 'Sans nom'}</div>
                     <div className="text-xs text-gray-400 truncate max-w-[150px]">{user.email}</div>
+                    {user.phone && <div className="text-xs text-gray-500 mt-0.5 truncate max-w-[150px]">📞 {user.phone}</div>}
                   </td>
                   <td className="px-3 py-3">
                     {user.organization_name ? (
@@ -167,7 +168,8 @@ export function UsersClient({ users }: { users: any[] }) {
                     )}
                   </td>
                   <td className="px-3 py-3 text-gray-500 whitespace-nowrap text-xs">
-                    {new Date(user.created_at).toLocaleDateString('fr-FR')}
+                    {new Date(user.created_at).toLocaleDateString('fr-FR')} <br/>
+                    <span className="text-gray-400 text-[10px]">{new Date(user.created_at).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}</span>
                   </td>
                   <td className="px-3 py-3 text-right">
                     <div className="flex items-center justify-end gap-2 relative group">

@@ -79,6 +79,7 @@ export async function getAdminUsers() {
       id,
       full_name,
       email,
+      phone,
       created_at,
       organization_members (
         org_role,
@@ -106,6 +107,7 @@ export async function getAdminUsers() {
       id: p.id,
       full_name: p.full_name,
       email: p.email,
+      phone: p.phone,
       created_at: p.created_at,
       organization_id: orgMember?.organizations?.id || null,
       organization_name: orgMember?.organizations?.name || null,
