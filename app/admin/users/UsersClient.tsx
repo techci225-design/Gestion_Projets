@@ -92,7 +92,7 @@ export function UsersClient({ users }: { users: any[] }) {
         </select>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto min-h-[280px]">
         <table className="w-full text-left text-sm text-gray-600">
           <thead className="bg-gray-50 text-gray-900 border-b border-gray-200">
             <tr>
