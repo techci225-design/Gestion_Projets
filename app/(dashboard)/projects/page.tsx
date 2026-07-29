@@ -30,17 +30,21 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
 
   let effectiveOrgId = supportOrgIdCookie || activeOrgIdCookie
 
+  let userOrgRole = null
+  
   // VERIFICATION: Ensure the user is actually a member of the requested org (unless in explicit support mode)
   if (effectiveOrgId && !supportOrgIdCookie) {
     const { data: membership } = await supabase
       .from('organization_members')
-      .select('organization_id')
+      .select('organization_id, org_role')
       .eq('user_id', user?.id)
       .eq('organization_id', effectiveOrgId)
       .single()
       
     if (!membership) {
       effectiveOrgId = undefined // Invalide, on force le repli
+    } else {
+      userOrgRole = membership.org_role
     }
   }
 
@@ -48,14 +52,17 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
   if (!effectiveOrgId) {
     const { data: memberOrgs } = await supabase
       .from('organization_members')
-      .select('organization_id')
+      .select('organization_id, org_role')
       .eq('user_id', user?.id)
       .limit(1)
     
     if (memberOrgs && memberOrgs.length > 0) {
       effectiveOrgId = memberOrgs[0].organization_id
+      userOrgRole = memberOrgs[0].org_role
     }
   }
+
+  const canCreateProject = supportOrgIdCookie ? true : ['owner', 'admin'].includes(userOrgRole || '')
 
   let query = supabase.from('projects').select('*')
   if (effectiveOrgId) {
@@ -246,7 +253,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
           <div>
             <h2 className="text-2xl font-bold tracking-tight text-text-primary">Vue consolidée de tous vos projets bailleurs</h2>
           </div>
-          <AddProjectModal />
+          {canCreateProject && <AddProjectModal />}
         </div>
 
         {checklistState && (
@@ -262,14 +269,20 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
             <div className="text-4xl mb-4">🎉</div>
             <h2 className="text-2xl font-bold text-text-primary mb-2">Bienvenue sur ProjetPilote !</h2>
             <p className="text-text-secondary mb-8">
-              Commencez par créer votre premier projet bailleur ou importez vos données existantes.
+              {canCreateProject 
+                ? "Commencez par créer votre premier projet bailleur ou importez vos données existantes."
+                : "Demandez à un administrateur de créer votre premier projet bailleur."}
             </p>
             <div className="flex flex-col gap-4 max-w-xs mx-auto">
-              <AddProjectModal />
-              {effectiveOrgId && <DemoProjectButton organizationId={effectiveOrgId} />}
-              <Link href="/projects/import" className="text-sm font-medium text-text-tertiary hover:text-primary transition-colors inline-flex justify-center items-center mt-2">
-                Importer depuis Excel →
-              </Link>
+              {canCreateProject && (
+                <>
+                  <AddProjectModal />
+                  {effectiveOrgId && <DemoProjectButton organizationId={effectiveOrgId} />}
+                  <Link href="/projects/import" className="text-sm font-medium text-text-tertiary hover:text-primary transition-colors inline-flex justify-center items-center mt-2">
+                    Importer depuis Excel →
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         ) : (
@@ -471,12 +484,18 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                   </div>
                   <h2 className="text-2xl font-bold text-text-primary mb-2">Bienvenue sur ProjetPilote !</h2>
                   <p className="text-text-secondary max-w-md mx-auto mb-8">
-                    Commencez par créer votre premier projet bailleur pour accéder aux fonctionnalités de suivi financier et EVM.
+                    {canCreateProject
+                      ? "Commencez par créer votre premier projet bailleur pour accéder aux fonctionnalités de suivi financier et EVM."
+                      : "Aucun projet bailleur n'est disponible. Demandez à un administrateur d'en créer un."}
                   </p>
-                  <AddProjectModal />
-                  <a href="/import-excel" className="text-sm font-medium text-text-secondary hover:text-primary transition-colors mt-6 underline underline-offset-4">
-                    Ou importer depuis un fichier Excel existant
-                  </a>
+                  {canCreateProject && (
+                    <>
+                      <AddProjectModal />
+                      <a href="/import-excel" className="text-sm font-medium text-text-secondary hover:text-primary transition-colors mt-6 underline underline-offset-4">
+                        Ou importer depuis un fichier Excel existant
+                      </a>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
