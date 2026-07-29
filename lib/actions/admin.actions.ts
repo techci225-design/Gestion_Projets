@@ -150,18 +150,19 @@ export async function deleteAdminUser(userId: string) {
     return { error: 'Vous ne pouvez pas supprimer votre propre compte.' }
   }
 
+  // Manual cleanup to prevent foreign key constraint violations
+  await adminClient.from('project_members').delete().eq('user_id', userId)
+  await adminClient.from('organization_members').delete().eq('user_id', userId)
+  // audit_log might reference profiles/users, we can optionally clear it or just delete profiles
+  await adminClient.from('profiles').delete().eq('id', userId)
+
   // Delete from Auth system
   const { error } = await adminClient.auth.admin.deleteUser(userId)
 
   if (error) {
     console.error('Erreur lors de la suppression de l\'utilisateur:', error)
-    return { error: 'Erreur technique lors de la suppression.' }
+    return { error: 'Erreur technique lors de la suppression. Veuillez vérifier les logs Vercel.' }
   }
-
-  // Manual cleanup just in case there's no cascade
-  await adminClient.from('project_members').delete().eq('user_id', userId)
-  await adminClient.from('organization_members').delete().eq('user_id', userId)
-  await adminClient.from('profiles').delete().eq('id', userId)
 
   revalidatePath('/admin/users')
   return { success: true }
