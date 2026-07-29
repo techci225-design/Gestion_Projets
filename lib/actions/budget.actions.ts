@@ -159,6 +159,48 @@ export async function createOperation(data: z.infer<typeof operationJournalSchem
   return { data: result }
 }
 
+const updateOperationJournalSchema = operationJournalSchema.extend({
+  id: z.string().uuid()
+})
+
+export async function updateOperation(data: z.infer<typeof updateOperationJournalSchema>) {
+  const parsed = updateOperationJournalSchema.safeParse(data)
+  if (!parsed.success) {
+    return { error: 'Invalid data', details: parsed.error.issues }
+  }
+
+  try {
+    await requireRole(parsed.data.project_id, ['owner', 'comptable'])
+  } catch (error: any) {
+    return { error: error.message }
+  }
+
+  const supabase = await createClient()
+
+  const { data: result, error } = await supabase
+    .from('operations_journal')
+    .update({
+      budget_line_id: parsed.data.budget_line_id,
+      task_code: parsed.data.task_code,
+      phase_wbs: parsed.data.phase_wbs,
+      status: parsed.data.status,
+      planned_cost: parsed.data.planned_cost,
+      actual_cost: parsed.data.actual_cost,
+      funding_source_id: parsed.data.funding_source_id
+    })
+    .eq('id', parsed.data.id)
+    .eq('project_id', parsed.data.project_id)
+    .select()
+    .single()
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath(`/projects/${parsed.data.project_id}/budget/journal`)
+  return { data: result }
+}
+
 export async function batchUpdateOperationsFromBank(projectId: string, updates: { operationId: string, actualCost: number, newStatus: string }[]) {
   const supabase = await createClient()
   

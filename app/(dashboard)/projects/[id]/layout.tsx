@@ -1,4 +1,4 @@
-import React from 'react'
+ import React from 'react'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { ArrowRight, Info } from 'lucide-react'

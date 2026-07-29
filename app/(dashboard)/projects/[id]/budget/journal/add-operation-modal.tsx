@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { X, CheckCircle2, Sparkles, AlertTriangle, AlertOctagon } from 'lucide-react'
-import { createOperation } from '@/lib/actions/budget.actions'
+import { createOperation, updateOperation } from '@/lib/actions/budget.actions'
 import { useRouter } from 'next/navigation'
 
 export function AddOperationModal({ 
@@ -10,12 +10,14 @@ export function AddOperationModal({
   budgetLines,
   fundingSources,
   currency = 'FCFA',
+  editItem,
   onClose
 }: { 
   projectId: string
   budgetLines: any[]
   fundingSources: any[]
   currency?: string
+  editItem?: any
   onClose: () => void 
 }) {
   const router = useRouter()
@@ -23,9 +25,10 @@ export function AddOperationModal({
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   
-  const [status, setStatus] = useState('planifie')
-  const [taskDesc, setTaskDesc] = useState('')
-  const [selectedBudgetLine, setSelectedBudgetLine] = useState('')
+  const [status, setStatus] = useState(editItem?.status || 'planifie')
+  const [taskDesc, setTaskDesc] = useState(editItem?.task_code || '')
+  const [selectedBudgetLine, setSelectedBudgetLine] = useState(editItem?.budget_line_id || '')
+  const [fundingSourceId, setFundingSourceId] = useState(editItem?.funding_source_id || '')
   
   // AI Suggestion State
   const [suggesting, setSuggesting] = useState(false)
@@ -36,8 +39,8 @@ export function AddOperationModal({
   const [anomalyLevel, setAnomalyLevel] = useState<0 | 1 | 2>(0) // 0: none, 1: >1.2, 2: >2.0
   const [confirmText, setConfirmText] = useState('')
   const [anomalyMessage, setAnomalyMessage] = useState('')
-  const [plannedCostVal, setPlannedCostVal] = useState(0)
-  const [actualCostVal, setActualCostVal] = useState(0)
+  const [plannedCostVal, setPlannedCostVal] = useState(editItem?.planned_cost || 0)
+  const [actualCostVal, setActualCostVal] = useState(editItem?.actual_cost || 0)
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -105,7 +108,7 @@ export function AddOperationModal({
 
     const formData = new FormData(e.currentTarget)
     
-    const result = await createOperation({
+    const payload = {
       project_id: projectId,
       budget_line_id: selectedBudgetLine,
       task_code: taskDesc,
@@ -113,8 +116,12 @@ export function AddOperationModal({
       status: status as any,
       planned_cost: formPlanned,
       actual_cost: formActual > 0 ? formActual : undefined,
-      funding_source_id: (formData.get('funding_source_id') as string) || undefined,
-    })
+      funding_source_id: fundingSourceId || undefined,
+    }
+
+    const result = editItem 
+      ? await updateOperation({ ...payload, id: editItem.id })
+      : await createOperation(payload)
 
     setLoading(false)
     if (result?.error) {
@@ -134,7 +141,7 @@ export function AddOperationModal({
       
       <div className="fixed inset-y-0 right-0 w-full max-w-md bg-surface shadow-2xl z-50 flex flex-col border-l border-border animate-in slide-in-from-right duration-300">
         <div className="px-6 py-4 border-b border-border flex justify-between items-center bg-surface-dim">
-          <h2 className="font-semibold text-lg text-text-primary">Nouvelle opération</h2>
+          <h2 className="font-semibold text-lg text-text-primary">{editItem ? 'Modifier l\'opération' : 'Nouvelle opération'}</h2>
           <button onClick={onClose} className="p-2 -mr-2 text-text-secondary hover:text-text-primary hover:bg-border/50 rounded-full transition-colors">
             <X className="w-5 h-5" />
           </button>
@@ -146,7 +153,7 @@ export function AddOperationModal({
           {success && (
             <div className="p-3 bg-success/10 text-success-dark text-sm font-medium rounded border border-success/20 flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5" />
-              Opération enregistrée avec succès.
+              Opération {editItem ? 'modifiée' : 'enregistrée'} avec succès.
             </div>
           )}
 
@@ -224,7 +231,7 @@ export function AddOperationModal({
 
           <div>
             <label className="block text-sm font-medium text-text-primary mb-1">Phase / WBS (Optionnel)</label>
-            <input type="text" name="phase_wbs" className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Ex: 1. Diagnostic" />
+            <input type="text" name="phase_wbs" defaultValue={editItem?.phase_wbs || ''} className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Ex: 1. Diagnostic" />
           </div>
 
           <div>
@@ -244,7 +251,7 @@ export function AddOperationModal({
 
           <div>
             <label className="block text-sm font-medium text-text-primary mb-1">Source de financement (Optionnel)</label>
-            <select name="funding_source_id" className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-surface">
+            <select value={fundingSourceId} onChange={e => setFundingSourceId(e.target.value)} name="funding_source_id" className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-surface">
               <option value="">Liée à la ligne budgétaire</option>
               {fundingSources.map(fs => (
                 <option key={fs.id} value={fs.id}>{fs.name}</option>

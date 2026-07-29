@@ -32,6 +32,7 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources, c
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedOperation, setSelectedOperation] = useState<OperationJournal | null>(null)
   const [activeTab, setActiveTab] = useState<'details' | 'docs' | 'comments'>('details')
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -232,6 +233,14 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources, c
           <div className="h-[calc(100vh-130px)] overflow-y-auto">
             {activeTab === 'details' && (
               <div className="p-6 space-y-6">
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="px-3 py-1.5 text-sm font-medium bg-white border border-border rounded shadow-sm text-text-secondary hover:bg-surface-dim hover:text-primary transition-colors"
+                  >
+                    Modifier
+                  </button>
+                </div>
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <h4 className="text-xs font-medium text-text-tertiary uppercase tracking-wider mb-1">ID Tâche</h4>
@@ -298,6 +307,20 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources, c
             )}
           </div>
         </RightDrawer>
+      )}
+
+      {isEditModalOpen && selectedOperation && (
+        <AddOperationModal 
+          projectId={projectId} 
+          budgetLines={budgetLines} 
+          fundingSources={fundingSources}
+          currency={currency}
+          editItem={selectedOperation}
+          onClose={() => {
+            setIsEditModalOpen(false)
+            setSelectedOperation(null)
+          }} 
+        />
       )}
     </div>
   )
