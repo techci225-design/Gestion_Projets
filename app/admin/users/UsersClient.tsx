@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import { Search, MoreVertical, Key, ExternalLink, Trash2 } from 'lucide-react'
+import { Search, MoreVertical, Key, ExternalLink, Trash2, Mail } from 'lucide-react'
 import { generatePasswordResetLink, deleteAdminUser } from '@/lib/actions/admin.actions'
 import { useRouter } from 'next/navigation'
 
