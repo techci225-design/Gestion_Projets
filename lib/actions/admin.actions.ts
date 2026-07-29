@@ -138,6 +138,35 @@ export async function generatePasswordResetLink(email: string) {
   return { link: data.properties.action_link }
 }
 
+export async function deleteAdminUser(userId: string) {
+  const isSuperAdmin = await checkSuperAdmin()
+  if (!isSuperAdmin) return { error: 'Accès non autorisé' }
+
+  const adminClient = createAdminClient()
+
+  // Ensure they don't delete themselves
+  const { data: { user } } = await adminClient.auth.getUser()
+  if (user && user.id === userId) {
+    return { error: 'Vous ne pouvez pas supprimer votre propre compte.' }
+  }
+
+  // Delete from Auth system
+  const { error } = await adminClient.auth.admin.deleteUser(userId)
+
+  if (error) {
+    console.error('Erreur lors de la suppression de l\'utilisateur:', error)
+    return { error: 'Erreur technique lors de la suppression.' }
+  }
+
+  // Manual cleanup just in case there's no cascade
+  await adminClient.from('project_members').delete().eq('user_id', userId)
+  await adminClient.from('organization_members').delete().eq('user_id', userId)
+  await adminClient.from('profiles').delete().eq('id', userId)
+
+  revalidatePath('/admin/users')
+  return { success: true }
+}
+
 export async function getAdminStatistics() {
   const isSuperAdmin = await checkSuperAdmin()
   if (!isSuperAdmin) throw new Error('Accès non autorisé')

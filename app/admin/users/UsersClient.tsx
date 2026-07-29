@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
-import { Search, MoreVertical, Key, ExternalLink } from 'lucide-react'
-import { generatePasswordResetLink } from '@/lib/actions/admin.actions'
+import { Search, MoreVertical, Key, ExternalLink, Trash2 } from 'lucide-react'
+import { generatePasswordResetLink, deleteAdminUser } from '@/lib/actions/admin.actions'
 import { useRouter } from 'next/navigation'
 
 export function UsersClient({ users }: { users: any[] }) {
@@ -49,6 +49,20 @@ export function UsersClient({ users }: { users: any[] }) {
     if (orgId) {
       document.cookie = `support_org_id=${orgId}; path=/; max-age=86400`
       router.push('/projects')
+    }
+  }
+
+  const handleDeleteUser = async (userId: string, email: string) => {
+    if (!window.confirm(`Êtes-vous sûr de vouloir supprimer définitivement l'utilisateur ${email} ? Cette action est irréversible.`)) {
+      return
+    }
+    
+    setIsLoading(true)
+    const res = await deleteAdminUser(userId)
+    setIsLoading(false)
+
+    if (res?.error) {
+      alert(res.error)
     }
   }
 
@@ -175,6 +189,14 @@ export function UsersClient({ users }: { users: any[] }) {
                           className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 text-gray-700 disabled:opacity-50"
                         >
                           <Key className="w-4 h-4 text-gray-400" /> Réinit. mot de passe
+                        </button>
+                        <hr className="my-1 border-gray-100" />
+                        <button 
+                          onClick={() => handleDeleteUser(user.id, user.email)}
+                          disabled={isLoading}
+                          className="w-full text-left px-4 py-2 text-sm hover:bg-red-50 flex items-center gap-2 text-red-600 disabled:opacity-50"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-500" /> Supprimer l'utilisateur
                         </button>
                       </div>
                     </div>
