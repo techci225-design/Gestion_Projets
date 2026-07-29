@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Plus, Download, History, ClipboardList, Paperclip } from 'lucide-react'
+import { Plus, Download, History, ClipboardList, Paperclip, Pencil } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { AddOperationModal } from './add-operation-modal'
 import { RightDrawer } from '@/components/ui/RightDrawer'
@@ -133,6 +133,7 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources, c
                   <th className="p-4 text-right font-medium">Coût Prévu ({currency})</th>
                   <th className="p-4 text-right font-medium">Coût Réel ({currency})</th>
                   <th className="p-4 text-right font-medium">Écart ({currency})</th>
+                  <th className="p-4 w-12 text-center"></th>
                 </tr>
               </thead>
               <tbody className="text-text-primary">
@@ -184,6 +185,19 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources, c
                           </span>
                         : '—'
                       }
+                    </td>
+                    <td className="p-4 text-center">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedOperation(item);
+                          setIsEditModalOpen(true);
+                        }}
+                        className="p-1.5 text-text-tertiary hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                        title="Modifier l'opération"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
                     </td>
                   </tr>
                 ))}
