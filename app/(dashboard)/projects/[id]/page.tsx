@@ -46,7 +46,7 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
   
   const totalEngage = budgetConsumption?.reduce((acc, curr) => acc + (Number(curr.total_engage) || 0), 0) || 0
   const totalDecaisse = budgetConsumption?.reduce((acc, curr) => acc + (Number(curr.total_decaisse) || 0), 0) || 0
-  const soldeDisponible = totalBudget - totalEngage - totalDecaisse
+  const soldeDisponible = totalBudget - totalEngage
 
   // 4. Fetch EVM Data
   const { data: evmSummary } = await supabase.from('v_evm_project_summary').select('*').eq('project_id', id).single()
