@@ -97,40 +97,64 @@ Deno.serve(async (req) => {
           }
 
           // 2. Email Alert
-          if (profile && profile.notif_email_alerts === false) continue;
+          if (profile && profile.notif_email_alerts !== false) {
+            const firstName = profile?.full_name ? profile.full_name.split(' ')[0] : 'Utilisateur'
+            const { data: userData } = await supabase.auth.admin.getUserById(m.user_id)
+            const toEmail = userData?.user?.email
 
-          const firstName = profile?.full_name ? profile.full_name.split(' ')[0] : 'Utilisateur'
-          const { data: userData } = await supabase.auth.admin.getUserById(m.user_id)
-          const toEmail = userData?.user?.email
+            if (toEmail) {
+              const emailHtml = `
+                <div style="font-family: sans-serif; color: #1E3A5F; line-height: 1.5;">
+                  <p>Bonjour ${firstName},</p>
+                  <p>${body}</p>
+                  <p>Action recommandée : Connectez-vous pour vérifier cette alerte.</p>
+                  <p>Accédez au tableau de bord :<br/>
+                  <a href="https://gestion-projets-e3uj.vercel.app${link}" style="color: #16A34A; font-weight: bold;">Voir le projet</a></p>
+                  <p>ProjetPilote — TSBC<br/>tsbcafrique@yahoo.fr</p>
+                </div>
+              `
+              
+              if (RESEND_API_KEY) {
+                await fetch('https://api.resend.com/emails', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${RESEND_API_KEY}`,
+                  },
+                  body: JSON.stringify({
+                    from: 'ProjetPilote <alerts@projetpilote.com>',
+                    to: [toEmail],
+                    subject: `${title} — ${projectName}`,
+                    html: emailHtml,
+                  }),
+                }).catch(e => console.error("Email send error", e))
+              } else {
+                console.log(`[Email Log] To: ${toEmail}, Subject: ${title} — ${projectName}`)
+              }
+            }
+          }
 
-          if (toEmail) {
-            const emailHtml = `
-              <div style="font-family: sans-serif; color: #1E3A5F; line-height: 1.5;">
-                <p>Bonjour ${firstName},</p>
-                <p>${body}</p>
-                <p>Action recommandée : Connectez-vous pour vérifier cette alerte.</p>
-                <p>Accédez au tableau de bord :<br/>
-                <a href="https://gestion-projets-e3uj.vercel.app${link}" style="color: #16A34A; font-weight: bold;">Voir le projet</a></p>
-                <p>ProjetPilote — TSBC<br/>tsbcafrique@yahoo.fr</p>
-              </div>
-            `
-            
-            if (RESEND_API_KEY) {
-              await fetch('https://api.resend.com/emails', {
+          // 3. Expo Push Notification
+          const { data: pushTokens } = await supabase
+            .from('push_tokens')
+            .select('token')
+            .eq('user_id', m.user_id)
+
+          if (pushTokens && pushTokens.length > 0) {
+            for (const pt of pushTokens) {
+              await fetch('https://exp.host/--/api/v2/push/send', {
                 method: 'POST',
                 headers: {
+                  'Accept': 'application/json',
                   'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${RESEND_API_KEY}`,
                 },
                 body: JSON.stringify({
-                  from: 'ProjetPilote <alerts@projetpilote.com>',
-                  to: [toEmail],
-                  subject: `${title} — ${projectName}`,
-                  html: emailHtml,
-                }),
-              }).catch(e => console.error("Email send error", e))
-            } else {
-              console.log(`[Email Log] To: ${toEmail}, Subject: ${title} — ${projectName}`)
+                  to: pt.token,
+                  title: title,
+                  body: body,
+                  data: { projectId, type, link }
+                })
+              }).catch(e => console.error("Expo push error", e))
             }
           }
         }

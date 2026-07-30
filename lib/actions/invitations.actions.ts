@@ -212,7 +212,7 @@ export async function acceptInvitation(token: string, formData?: { password?: st
     organization_id: invitation.organization_id,
     user_id: userId,
     org_role: 'member'
-  }, { onConflict: 'organization_id, user_id' })
+  }, { onConflict: 'organization_id,user_id' })
 
   if (orgError) {
     console.error('Org member insert error', orgError)
@@ -224,7 +224,7 @@ export async function acceptInvitation(token: string, formData?: { password?: st
       project_id: invitation.project_id,
       user_id: userId,
       role: invitation.invited_role
-    }, { onConflict: 'project_id, user_id' })
+    }, { onConflict: 'project_id,user_id' })
     if (projError) {
       console.error('Proj member insert error', projError)
     }
@@ -284,7 +284,7 @@ export async function autoAcceptPendingInvitations() {
       organization_id: inv.organization_id,
       user_id: user.id,
       org_role: 'member'
-    }, { onConflict: 'organization_id, user_id' })
+    }, { onConflict: 'organization_id,user_id' })
 
     // 2. Add to project if exists
     if (inv.project_id) {
@@ -292,7 +292,7 @@ export async function autoAcceptPendingInvitations() {
         project_id: inv.project_id,
         user_id: user.id,
         role: inv.invited_role
-      }, { onConflict: 'project_id, user_id' })
+      }, { onConflict: 'project_id,user_id' })
     }
 
     // 3. Mark as accepted

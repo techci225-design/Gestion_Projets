@@ -56,11 +56,20 @@ export default function InviteClient({
       if (res.error) {
         setError(res.error)
       } else {
-        // Force refresh session
+        // Sign in the user automatically with the password they just created/provided
         const supabase = createClient()
-        await supabase.auth.refreshSession()
-        router.push('/projects')
-        router.refresh()
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: email,
+          password: password
+        })
+        
+        if (signInError) {
+           // If sign in fails for some reason, redirect to login so they can try again
+           router.push('/login')
+        } else {
+           router.push('/projects')
+           router.refresh()
+        }
       }
     })
   }
