@@ -1,6 +1,7 @@
 import React from 'react'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { Header } from '@/components/dashboard/Header'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { CalendarDays, Wallet, Building2, AlignLeft, Landmark, Clock, Users, ArrowUpRight, ArrowDownRight, Activity, AlertTriangle, Flame, LayoutDashboard, Target, Briefcase, ChevronRight } from 'lucide-react'
@@ -34,8 +35,9 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
   const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user?.id).single()
 
   // 3. Fetch Financial Consumption & Funding Sources
+  const adminClient = createAdminClient()
   const { data: budgetConsumption } = await supabase.from('v_budget_consumption').select('*').eq('project_id', id)
-  const { data: fundingSources } = await supabase.from('funding_sources').select('name, amount_committed').eq('project_id', id)
+  const { data: fundingSources } = await adminClient.from('funding_sources').select('name, amount_committed').eq('project_id', id)
   
   // Fetch Organization for Maître d'œuvre
   const { data: org } = await supabase.from('organizations').select('name').eq('id', project.organization_id).single()
