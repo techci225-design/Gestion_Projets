@@ -542,9 +542,14 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2 pt-4 border-t border-border">
-                            <AlertBadge value={project.cpi} type="cpi" />
-                            <AlertBadge value={project.spi} type="spi" />
+                          <div className="flex items-center justify-between pt-4 border-t border-border mt-4">
+                            <div className="flex items-center gap-2">
+                              <AlertBadge value={project.cpi} type="cpi" />
+                              <AlertBadge value={project.spi} type="spi" />
+                            </div>
+                            <div className="text-sm font-medium text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                              Gérer <ChevronRight className="w-4 h-4" />
+                            </div>
                           </div>
                         </div>
                       </div>

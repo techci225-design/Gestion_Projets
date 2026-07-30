@@ -198,7 +198,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 p-6 lg:p-8 bg-surface">
+        <div className="flex-1 min-w-0 p-6 lg:p-8 bg-surface">
           
           
           {/* TAB: General */}
