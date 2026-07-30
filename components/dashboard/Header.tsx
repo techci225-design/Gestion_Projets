@@ -16,13 +16,13 @@ export function Header({ title, userFullName }: HeaderProps) {
   const { activeOrganization, organizations, setActiveOrganization, isLoading, isSuperAdmin } = useOrganization()
 
   return (
-    <header className="h-16 flex items-center justify-between px-6 bg-surface border-b border-border sticky top-0 z-10">
-      <div className="flex items-center gap-4">
-        <h1 className="text-xl font-semibold text-text-primary tracking-tight">{title}</h1>
+    <header className="h-16 flex items-center justify-between px-6 bg-surface border-b border-border sticky top-0 z-10 gap-4">
+      <div className="flex items-center gap-4 min-w-0 flex-1">
+        <h1 className="text-xl font-semibold text-text-primary tracking-tight truncate">{title}</h1>
         
         {/* Org Selector */}
         {!isLoading && activeOrganization && organizations.length > 1 && (
-          <div className="relative group ml-4 border-l border-border pl-4 flex items-center">
+          <div className="relative group ml-4 border-l border-border pl-4 flex items-center shrink-0">
             {isSuperAdmin && (
               <Link href="/admin/organizations" className="mr-4 px-3 py-1.5 bg-red-100 text-red-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-red-200 transition-colors">
                 Admin
@@ -61,7 +61,7 @@ export function Header({ title, userFullName }: HeaderProps) {
         )}
       </div>
 
-      <div className="flex items-center gap-3 md:gap-4">
+      <div className="flex items-center gap-3 md:gap-4 shrink-0">
         {activeOrganization && <GlobalSearch currentOrgId={activeOrganization.id} />}
         <NotificationBell />
         {userFullName && (

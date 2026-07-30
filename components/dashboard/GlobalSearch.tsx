@@ -116,10 +116,10 @@ export function GlobalSearch({ currentOrgId }: { currentOrgId: string }) {
     <>
       <button 
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 px-3 py-1.5 bg-surface-dim border border-border rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors w-48 lg:w-64"
+        className="flex items-center justify-center md:justify-start gap-2 p-1.5 md:px-3 md:py-1.5 bg-surface-dim border border-border rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-hover transition-colors w-9 md:w-48 lg:w-64 shrink-0"
       >
-        <Search className="w-4 h-4" />
-        <span className="text-sm flex-1 text-left">Rechercher...</span>
+        <Search className="w-4 h-4 md:w-4 md:h-4" />
+        <span className="text-sm flex-1 text-left hidden md:block">Rechercher...</span>
         <span className="text-[10px] font-medium px-1.5 py-0.5 bg-white border border-border rounded text-text-tertiary shadow-sm hidden sm:inline-block">
           ⌘K
         </span>

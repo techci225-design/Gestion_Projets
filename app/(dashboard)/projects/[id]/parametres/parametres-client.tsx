@@ -144,7 +144,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
             Informations générales
           </button>
           
-          {['owner', 'admin'].includes(userRole) && (
+          {['owner', 'admin', 'chef_projet'].includes(userRole) && (
             <>
               <button
                 onClick={() => setActiveTab('bailleurs')}
@@ -224,7 +224,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                       type="text" 
                       value={formData.name}
                       onChange={e => setFormData({...formData, name: e.target.value})}
-                      disabled={isPending}
+                      disabled={isPending || !canEdit}
                       className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:border-primary disabled:opacity-50"
                       required
                     />
@@ -235,7 +235,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                       type="text" 
                       value={formData.code}
                       onChange={e => setFormData({...formData, code: e.target.value})}
-                      disabled={isPending}
+                      disabled={isPending || !canEdit}
                       className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:border-primary disabled:opacity-50"
                       required
                     />
@@ -246,7 +246,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                       type="date" 
                       value={formData.start_date}
                       onChange={e => setFormData({...formData, start_date: e.target.value})}
-                      disabled={isPending}
+                      disabled={isPending || !canEdit}
                       className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:border-primary disabled:opacity-50"
                       required
                     />
@@ -257,7 +257,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                       type="date" 
                       value={formData.end_date}
                       onChange={e => setFormData({...formData, end_date: e.target.value})}
-                      disabled={isPending}
+                      disabled={isPending || !canEdit}
                       className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:border-primary disabled:opacity-50"
                       required
                     />
@@ -274,7 +274,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                           type="number" 
                           value={formData.budget}
                           onChange={e => setFormData({...formData, budget: e.target.value})}
-                          disabled={isPending}
+                          disabled={isPending || !canEdit}
                           className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:border-primary disabled:opacity-50"
                           placeholder="30000000"
                         />
@@ -290,7 +290,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                           type="text" 
                           value={formData.funder}
                           onChange={e => setFormData({...formData, funder: e.target.value})}
-                          disabled={isPending}
+                          disabled={isPending || !canEdit}
                           className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:border-primary disabled:opacity-50"
                           placeholder="Ex: BID via FAES"
                         />
@@ -301,7 +301,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                           type="text" 
                           value={formData.implementing_agency}
                           onChange={e => setFormData({...formData, implementing_agency: e.target.value})}
-                          disabled={isPending}
+                          disabled={isPending || !canEdit}
                           className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:border-primary disabled:opacity-50"
                           placeholder="Ex: MEF"
                         />
@@ -321,7 +321,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                           type="date" 
                           value={formData.evm_control_date}
                           onChange={e => setFormData({...formData, evm_control_date: e.target.value})}
-                          disabled={isPending}
+                          disabled={isPending || !canEdit}
                           className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:border-primary disabled:opacity-50"
                         />
                       </div>
@@ -333,7 +333,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                     <select 
                       value={formData.status}
                       onChange={e => setFormData({...formData, status: e.target.value})}
-                      disabled={isPending}
+                      disabled={isPending || !canEdit}
                       className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:border-primary disabled:opacity-50"
                     >
                       <option value="actif">Actif</option>
@@ -346,92 +346,96 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                     <textarea 
                       value={formData.description}
                       onChange={e => setFormData({...formData, description: e.target.value})}
-                      disabled={isPending}
+                      disabled={isPending || !canEdit}
                       rows={3}
                       className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm focus:outline-none focus:border-primary disabled:opacity-50 resize-none"
                     />
                   </div>
                 </div>
 
-                <div className="flex justify-end">
-                  <button 
-                    type="submit"
-                    disabled={isPending}
-                    className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
-                  >
-                    {isPending ? 'Enregistrement...' : 'Enregistrer les modifications'}
-                  </button>
-                </div>
+                {canEdit && (
+                  <div className="flex justify-end">
+                    <button 
+                      type="submit"
+                      disabled={isPending}
+                      className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+                    >
+                      {isPending ? 'Enregistrement...' : 'Enregistrer les modifications'}
+                    </button>
+                  </div>
+                )}
               </form>
 
               {/* Danger Zone */}
-              <div className="mt-12">
-                <div className="border-b border-danger/20 pb-4 mb-6">
-                  <h3 className="text-xl font-semibold text-danger">Zone de danger</h3>
-                  <p className="text-sm text-text-secondary mt-1">Actions irréversibles concernant ce projet.</p>
-                </div>
-                
-                <div className="bg-warning/10 border border-warning/20 rounded-xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-                  <div>
-                    <h4 className="font-bold text-warning-dark">Archiver le projet</h4>
-                    <p className="text-sm text-warning-dark/80 mt-1 max-w-xl">
-                      Le projet passera en statut "Clos". Il n'apparaîtra plus dans les rapports actifs et ne générera plus d'alertes.
-                    </p>
-                  </div>
-                  <button 
-                    onClick={handleArchiveProject}
-                    disabled={isPending || formData.status === 'clos'}
-                    className="px-4 py-2 bg-warning text-white rounded-lg text-sm font-medium hover:bg-warning/90 transition-colors disabled:opacity-50 whitespace-nowrap"
-                  >
-                    {formData.status === 'clos' ? 'Déjà archivé' : 'Archiver ce projet'}
-                  </button>
-                </div>
-
-                <div className="bg-danger/5 border border-danger/20 rounded-xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <div className="flex-1">
-                    <h4 className="font-bold text-text-primary">Supprimer le projet</h4>
-                    <p className="text-sm text-text-secondary mt-1 max-w-xl">Cette action est définitive. Toutes les données associées (tâches, budget, documents) doivent d'abord être supprimées.</p>
+              {userRole === 'owner' && (
+                <div className="mt-12">
+                  <div className="border-b border-danger/20 pb-4 mb-6">
+                    <h3 className="text-xl font-semibold text-danger">Zone de danger</h3>
+                    <p className="text-sm text-text-secondary mt-1">Actions irréversibles concernant ce projet.</p>
                   </div>
                   
-                  {!showDeleteConfirm ? (
-                    <button 
-                      onClick={() => setShowDeleteConfirm(true)}
-                      className="px-4 py-2 bg-surface border border-danger text-danger rounded-lg text-sm font-medium hover:bg-danger hover:text-white transition-colors whitespace-nowrap"
-                    >
-                      Supprimer ce projet
-                    </button>
-                  ) : (
-                    <div className="flex flex-col items-end gap-3 w-full max-w-xs">
-                      <div className="w-full">
-                        <label className="block text-xs font-medium text-danger mb-1">Tapez <strong>{project?.name}</strong> pour confirmer</label>
-                        <input
-                          type="text"
-                          value={deleteConfirmText}
-                          onChange={e => setDeleteConfirmText(e.target.value)}
-                          placeholder="Nom du projet"
-                          className="w-full px-3 py-2 bg-white border border-danger/30 rounded-lg text-sm focus:outline-none focus:border-danger focus:ring-1 focus:ring-danger"
-                        />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button 
-                          onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}
-                          disabled={isDeleting}
-                          className="px-4 py-2 bg-surface border border-border text-text-secondary rounded-lg text-sm font-medium hover:bg-surface-hover transition-colors disabled:opacity-50"
-                        >
-                          Annuler
-                        </button>
-                        <button 
-                          onClick={handleDeleteProject}
-                          disabled={isDeleting || deleteConfirmText !== project?.name}
-                          className="px-4 py-2 bg-danger text-white rounded-lg text-sm font-medium hover:bg-danger/90 transition-colors disabled:opacity-50 flex items-center gap-2"
-                        >
-                          {isDeleting ? 'Suppression...' : 'Supprimer'}
-                        </button>
-                      </div>
+                  <div className="bg-warning/10 border border-warning/20 rounded-xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                    <div>
+                      <h4 className="font-bold text-warning-dark">Archiver le projet</h4>
+                      <p className="text-sm text-warning-dark/80 mt-1 max-w-xl">
+                        Le projet passera en statut "Clos". Il n'apparaîtra plus dans les rapports actifs et ne générera plus d'alertes.
+                      </p>
                     </div>
-                  )}
+                    <button 
+                      onClick={handleArchiveProject}
+                      disabled={isPending || formData.status === 'clos'}
+                      className="px-4 py-2 bg-warning text-white rounded-lg text-sm font-medium hover:bg-warning/90 transition-colors disabled:opacity-50 whitespace-nowrap"
+                    >
+                      {formData.status === 'clos' ? 'Déjà archivé' : 'Archiver ce projet'}
+                    </button>
+                  </div>
+
+                  <div className="bg-danger/5 border border-danger/20 rounded-xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div className="flex-1">
+                      <h4 className="font-bold text-text-primary">Supprimer le projet</h4>
+                      <p className="text-sm text-text-secondary mt-1 max-w-xl">Cette action est définitive. Toutes les données associées (tâches, budget, documents) doivent d'abord être supprimées.</p>
+                    </div>
+                    
+                    {!showDeleteConfirm ? (
+                      <button 
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="px-4 py-2 bg-surface border border-danger text-danger rounded-lg text-sm font-medium hover:bg-danger hover:text-white transition-colors whitespace-nowrap"
+                      >
+                        Supprimer ce projet
+                      </button>
+                    ) : (
+                      <div className="flex flex-col items-end gap-3 w-full max-w-xs">
+                        <div className="w-full">
+                          <label className="block text-xs font-medium text-danger mb-1">Tapez <strong>{project?.name}</strong> pour confirmer</label>
+                          <input
+                            type="text"
+                            value={deleteConfirmText}
+                            onChange={e => setDeleteConfirmText(e.target.value)}
+                            placeholder="Nom du projet"
+                            className="w-full px-3 py-2 bg-white border border-danger/30 rounded-lg text-sm focus:outline-none focus:border-danger focus:ring-1 focus:ring-danger"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button 
+                            onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}
+                            disabled={isDeleting}
+                            className="px-4 py-2 bg-surface border border-border text-text-secondary rounded-lg text-sm font-medium hover:bg-surface-hover transition-colors disabled:opacity-50"
+                          >
+                            Annuler
+                          </button>
+                          <button 
+                            onClick={handleDeleteProject}
+                            disabled={isDeleting || deleteConfirmText !== project?.name}
+                            className="px-4 py-2 bg-danger text-white rounded-lg text-sm font-medium hover:bg-danger/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+                          >
+                            {isDeleting ? 'Suppression...' : 'Supprimer'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
