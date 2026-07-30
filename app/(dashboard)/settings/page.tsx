@@ -16,7 +16,7 @@ export default async function SettingsPage() {
   // Fetch user profile from DB
   const { data: profileData, error } = await supabase
     .from('profiles')
-    .select('id, full_name, email, phone, notif_email_alerts, notif_email_weekly, notif_push_critical')
+    .select('id, full_name, email, phone, notif_email_alerts, notif_email_weekly, notif_push_critical, whatsapp_number, notif_whatsapp')
     .eq('id', user.id)
     .single()
 

@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Building2, Users, BarChart3 } from 'lucide-react'
+import { Building2, Users, BarChart3, Settings } from 'lucide-react'
 
 export function AdminSidebarNav() {
   const pathname = usePathname()
@@ -12,6 +12,7 @@ export function AdminSidebarNav() {
     { name: 'Organisations', href: '/admin/organizations', icon: Building2 },
     { name: 'Utilisateurs', href: '/admin/users', icon: Users },
     { name: 'Statistiques', href: '/admin/stats', icon: BarChart3 },
+    { name: 'Configuration', href: '/admin/settings', icon: Settings },
   ]
 
   return (

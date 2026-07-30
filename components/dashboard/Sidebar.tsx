@@ -120,19 +120,29 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
 
         </nav>
 
-        <div className="p-4 border-t border-border flex items-center gap-3 justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold uppercase">
-              {userFullName.charAt(0)}
+        <div className="p-4 border-t border-border flex flex-col gap-3">
+          <a
+            href="https://wa.me/2250707363020?text=Bonjour+TSBC%2C+j%27ai+besoin+d%27aide+sur+ProjetPilote"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-sm font-medium transition-colors border border-emerald-200"
+          >
+            <span>💬</span> Support TSBC
+          </a>
+          <div className="flex items-center gap-3 justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold uppercase">
+                {userFullName.charAt(0)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-text-primary truncate">{userFullName}</p>
+                <Link href="/settings" className="text-xs text-text-secondary hover:text-primary transition-colors">Mon Profil</Link>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-text-primary truncate">{userFullName}</p>
-              <Link href="/settings" className="text-xs text-text-secondary hover:text-primary transition-colors">Mon Profil</Link>
-            </div>
+            <button onClick={handleLogout} className="p-2 text-text-secondary hover:text-danger hover:bg-danger/10 rounded-lg transition-colors">
+              <LogOut className="w-5 h-5" />
+            </button>
           </div>
-          <button onClick={handleLogout} className="p-2 text-text-secondary hover:text-danger hover:bg-danger/10 rounded-lg transition-colors">
-            <LogOut className="w-5 h-5" />
-          </button>
         </div>
       </aside>
 
@@ -212,19 +222,29 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
              )}
              
              {/* Mobile User Profile & Logout */}
-             <div className="p-4 border-t border-border flex items-center justify-between bg-surface-dim">
-                <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold uppercase shrink-0">
-                    {userFullName.charAt(0)}
+             <div className="p-4 border-t border-border flex flex-col gap-3 bg-surface-dim">
+                <a
+                  href="https://wa.me/2250707363020?text=Bonjour+TSBC%2C+j%27ai+besoin+d%27aide+sur+ProjetPilote"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-sm font-medium transition-colors border border-emerald-200"
+                >
+                  <span>💬</span> Support TSBC
+                </a>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold uppercase shrink-0">
+                      {userFullName.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0 pr-2">
+                      <p className="text-sm font-semibold text-text-primary truncate">{userFullName}</p>
+                      <Link href="/settings" onClick={() => setIsMobileMenuOpen(false)} className="text-xs text-text-secondary hover:text-primary transition-colors truncate block">Mon Profil</Link>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0 pr-2">
-                    <p className="text-sm font-semibold text-text-primary truncate">{userFullName}</p>
-                    <Link href="/settings" onClick={() => setIsMobileMenuOpen(false)} className="text-xs text-text-secondary hover:text-primary transition-colors truncate block">Mon Profil</Link>
-                  </div>
+                  <button onClick={handleLogout} className="p-2.5 text-danger hover:bg-danger/10 rounded-lg transition-colors shrink-0">
+                    <LogOut className="w-5 h-5" />
+                  </button>
                 </div>
-                <button onClick={handleLogout} className="p-2.5 text-danger hover:bg-danger/10 rounded-lg transition-colors shrink-0">
-                  <LogOut className="w-5 h-5" />
-                </button>
              </div>
           </div>
         </div>

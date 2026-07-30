@@ -77,6 +77,17 @@ export default async function DashboardLayout({
 
   const userFullName = profile?.full_name || user.email || 'Utilisateur'
 
+  // Track session for engagement analytics (don't block render if it fails)
+  if (activeOrgId) {
+    supabase.from('user_sessions').upsert({
+      user_id: user.id,
+      organization_id: activeOrgId,
+      last_seen_at: new Date().toISOString()
+    }, { onConflict: 'user_id,organization_id' }).then(({ error }) => {
+      if (error) console.error('Failed to log session:', error)
+    })
+  }
+
   return (
     <OrganizationProvider>
       <div className="min-h-screen bg-surface-dim md:pl-60 pb-32 md:pb-0">

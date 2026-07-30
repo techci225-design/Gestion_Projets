@@ -44,10 +44,13 @@ Deno.serve(async (req) => {
         return // Déjà notifié
       }
 
-      // Récupérer les membres cibles
+      // Récupérer les membres cibles et leurs préférences
       const { data: members } = await supabase
         .from('project_members')
-        .select('user_id')
+        .select(`
+          user_id,
+          profiles!inner(full_name, notif_email_alerts, notif_whatsapp, whatsapp_number)
+        `)
         .eq('project_id', projectId)
         .in('role', roles)
 
@@ -64,20 +67,39 @@ Deno.serve(async (req) => {
         const { error } = await supabase.from('notifications').insert(notificationsToInsert)
         if (!error) notificationsCreated += notificationsToInsert.length
 
-        // Envoi d'emails
+        // Envoi d'emails et WhatsApp
         for (const m of members) {
-          // Check preferences
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('full_name, notif_email_alerts')
-            .eq('id', m.user_id)
-            .single()
+          const profile = m.profiles as any
 
-          // If preference is explicitly false, skip email
+          // 1. WhatsApp Alert
+          if (profile.notif_whatsapp && profile.whatsapp_number) {
+            const WHATSAPP_TOKEN = Deno.env.get('WHATSAPP_TOKEN')
+            const WHATSAPP_PHONE_ID = Deno.env.get('WHATSAPP_PHONE_NUMBER_ID')
+            
+            if (WHATSAPP_TOKEN && WHATSAPP_PHONE_ID) {
+              const waText = `🔴 *ProjetPilote — ALERTE*\n${projectName}\n${body}\nVoir: https://gestion-projets-e3uj.vercel.app${link}`
+              await fetch(`https://graph.facebook.com/v18.0/${WHATSAPP_PHONE_ID}/messages`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${WHATSAPP_TOKEN}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  messaging_product: 'whatsapp',
+                  to: profile.whatsapp_number.replace('+', ''), // Meta requires number without +
+                  type: 'text',
+                  text: { body: waText }
+                })
+              }).catch(e => console.error("WhatsApp send error", e))
+            } else {
+              console.log(`[WhatsApp Log] Configure WHATSAPP_TOKEN in Vercel to send to ${profile.whatsapp_number}`)
+            }
+          }
+
+          // 2. Email Alert
           if (profile && profile.notif_email_alerts === false) continue;
 
           const firstName = profile?.full_name ? profile.full_name.split(' ')[0] : 'Utilisateur'
-
           const { data: userData } = await supabase.auth.admin.getUserById(m.user_id)
           const toEmail = userData?.user?.email
 

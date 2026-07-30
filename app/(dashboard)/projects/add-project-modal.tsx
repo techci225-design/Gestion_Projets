@@ -22,7 +22,7 @@ export function AddProjectModal() {
   const [description, setDescription] = useState('')
   const [funder, setFunder] = useState('')
   const [implementingAgency, setImplementingAgency] = useState('')
-  const [currency, setCurrency] = useState('FCFA')
+  const [currency, setCurrency] = useState('XOF')
 
   // Step 2: Funding
   const [fundingSources, setFundingSources] = useState<{ id: string, name: string, type: string, amount: number }[]>([
@@ -218,8 +218,10 @@ export function AddProjectModal() {
                   <div>
                     <label className="block text-sm font-medium text-text-primary mb-1">Devise du projet *</label>
                     <select value={currency} onChange={e => setCurrency(e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-surface">
-                      <option value="FCFA">FCFA</option>
-                      <option value="USD">USD ($)</option>
+                      <option value="XOF">FCFA (XOF) — Afrique de l'Ouest</option>
+                      <option value="XAF">FCFA (XAF) — Afrique Centrale</option>
+                      <option value="EUR">Euro (EUR)</option>
+                      <option value="USD">Dollar USD</option>
                     </select>
                   </div>
                   <div className="grid grid-cols-2 gap-4">

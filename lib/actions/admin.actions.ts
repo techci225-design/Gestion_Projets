@@ -184,107 +184,132 @@ export async function getAdminStatistics() {
 
   const adminClient = createAdminClient()
   
-  // 1. Total Organizations
-  const { count: totalOrgsCount } = await adminClient
-    .from('organizations')
-    .select('*', { count: 'exact', head: true })
-    
-  // 2. Active Organizations
-  const { count: activeOrgsCount } = await adminClient
-    .from('organizations')
-    .select('*', { count: 'exact', head: true })
-    .eq('is_active', true)
-    
-  // 3. Pro and Trial Organizations for conversion rate
-  const { count: proOrgsCount } = await adminClient
-    .from('organizations')
-    .select('*', { count: 'exact', head: true })
-    .eq('plan', 'pro')
-    
-  const { count: trialOrgsCount } = await adminClient
-    .from('organizations')
-    .select('*', { count: 'exact', head: true })
-    .eq('plan', 'trial')
-    
-  const { count: instOrgsCount } = await adminClient
-    .from('organizations')
-    .select('*', { count: 'exact', head: true })
-    .eq('plan', 'institutionnel')
+  // 1. Settings (for MRR)
+  const { data: settings } = await adminClient.from('platform_settings').select('*').eq('id', 1).single()
+  const proPrice = settings?.pro_price || 25000
+  const instPrice = settings?.inst_price || 100000
 
-  // 4. Active Projects
-  const { count: activeProjectsCount } = await adminClient
-    .from('projects')
-    .select('*', { count: 'exact', head: true })
-    .eq('status', 'actif')
-    
-  // 5. Total Budget (from budget_lines)
-  const { data: budgetData } = await adminClient
-    .from('budget_lines')
-    .select('initial_allocated_amount')
-    
-  const totalBudget = (budgetData || []).reduce((sum, line) => sum + (line.initial_allocated_amount || 0), 0)
+  // 2. All Organizations
+  const { data: orgsData } = await adminClient.from('organizations').select('id, name, plan, is_active, created_at, projects(id)')
+  const orgs = orgsData || []
   
-  // 6. Recent Activity (audit_log)
-  const { data: recentActivity } = await adminClient
-    .from('audit_log')
-    .select(`
-      id, created_at, action, module, project_id,
-      profiles (full_name, email)
-    `)
-    .order('created_at', { ascending: false })
-    .limit(10)
-    
-  // 7. Top 5 Organizations
-  const { data: topOrgsQuery } = await adminClient
-    .from('organizations')
-    .select(`
-      id, name, plan,
-      projects ( id, budget_lines ( initial_allocated_amount ) ),
-      organization_members ( user_id )
-    `)
-    
-  let topOrgs = (topOrgsQuery || []).map(org => {
-    let budgetTotal = 0
-    let nbProjets = org.projects?.length || 0
-    
-    org.projects?.forEach(p => {
-      p.budget_lines?.forEach((bl: any) => {
-        budgetTotal += (bl.initial_allocated_amount || 0)
-      })
-    })
-    
-    // nb members (unique user_ids in organization_members)
-    const uniqueMembers = new Set(org.organization_members?.map((om: any) => om.user_id))
-    
-    return {
-      id: org.id,
-      name: org.name,
-      plan: org.plan,
-      nb_projets: nbProjets,
-      nb_membres: uniqueMembers.size,
-      budget_total: budgetTotal
+  const totalOrgs = orgs.length
+  const activeOrgsCount = orgs.filter(o => o.is_active).length
+  const proOrgsCount = orgs.filter(o => o.plan === 'pro').length
+  const trialOrgsCount = orgs.filter(o => o.plan === 'trial').length
+  const instOrgsCount = orgs.filter(o => o.plan === 'institutionnel').length
+
+  const mrr = (proOrgsCount * proPrice) + (instOrgsCount * instPrice)
+  const activatedOrgs = orgs.filter(o => o.projects && o.projects.length > 0).length
+  const activationRate = totalOrgs > 0 ? Math.round((activatedOrgs / totalOrgs) * 100) : 0
+  const conversionRate = totalOrgs > 0 ? Math.round((proOrgsCount / totalOrgs) * 100) : 0
+
+  // 3. Active Projects & Budget
+  const { count: activeProjectsCount } = await adminClient.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'actif')
+  const { data: budgetData } = await adminClient.from('budget_lines').select('initial_allocated_amount')
+  const totalBudget = (budgetData || []).reduce((sum, line) => sum + (line.initial_allocated_amount || 0), 0)
+
+  // 4. Sessions (Engagement & Churn)
+  const { data: sessions } = await adminClient.from('user_sessions').select('organization_id, last_seen_at')
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  
+  const orgLastSeen = new Map<string, string>()
+  sessions?.forEach(s => {
+    if (!orgLastSeen.has(s.organization_id) || new Date(s.last_seen_at) > new Date(orgLastSeen.get(s.organization_id)!)) {
+      orgLastSeen.set(s.organization_id, s.last_seen_at)
     }
   })
-  
-  // Sort by projects DESC, then budget DESC
-  topOrgs.sort((a, b) => {
-    if (b.nb_projets !== a.nb_projets) return b.nb_projets - a.nb_projets
-    return b.budget_total - a.budget_total
+
+  let engagedOrgsCount = 0
+  const churnRisk = []
+
+  for (const org of orgs) {
+    const lastSeen = orgLastSeen.get(org.id)
+    if (lastSeen && lastSeen >= sevenDaysAgo) {
+      engagedOrgsCount++
+    } else {
+      churnRisk.push({
+        id: org.id,
+        name: org.name,
+        plan: org.plan,
+        nb_projects: org.projects?.length || 0,
+        last_seen_at: lastSeen || null
+      })
+    }
+  }
+
+  // Sort churn risk by last seen (oldest first, nulls first)
+  churnRisk.sort((a, b) => {
+    if (!a.last_seen_at) return -1
+    if (!b.last_seen_at) return 1
+    return new Date(a.last_seen_at).getTime() - new Date(b.last_seen_at).getTime()
   })
   
-  topOrgs = topOrgs.slice(0, 5)
+  const engagementRate = activeOrgsCount > 0 ? Math.round((engagedOrgsCount / activeOrgsCount) * 100) : 0
+
+  // 5. Graph: Registrations by week (last 12 weeks)
+  const graphData = []
+  const msInWeek = 7 * 24 * 60 * 60 * 1000
+  const now = Date.now()
+  for (let i = 11; i >= 0; i--) {
+    const weekStart = new Date(now - (i * msInWeek))
+    const weekEnd = new Date(now - ((i - 1) * msInWeek))
+    const weekOrgs = orgs.filter(o => {
+      const d = new Date(o.created_at)
+      return d >= weekStart && d < weekEnd
+    })
+    graphData.push({
+      week: `S-${i}`,
+      total: weekOrgs.length,
+      pro: weekOrgs.filter(o => o.plan === 'pro').length
+    })
+  }
+
+  // 6. Module Usage
+  const { count: journalCount } = await adminClient.from('operations_journal').select('*', { count: 'exact', head: true })
+  const { count: evmCount } = await adminClient.from('wbs_tasks').select('*', { count: 'exact', head: true })
+  const { count: procurementCount } = await adminClient.from('procurement_plan').select('*', { count: 'exact', head: true })
+  const { count: risksCount } = await adminClient.from('risks').select('*', { count: 'exact', head: true })
+
+  const moduleUsage = [
+    { name: 'Journal Opérations', count: journalCount || 0 },
+    { name: 'EVM Tâches', count: evmCount || 0 },
+    { name: 'Marchés', count: procurementCount || 0 },
+    { name: 'Risques', count: risksCount || 0 }
+  ].sort((a, b) => b.count - a.count)
     
   return {
     kpis: {
-      totalOrgs: totalOrgsCount || 0,
-      activeOrgs: activeOrgsCount || 0,
+      totalOrgs,
+      activeOrgs: activeOrgsCount,
       activeProjects: activeProjectsCount || 0,
-      totalBudget: totalBudget,
-      proOrgs: proOrgsCount || 0,
-      trialOrgs: trialOrgsCount || 0,
-      instOrgs: instOrgsCount || 0
+      totalBudget,
+      proOrgs: proOrgsCount,
+      trialOrgs: trialOrgsCount,
+      instOrgs: instOrgsCount,
+      mrr,
+      activationRate,
+      engagementRate,
+      conversionRate
     },
-    recentActivity: recentActivity || [],
-    topOrgs
-  }
+    churnRisk,
+    graphData,
+    moduleUsage
 }
+
+export async function updatePlatformSettings(settings: { pro_price: number, inst_price: number, exchange_rate_eur: number, exchange_rate_usd: number }) {
+  const isSuperAdmin = await checkSuperAdmin()
+  if (!isSuperAdmin) return { error: 'Accès non autorisé' }
+
+  const adminClient = createAdminClient()
+  const { error } = await adminClient
+    .from('platform_settings')
+    .update(settings)
+    .eq('id', 1)
+
+  if (error) return { error: 'Erreur lors de la mise à jour des paramètres' }
+  revalidatePath('/admin/settings')
+  return { success: true }
+}
+
+

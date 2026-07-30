@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function updateProfile(data: { full_name: string, phone?: string }) {
+export async function updateProfile(data: { full_name: string, phone?: string, whatsapp_number?: string }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Non authentifié' }
@@ -16,7 +16,8 @@ export async function updateProfile(data: { full_name: string, phone?: string })
     .from('profiles')
     .update({
       full_name: data.full_name,
-      phone: data.phone || null
+      phone: data.phone || null,
+      whatsapp_number: data.whatsapp_number || null
     })
     .eq('id', user.id)
 
@@ -32,6 +33,7 @@ export async function updateNotificationPrefs(prefs: {
   notif_email_alerts?: boolean;
   notif_email_weekly?: boolean;
   notif_push_critical?: boolean;
+  notif_whatsapp?: boolean;
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

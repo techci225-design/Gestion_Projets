@@ -16,6 +16,8 @@ export interface SettingsProfile {
   notif_email_alerts: boolean | null
   notif_email_weekly: boolean | null
   notif_push_critical: boolean | null
+  whatsapp_number: string | null
+  notif_whatsapp: boolean | null
 }
 
 export function SettingsClient({ profile, isOwner }: { profile: SettingsProfile, isOwner?: boolean }) {
@@ -27,11 +29,13 @@ export function SettingsClient({ profile, isOwner }: { profile: SettingsProfile,
     notif_email_alerts: profile.notif_email_alerts ?? true,
     notif_email_weekly: profile.notif_email_weekly ?? true,
     notif_push_critical: profile.notif_push_critical ?? true,
+    notif_whatsapp: profile.notif_whatsapp ?? false,
   }
 
   // State for Profile Form
   const [fullName, setFullName] = useState(profile.full_name)
   const [phone, setPhone] = useState(profile.phone || '')
+  const [whatsappNumber, setWhatsappNumber] = useState(profile.whatsapp_number || '')
   const [profileLoading, setProfileLoading] = useState(false)
   const [profileSuccess, setProfileSuccess] = useState(false)
   const [profileError, setProfileError] = useState<string | null>(null)
@@ -51,7 +55,7 @@ export function SettingsClient({ profile, isOwner }: { profile: SettingsProfile,
     setProfileSuccess(false)
     setProfileError(null)
 
-    const res = await updateProfile({ full_name: fullName, phone })
+    const res = await updateProfile({ full_name: fullName, phone, whatsapp_number: whatsappNumber })
     if (res.error) {
       setProfileError(res.error)
     } else {
@@ -138,6 +142,18 @@ export function SettingsClient({ profile, isOwner }: { profile: SettingsProfile,
                 onChange={e => setPhone(e.target.value)}
                 className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" 
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1">Numéro WhatsApp Business (Format: +225XXXXXXXX)</label>
+              <input 
+                type="tel" 
+                value={whatsappNumber}
+                onChange={e => setWhatsappNumber(e.target.value)}
+                placeholder="+22500000000"
+                className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" 
+              />
+              <p className="text-xs text-text-tertiary mt-1">Requis pour recevoir les alertes sur WhatsApp.</p>
             </div>
 
             <div className="pt-2 flex items-center gap-4">
@@ -268,7 +284,8 @@ export function SettingsClient({ profile, isOwner }: { profile: SettingsProfile,
             {[
               { id: 'notif_email_alerts', label: 'Alertes par email (Instantané)', desc: 'Dépassement de budget, risques critiques' },
               { id: 'notif_email_weekly', label: 'Rapport hebdomadaire', desc: 'Résumé des projets et échéances' },
-              { id: 'notif_push_critical', label: 'Notifications Push (UI)', desc: 'Alertes urgentes sur le tableau de bord' }
+              { id: 'notif_push_critical', label: 'Notifications Push (UI)', desc: 'Alertes urgentes sur le tableau de bord' },
+              { id: 'notif_whatsapp', label: 'Alertes WhatsApp', desc: 'Recevoir les alertes critiques sur WhatsApp (Numéro requis dans profil)' }
             ].map((item) => (
               <div key={item.id} className="flex items-center justify-between">
                 <div>

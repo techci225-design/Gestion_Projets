@@ -89,7 +89,7 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
               </div>
               <h2 className="text-white/80 text-sm font-medium mb-1">Budget Global</h2>
               <p className="text-3xl font-bold tracking-tight">
-                {displayBudget > 0 ? formatCurrency(displayBudget, getDisplayCurrency(project.currency)) : 'Non défini'}
+                {displayBudget > 0 ? formatCurrency(displayBudget, project.currency) : 'Non défini'}
               </p>
             </div>
 
