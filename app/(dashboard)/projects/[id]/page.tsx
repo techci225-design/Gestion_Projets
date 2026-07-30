@@ -37,8 +37,12 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
   const { data: budgetConsumption } = await supabase.from('v_budget_consumption').select('*').eq('project_id', id)
   const { data: fundingSources } = await supabase.from('funding_sources').select('amount').eq('project_id', id)
 
+  // Calcule le budget global à partir de v_budget_consumption (lignes budgétaires)
+  const totalBudgetFromLines = budgetConsumption?.reduce((acc, curr) => acc + (Number(curr.initial_allocated_amount) || 0), 0) || 0
   const totalFunding = fundingSources?.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0) || 0
-  const totalBudget = totalFunding > 0 ? totalFunding : (project.budget || 0)
+  
+  // Utilise par ordre de priorité: Lignes budgétaires > Sources de financement > Budget global projet
+  const totalBudget = totalBudgetFromLines > 0 ? totalBudgetFromLines : (totalFunding > 0 ? totalFunding : (project.budget || 0))
   
   const totalEngage = budgetConsumption?.reduce((acc, curr) => acc + (Number(curr.total_engage) || 0), 0) || 0
   const totalDecaisse = budgetConsumption?.reduce((acc, curr) => acc + (Number(curr.total_decaisse) || 0), 0) || 0
