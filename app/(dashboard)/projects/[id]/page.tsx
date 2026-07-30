@@ -33,13 +33,16 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
   const { data: { user } } = await supabase.auth.getUser()
   const { data: profile } = await supabase.from('profiles').select('full_name').eq('id', user?.id).single()
 
-  // 3. Fetch Financial Consumption
+  // 3. Fetch Financial Consumption & Funding Sources
   const { data: budgetConsumption } = await supabase.from('v_budget_consumption').select('*').eq('project_id', id)
-  const { data: fundingSources } = await supabase.from('funding_sources').select('amount').eq('project_id', id)
+  const { data: fundingSources } = await supabase.from('funding_sources').select('name, amount_committed').eq('project_id', id)
+  
+  // Fetch Organization for Maître d'œuvre
+  const { data: org } = await supabase.from('organizations').select('name').eq('id', project.organization_id).single()
 
   // Calcule le budget global à partir de v_budget_consumption (lignes budgétaires)
   const totalBudgetFromLines = budgetConsumption?.reduce((acc, curr) => acc + (Number(curr.initial_allocated_amount) || 0), 0) || 0
-  const totalFunding = fundingSources?.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0) || 0
+  const totalFunding = fundingSources?.reduce((acc, curr) => acc + (Number(curr.amount_committed) || 0), 0) || 0
   
   // Utilise par ordre de priorité: Lignes budgétaires > Sources de financement > Budget global projet
   const totalBudget = totalBudgetFromLines > 0 ? totalBudgetFromLines : (totalFunding > 0 ? totalFunding : (project.budget || 0))
@@ -279,7 +282,9 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
                     <Landmark className="w-4 h-4" /> Financement / Bailleur
                   </h3>
                   <p className="text-base font-bold text-text-primary ml-6">
-                    {project.funder || "Non défini"}
+                    {fundingSources && fundingSources.length > 0 
+                      ? fundingSources.map(fs => fs.name).join(', ') 
+                      : "Non défini"}
                   </p>
                 </div>
                 <div>
@@ -287,7 +292,7 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
                     <Users className="w-4 h-4" /> Maître d'œuvre
                   </h3>
                   <p className="text-base font-bold text-text-primary ml-6">
-                    {project.implementing_agency || "Non défini"}
+                    {org?.name || "Non défini"}
                   </p>
                 </div>
               </div>
