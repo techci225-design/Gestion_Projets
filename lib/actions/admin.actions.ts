@@ -295,8 +295,8 @@ export async function getAdminStatistics() {
     churnRisk,
     graphData,
     moduleUsage
+  }
 }
-
 export async function updatePlatformSettings(settings: { pro_price: number, inst_price: number, exchange_rate_eur: number, exchange_rate_usd: number }) {
   const isSuperAdmin = await checkSuperAdmin()
   if (!isSuperAdmin) return { error: 'Accès non autorisé' }
