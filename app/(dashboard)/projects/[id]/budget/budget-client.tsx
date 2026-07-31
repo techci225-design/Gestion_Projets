@@ -268,7 +268,7 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
                         <td className="p-4 text-center">{key}</td>
                         <td className="p-4 uppercase" colSpan={4}>{key}. {objectifName}</td>
                         <td className="p-4 text-right font-mono">{formatCurrency(groupAlloc, currency).replace(currency, '')}</td>
-                        <td className="p-4 text-right font-mono text-warning-dark">{formatCurrency(groupItems.reduce((acc, i) => acc + Number(i.total_engage || 0), 0), currency).replace(currency, '')}</td>
+                        <td className="p-4 text-right font-mono text-warning-dark">{formatCurrency(groupItems.reduce((acc, i) => acc + Number(i.total_engage || 0) + Number(i.total_decaisse || 0), 0), currency).replace(currency, '')}</td>
                         <td className="p-4 text-right font-mono text-text-secondary">{formatCurrency(groupItems.reduce((acc, i) => acc + Number(i.total_decaisse || 0), 0), currency).replace(currency, '')}</td>
                         <td className="p-4 text-right font-mono font-medium">{formatCurrency(groupItems.reduce((acc, i) => acc + Number(i.solde_disponible || 0), 0), currency).replace(currency, '')}</td>
                         <td className="p-4"></td>
@@ -281,7 +281,7 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
                           <td className="p-4 text-right font-mono text-text-secondary">{item.quantity || '-'}</td>
                           <td className="p-4 text-right font-mono text-text-secondary">{item.unit_cost !== null && item.unit_cost !== undefined ? formatCurrency(item.unit_cost, currency).replace(currency, '') : '-'}</td>
                           <td className="p-4 text-right font-mono font-medium">{formatCurrency(item.initial_allocated_amount, currency).replace(currency, '')}</td>
-                          <td className="p-4 text-right font-mono text-warning-dark">{formatCurrency(item.total_engage || 0, currency).replace(currency, '')}</td>
+                          <td className="p-4 text-right font-mono text-warning-dark">{formatCurrency((item.total_engage || 0) + (item.total_decaisse || 0), currency).replace(currency, '')}</td>
                           <td className="p-4 text-right font-mono text-text-secondary">{formatCurrency(item.total_decaisse || 0, currency).replace(currency, '')}</td>
                           <td className={`p-4 text-right font-mono font-medium ${item.solde_disponible < 0 ? 'text-danger' : 'text-success-dark'}`}>
                             {formatCurrency(item.solde_disponible || 0, currency).replace(currency, '')}
