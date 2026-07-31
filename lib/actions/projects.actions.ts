@@ -67,7 +67,10 @@ export async function createProject(formData: FormData) {
     return { error: 'Aucune organisation sélectionnée' }
   }
 
-  // Check user role in this organization
+  // Check user role in this organization or if user is super admin
+  const { data: profile } = await supabase.from('profiles').select('is_super_admin').eq('id', user.id).single()
+  const isSuperAdmin = profile?.is_super_admin === true
+
   const { data: memberData } = await supabase
     .from('organization_members')
     .select('org_role')
@@ -75,7 +78,7 @@ export async function createProject(formData: FormData) {
     .eq('organization_id', activeOrgId)
     .single()
 
-  if (!memberData || !['owner', 'admin'].includes(memberData.org_role)) {
+  if (!isSuperAdmin && (!memberData || !['owner', 'admin'].includes(memberData.org_role))) {
     return { error: "Vous n'avez pas les droits (owner/admin) pour créer un projet dans cette organisation." }
   }
 
@@ -165,7 +168,10 @@ export async function createProjectWithBudget(payload: any) {
     return { error: 'Aucune organisation sélectionnée' }
   }
 
-  // SÉCURITÉ CRITIQUE : Vérifier que l'utilisateur appartient bien à l'organisation (owner ou admin)
+  // SÉCURITÉ CRITIQUE : Vérifier que l'utilisateur appartient bien à l'organisation (owner ou admin) OU qu'il est super_admin
+  const { data: profile } = await supabase.from('profiles').select('is_super_admin').eq('id', user.id).single()
+  const isSuperAdmin = profile?.is_super_admin === true
+
   const { data: memberData } = await supabase
     .from('organization_members')
     .select('org_role')
@@ -173,7 +179,7 @@ export async function createProjectWithBudget(payload: any) {
     .eq('organization_id', activeOrgId)
     .single()
 
-  if (!memberData || !['owner', 'admin'].includes(memberData.org_role)) {
+  if (!isSuperAdmin && (!memberData || !['owner', 'admin'].includes(memberData.org_role))) {
     return { error: "Vous n'avez pas les droits (owner/admin) pour créer un projet dans cette organisation." }
   }
 
