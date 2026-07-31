@@ -274,7 +274,7 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
                           <td className="p-4">{item.label}</td>
                           <td className="p-4 text-center text-text-secondary">{item.unit || '-'}</td>
                           <td className="p-4 text-right font-mono text-text-secondary">{item.quantity || '-'}</td>
-                          <td className="p-4 text-right font-mono text-text-secondary">{item.unit_cost ? formatCurrency(item.unit_cost, currency).replace(currency, '') : '-'}</td>
+                          <td className="p-4 text-right font-mono text-text-secondary">{item.unit_cost !== null && item.unit_cost !== undefined ? formatCurrency(item.unit_cost, currency).replace(currency, '') : '-'}</td>
                           <td className="p-4 text-right font-mono font-medium">{formatCurrency(item.initial_allocated_amount, currency).replace(currency, '')}</td>
                           <td className="p-4 text-right font-mono text-warning-dark">{formatCurrency(item.total_engage || 0, currency).replace(currency, '')}</td>
                           <td className="p-4 text-right font-mono text-text-secondary">{formatCurrency(item.total_decaisse || 0, currency).replace(currency, '')}</td>

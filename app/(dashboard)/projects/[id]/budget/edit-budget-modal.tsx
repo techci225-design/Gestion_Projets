@@ -23,12 +23,6 @@ export function EditBudgetModal({
   const [unitCost, setUnitCost] = useState<number | ''>(budgetLine.unit_cost || '')
   const [allocatedAmount, setAllocatedAmount] = useState<number | ''>(budgetLine.initial_allocated_amount || '')
 
-  // Auto-calculate allocated amount when qty and unit cost change
-  React.useEffect(() => {
-    if (qty !== '' && unitCost !== '') {
-      setAllocatedAmount(Number(qty) * Number(unitCost))
-    }
-  }, [qty, unitCost])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
