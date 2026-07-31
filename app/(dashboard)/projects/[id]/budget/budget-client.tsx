@@ -268,9 +268,9 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
                         <td className="p-4 text-center">{key}</td>
                         <td className="p-4 uppercase" colSpan={4}>{key}. {objectifName}</td>
                         <td className="p-4 text-right font-mono">{formatCurrency(groupAlloc, currency).replace(currency, '')}</td>
-                        <td className="p-4"></td>
-                        <td className="p-4"></td>
-                        <td className="p-4"></td>
+                        <td className="p-4 text-right font-mono text-warning-dark">{formatCurrency(groupItems.reduce((acc, i) => acc + Number(i.total_engage || 0), 0), currency).replace(currency, '')}</td>
+                        <td className="p-4 text-right font-mono text-text-secondary">{formatCurrency(groupItems.reduce((acc, i) => acc + Number(i.total_decaisse || 0), 0), currency).replace(currency, '')}</td>
+                        <td className="p-4 text-right font-mono font-medium">{formatCurrency(groupItems.reduce((acc, i) => acc + Number(i.solde_disponible || 0), 0), currency).replace(currency, '')}</td>
                         <td className="p-4"></td>
                       </tr>
                       {groupItems.map((item, idx) => (
