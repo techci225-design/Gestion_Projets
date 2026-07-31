@@ -51,8 +51,8 @@ export function AddBudgetModal({
     if (result?.error) {
       setError(result.error)
     } else {
-      onClose()
       router.refresh()
+      onClose()
     }
   }
 
