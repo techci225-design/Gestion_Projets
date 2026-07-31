@@ -266,7 +266,12 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
                     <React.Fragment key={key}>
                       <tr className="bg-primary/10 border-b border-border/50 font-bold text-primary">
                         <td className="p-4 text-center">{key}</td>
-                        <td className="p-4 uppercase" colSpan={8}>{key}. {objectifName}</td>
+                        <td className="p-4 uppercase" colSpan={4}>{key}. {objectifName}</td>
+                        <td className="p-4 text-right">{formatCurrency(groupAlloc).replace('FCFA', '')}</td>
+                        <td className="p-4"></td>
+                        <td className="p-4"></td>
+                        <td className="p-4"></td>
+                        <td className="p-4"></td>
                       </tr>
                       {groupItems.map((item, idx) => (
                         <tr key={item.budget_line_id} className={`border-b border-border/30 h-10 hover:bg-slate-50 transition-colors`}>
