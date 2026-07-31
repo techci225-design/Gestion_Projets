@@ -267,7 +267,7 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
                       <tr className="bg-primary/10 border-b border-border/50 font-bold text-primary">
                         <td className="p-4 text-center">{key}</td>
                         <td className="p-4 uppercase" colSpan={4}>{key}. {objectifName}</td>
-                        <td className="p-4 text-right">{formatCurrency(groupAlloc).replace('FCFA', '')}</td>
+                        <td className="p-4 text-right font-mono">{formatCurrency(groupAlloc, currency).replace(currency, '')}</td>
                         <td className="p-4"></td>
                         <td className="p-4"></td>
                         <td className="p-4"></td>
