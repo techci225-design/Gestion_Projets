@@ -5,7 +5,6 @@ import { Plus, Download, CheckCircle2, WalletCards, Trash2, AlertTriangle, Penci
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { AddBudgetModal } from './add-budget-modal'
 import { EditBudgetModal } from './edit-budget-modal'
-import { BurnRateChart } from '@/components/dashboard/BurnRateChart'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { deleteBudgetLine } from '@/lib/actions/budget.actions'
 
@@ -288,10 +287,6 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
         </div>
       )}
 
-      {/* Burn Rate Chart */}
-      {operations && operations.length > 0 && (
-        <BurnRateChart operations={operations} />
-      )}
 
       {/* Empty State or Data Table */}
       {items.length === 0 ? (
