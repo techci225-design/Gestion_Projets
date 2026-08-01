@@ -59,18 +59,23 @@ export async function createProject(formData: FormData) {
     return { error: 'Erreur de configuration serveur (Clé Admin manquante ou invalide). Veuillez vérifier la variable SUPABASE_SERVICE_ROLE_KEY sur Vercel.' }
   }
 
-  // Get active organization
+  // Get active organization (Support mode override)
   const cookieStore = await cookies()
-  const activeOrgId = cookieStore.get('active_org_id')?.value
+  let activeOrgId = cookieStore.get('active_org_id')?.value
+  const supportOrgId = cookieStore.get('support_org_id')?.value
+
+  const { data: profile } = await supabase.from('profiles').select('is_super_admin').eq('id', user.id).single()
+  const isSuperAdmin = profile?.is_super_admin === true
+
+  if (isSuperAdmin && supportOrgId) {
+    activeOrgId = supportOrgId
+  }
 
   if (!activeOrgId) {
     return { error: 'Aucune organisation sélectionnée' }
   }
 
   // Check user role in this organization or if user is super admin
-  const { data: profile } = await supabase.from('profiles').select('is_super_admin').eq('id', user.id).single()
-  const isSuperAdmin = profile?.is_super_admin === true
-
   const { data: memberData } = await supabase
     .from('organization_members')
     .select('org_role')
@@ -160,18 +165,23 @@ export async function createProjectWithBudget(payload: any) {
     return { error: 'Erreur de configuration serveur (Clé Admin manquante).' }
   }
 
-  // Get active organization
+  // Get active organization (Support mode override)
   const cookieStore = await cookies()
-  const activeOrgId = cookieStore.get('active_org_id')?.value
+  let activeOrgId = cookieStore.get('active_org_id')?.value
+  const supportOrgId = cookieStore.get('support_org_id')?.value
+
+  const { data: profile } = await supabase.from('profiles').select('is_super_admin').eq('id', user.id).single()
+  const isSuperAdmin = profile?.is_super_admin === true
+
+  if (isSuperAdmin && supportOrgId) {
+    activeOrgId = supportOrgId
+  }
 
   if (!activeOrgId) {
     return { error: 'Aucune organisation sélectionnée' }
   }
 
   // SÉCURITÉ CRITIQUE : Vérifier que l'utilisateur appartient bien à l'organisation (owner ou admin) OU qu'il est super_admin
-  const { data: profile } = await supabase.from('profiles').select('is_super_admin').eq('id', user.id).single()
-  const isSuperAdmin = profile?.is_super_admin === true
-
   const { data: memberData } = await supabase
     .from('organization_members')
     .select('org_role')
