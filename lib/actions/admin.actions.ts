@@ -160,6 +160,10 @@ export async function deleteAdminUser(userId: string) {
   await adminClient.from('audit_log').delete().eq('user_id', userId)
   await adminClient.from('invitations').delete().eq('invited_by', userId)
 
+  // Set foreign keys to NULL to avoid constraint errors
+  await adminClient.from('projects').update({ created_by: null }).eq('created_by', userId)
+  await adminClient.from('attachments').update({ uploaded_by: null }).eq('uploaded_by', userId)
+
   // Finally delete from profiles
   const { error: profileErr } = await adminClient.from('profiles').delete().eq('id', userId)
   if (profileErr) {
