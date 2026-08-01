@@ -208,11 +208,11 @@ export function AddProjectModal() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-text-primary mb-1">Date de début *</label>
-                      <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                      <input type="date" max="2999-12-31" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-text-primary mb-1">Date de fin prévue *</label>
-                      <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                      <input type="date" max="2999-12-31" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
                     </div>
                   </div>
                   <div>
