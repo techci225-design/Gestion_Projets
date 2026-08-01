@@ -5,10 +5,12 @@ import { Plus, X, Trash2, CheckCircle2, ChevronRight, ChevronLeft, AlertTriangle
 import { createProjectWithBudget } from '@/lib/actions/projects.actions'
 import { useRouter } from 'next/navigation'
 import { formatCurrency } from '@/lib/utils/format-currency'
-import { useOrganization } from '@/lib/contexts/OrganizationContext'
+import { OrganizationContext } from '@/lib/contexts/OrganizationContext'
+import { useContext } from 'react'
 
 export function AddProjectModal() {
-  const { activeOrganization } = useOrganization()
+  const context = useContext(OrganizationContext)
+  const activeOrganization = context?.activeOrganization
   const [isOpen, setIsOpen] = useState(false)
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
@@ -75,7 +77,7 @@ export function AddProjectModal() {
           }))
       }
       
-      const res = await createProjectWithBudget(payload)
+      const res: any = await createProjectWithBudget(payload as any)
       if (res.error) {
         if (res.type === 'LIMIT_REACHED') {
           setError(res.error)
