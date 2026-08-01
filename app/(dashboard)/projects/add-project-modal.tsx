@@ -5,8 +5,10 @@ import { Plus, X, Trash2, CheckCircle2, ChevronRight, ChevronLeft, AlertTriangle
 import { createProjectWithBudget } from '@/lib/actions/projects.actions'
 import { useRouter } from 'next/navigation'
 import { formatCurrency } from '@/lib/utils/format-currency'
+import { useOrganization } from '@/lib/contexts/OrganizationContext'
 
 export function AddProjectModal() {
+  const { activeOrganization } = useOrganization()
   const [isOpen, setIsOpen] = useState(false)
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
@@ -62,6 +64,7 @@ export function AddProjectModal() {
         funder,
         implementing_agency: implementingAgency,
         currency,
+        organization_id: activeOrganization?.id,
         funding_sources: fundingSources.filter(fs => fs.name.trim() !== '' && fs.amount > 0),
         budget_lines: budgetLines
           .filter(bl => bl.funding_source_id !== '' && bl.amount > 0)

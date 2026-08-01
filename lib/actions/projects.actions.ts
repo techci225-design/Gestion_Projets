@@ -165,16 +165,20 @@ export async function createProjectWithBudget(payload: any) {
     return { error: 'Erreur de configuration serveur (Clé Admin manquante).' }
   }
 
-  // Get active organization (Support mode override)
-  const cookieStore = await cookies()
-  let activeOrgId = cookieStore.get('active_org_id')?.value
-  const supportOrgId = cookieStore.get('support_org_id')?.value
+  // Get active organization (Support mode override or payload)
+  let activeOrgId = payload.organization_id
 
-  const { data: profile } = await supabase.from('profiles').select('is_super_admin').eq('id', user.id).single()
-  const isSuperAdmin = profile?.is_super_admin === true
+  if (!activeOrgId) {
+    const cookieStore = await cookies()
+    activeOrgId = cookieStore.get('active_org_id')?.value
+    const supportOrgId = cookieStore.get('support_org_id')?.value
 
-  if (isSuperAdmin && supportOrgId) {
-    activeOrgId = supportOrgId
+    const { data: profile } = await supabase.from('profiles').select('is_super_admin').eq('id', user.id).single()
+    const isSuperAdmin = profile?.is_super_admin === true
+
+    if (isSuperAdmin && supportOrgId) {
+      activeOrgId = supportOrgId
+    }
   }
 
   if (!activeOrgId) {
