@@ -191,19 +191,19 @@ export async function acceptInvitation(token: string, formData?: { password?: st
     }
   }
 
-  // 3. Update Profile if needed
-  if (formData?.first_name || formData?.last_name) {
-    // If new user, create their profile
-    const { data: profile } = await adminClient.from('profiles').select('id').eq('id', userId).single()
-    if (!profile) {
-       await adminClient.from('profiles').insert({
-         id: userId,
-         email: invitation.invited_email,
-         first_name: formData.first_name,
-         last_name: formData.last_name,
-         full_name: `${formData.first_name} ${formData.last_name}`.trim(),
-         role: 'client'
-       })
+  // 3. Ensure Profile exists
+  const { data: profile } = await adminClient.from('profiles').select('id').eq('id', userId).single()
+  if (!profile) {
+    const { error: profileError } = await adminClient.from('profiles').insert({
+      id: userId,
+      email: invitation.invited_email,
+      full_name: formData?.first_name || formData?.last_name 
+        ? `${formData.first_name || ''} ${formData.last_name || ''}`.trim() 
+        : invitation.invited_email.split('@')[0]
+    })
+    if (profileError) {
+      console.error('Profile insert error:', profileError)
+      return { error: 'Erreur lors de la création du profil utilisateur.' }
     }
   }
 
@@ -216,6 +216,7 @@ export async function acceptInvitation(token: string, formData?: { password?: st
 
   if (orgError) {
     console.error('Org member insert error', orgError)
+    return { error: 'Erreur critique: Impossible de vous ajouter à l\'organisation.' }
   }
 
   // 5. Add to project if exists
@@ -227,6 +228,7 @@ export async function acceptInvitation(token: string, formData?: { password?: st
     }, { onConflict: 'project_id,user_id' })
     if (projError) {
       console.error('Proj member insert error', projError)
+      return { error: 'Erreur critique: Impossible de vous ajouter au projet.' }
     }
   }
 

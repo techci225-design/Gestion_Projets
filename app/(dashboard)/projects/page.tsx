@@ -244,6 +244,8 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
     return `?sort=${field}&order=${newOrder}`
   }
 
+  const globalCurrency = projects?.length > 0 ? (projects[0].currency || 'XOF') : 'XOF'
+
   return (
     <>
       <Header title="Tableau de bord — Portefeuille" userFullName={profile?.full_name || 'Utilisateur'} />
@@ -302,7 +304,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                     <Target className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="text-base sm:text-lg font-bold text-text-primary whitespace-nowrap" title={formatCurrency(totalBudgetActif)}>{formatCurrency(totalBudgetActif, 'FCFA', true)}</div>
+                <div className="text-base sm:text-lg font-bold text-text-primary whitespace-nowrap" title={formatCurrency(totalBudgetActif, globalCurrency, true)}>{formatCurrency(totalBudgetActif, globalCurrency, true)}</div>
               </div>
 
               <div className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between min-w-0">
@@ -312,7 +314,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                     <DollarSign className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="text-base sm:text-lg font-bold text-text-primary whitespace-nowrap" title={formatCurrency(totalDecaisseActif)}>{formatCurrency(totalDecaisseActif, 'FCFA', true)}</div>
+                <div className="text-base sm:text-lg font-bold text-text-primary whitespace-nowrap" title={formatCurrency(totalDecaisseActif, globalCurrency, true)}>{formatCurrency(totalDecaisseActif, globalCurrency, true)}</div>
               </div>
 
               <div className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between">
@@ -427,12 +429,12 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                             </span>
                           </td>
                           <td className="px-4 py-3 text-right font-medium">
-                            {formatCurrency(p.pTotalBudget)}
+                            {formatCurrency(p.pTotalBudget, p.currency, true)}
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex flex-col gap-1">
                               <div className="flex justify-between text-xs">
-                                <span>{formatCurrency(p.pTotalConsumed)}</span>
+                                <span>{formatCurrency(p.pTotalConsumed, p.currency, true)}</span>
                                 <span className="font-medium">{(p.pTauxConso * 100).toFixed(0)}%</span>
                               </div>
                               <div className="w-full bg-surface-dim rounded-full h-1.5 overflow-hidden">
@@ -450,7 +452,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                             <AlertBadge value={p.spi} type="spi" />
                           </td>
                           <td className={`px-4 py-3 text-right font-medium ${p.vac < 0 ? 'text-danger' : 'text-success'}`}>
-                            {p.vac < 0 ? '' : '+'}{formatCurrency(p.vac)}
+                            {p.vac < 0 ? '' : '+'}{formatCurrency(p.vac, p.currency, true)}
                           </td>
                           <td className="px-4 py-3 text-right">
                             <Link href={`/projects/${p.id}`} className="text-primary hover:text-primary/80 font-medium text-sm">
