@@ -40,10 +40,10 @@ export function AddBudgetModal({
       code: formData.get('code') as string,
       label: formData.get('label') as string,
       initial_allocated_amount: Number(formData.get('initial_allocated_amount')) || 0,
-      unit: formData.get('unit') as string || undefined,
-      quantity: formData.get('quantity') ? Number(formData.get('quantity')) : undefined,
-      unit_cost: formData.get('unit_cost') ? Number(formData.get('unit_cost')) : undefined,
-      responsible: formData.get('responsible') as string || undefined,
+      unit: formData.get('unit') ? formData.get('unit') as string : null,
+      quantity: formData.get('quantity') ? Number(formData.get('quantity')) : null,
+      unit_cost: formData.get('unit_cost') ? Number(formData.get('unit_cost')) : null,
+      responsible: formData.get('responsible') ? formData.get('responsible') as string : null,
       counterpart_amount: 0
     })
 
