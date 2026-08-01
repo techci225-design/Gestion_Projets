@@ -60,8 +60,9 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
   const { data: operations } = await supabase.from('operations_journal').select('*').eq('project_id', id).order('created_at', { ascending: true })
 
   // EVM Calculations
-  const cpi = evmSummary?.cpi_global || 1
-  const spi = evmSummary?.spi_global || 1
+  const hasEVMData = evmSnapshots && evmSnapshots.length > 0
+  const cpi = hasEVMData ? (evmSummary?.cpi_global || 1) : null
+  const spi = hasEVMData ? (evmSummary?.spi_global || 1) : null
   const evTotal = evmSummary?.ev_total || 0
   const bacTotal = evmSummary?.bac_total || totalBudget
   const avancementProgress = bacTotal > 0 ? (evTotal / bacTotal) * 100 : 0

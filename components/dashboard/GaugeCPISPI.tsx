@@ -4,25 +4,31 @@ import React from 'react'
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 
 interface GaugeCPISPIProps {
-  value: number
+  value: number | null | undefined
   label: string
 }
 
 export function GaugeCPISPI({ value, label }: GaugeCPISPIProps) {
   // Determine color and status
-  let color = '#DC2626' // danger
-  let status = 'Critique'
-  if (value >= 1) {
-    color = '#16A34A' // success
-    status = 'Bon'
-  } else if (value >= 0.9) {
-    color = '#F59E0B' // warning
-    status = 'Moyen'
+  let color = '#94A3B8' // slate-400 for empty state
+  let status = 'N/A'
+  let normalizedValue = 0
+  
+  if (value !== null && value !== undefined) {
+    color = '#DC2626' // danger
+    status = 'Critique'
+    if (value >= 1) {
+      color = '#16A34A' // success
+      status = 'Bon'
+    } else if (value >= 0.9) {
+      color = '#F59E0B' // warning
+      status = 'Moyen'
+    }
+    normalizedValue = Math.min(Math.max(value, 0), 2)
   }
 
   // Calculate the gauge filling (limit between 0 and 2 for the display scale)
   // We map [0, 2] to [0, 180] degrees
-  const normalizedValue = Math.min(Math.max(value, 0), 2)
   const percentage = (normalizedValue / 2) * 100
   
   const data = [
@@ -56,9 +62,9 @@ export function GaugeCPISPI({ value, label }: GaugeCPISPIProps) {
         </ResponsiveContainer>
         <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center">
           <span className="text-2xl font-bold" style={{ color }}>
-            {value.toFixed(2)}
+            {value !== null && value !== undefined ? value.toFixed(2) : '-.--'}
           </span>
-          <span className="text-xs text-text-secondary uppercase tracking-wider font-semibold mt-1">
+          <span className="text-xs font-bold uppercase tracking-wider mt-1" style={{ color }}>
             {status}
           </span>
         </div>
