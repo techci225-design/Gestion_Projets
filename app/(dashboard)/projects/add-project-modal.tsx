@@ -39,7 +39,12 @@ export function AddProjectModal() {
   const diff = totalFunding - totalBudget
 
   // Validations
-  const canGoStep2 = name.trim() !== '' && code.trim() !== '' && startDate !== '' && endDate !== '' && description.trim() !== '' && funder.trim() !== '' && implementingAgency.trim() !== ''
+  const isValidDate = (dateStr: string) => {
+    if (!dateStr) return false;
+    const year = parseInt(dateStr.split('-')[0]);
+    return year >= 2000 && year <= 2100;
+  }
+  const canGoStep2 = name.trim() !== '' && code.trim() !== '' && isValidDate(startDate) && isValidDate(endDate) && description.trim() !== '' && funder.trim() !== '' && implementingAgency.trim() !== ''
   const canGoStep3 = fundingSources.some(fs => fs.name.trim() !== '' && fs.amount > 0)
   const canSubmit = budgetLines.some(bl => bl.funding_source_id !== '' && bl.amount > 0)
 
@@ -212,9 +217,13 @@ export function AddProjectModal() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-text-primary mb-1">Date de fin prévue *</label>
-                      <input type="date" max="2999-12-31" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                      <input type="date" max="2999-12-31" value={endDate} onChange={e => setEndDate(e.target.value)} className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 ${endDate && !isValidDate(endDate) ? 'border-danger focus:ring-danger/20' : 'border-border focus:ring-primary/20'}`} />
+                      {endDate && !isValidDate(endDate) && <span className="text-xs text-danger mt-1">Veuillez entrer une année valide (entre 2000 et 2100).</span>}
                     </div>
                   </div>
+                  {startDate && !isValidDate(startDate) && (
+                    <div className="-mt-3"><span className="text-xs text-danger">Date de début: Veuillez entrer une année valide (entre 2000 et 2100).</span></div>
+                  )}
                   <div>
                     <label className="block text-sm font-medium text-text-primary mb-1">Devise du projet *</label>
                     <select value={currency} onChange={e => setCurrency(e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-surface">
