@@ -286,9 +286,7 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
                     <Landmark className="w-4 h-4" /> Financement / Bailleur
                   </h3>
                   <p className="text-base font-bold text-text-primary ml-6">
-                    {fundingSources && fundingSources.length > 0 
-                      ? fundingSources.map(fs => fs.name).join(', ') 
-                      : "Non défini"}
+                    {project.funder || (fundingSources && fundingSources.length > 0 ? fundingSources.map(fs => fs.name).join(', ') : "Non défini")}
                   </p>
                 </div>
                 <div>
@@ -296,7 +294,7 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
                     <Users className="w-4 h-4" /> Maître d'œuvre
                   </h3>
                   <p className="text-base font-bold text-text-primary ml-6">
-                    {org?.name || "Non défini"}
+                    {project.implementing_agency || org?.name || "Non défini"}
                   </p>
                 </div>
               </div>
