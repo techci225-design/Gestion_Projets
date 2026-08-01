@@ -5,7 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { Header } from '@/components/dashboard/Header'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { CalendarDays, Wallet, Building2, AlignLeft, Landmark, Clock, Users, ArrowUpRight, ArrowDownRight, Activity, AlertTriangle, Flame, LayoutDashboard, Target, Briefcase, ChevronRight } from 'lucide-react'
-import { format, differenceInMonths } from 'date-fns'
+import { format, differenceInMonths, differenceInDays } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
 // Composants du Tableau de Bord EVM
@@ -91,6 +91,8 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
   const startDate = project.start_date ? new Date(project.start_date) : null
   const endDate = project.end_date ? new Date(project.end_date) : null
   const durationMonths = startDate && endDate ? differenceInMonths(endDate, startDate) : 0
+  const durationDays = startDate && endDate ? differenceInDays(endDate, startDate) : 0
+  const durationDisplay = durationMonths > 0 ? `${durationMonths} mois` : (durationDays > 0 ? `${durationDays} jours` : '0 mois')
 
   return (
     <>
@@ -272,7 +274,7 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
                   </div>
                   <div className="flex justify-between items-center px-1">
                     <span className="text-sm font-medium text-text-secondary">Durée estimée</span>
-                    <span className="text-sm font-bold text-primary">{durationMonths} mois</span>
+                    <span className="text-sm font-bold text-primary">{durationDisplay}</span>
                   </div>
                 </div>
               </div>
