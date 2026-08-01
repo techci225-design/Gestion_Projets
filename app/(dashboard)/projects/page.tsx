@@ -531,7 +531,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                           <div className="space-y-1.5">
                             <div className="flex justify-between text-sm">
                               <span className="text-text-secondary">Consommation ({(project.pTauxConso * 100).toFixed(0)}%)</span>
-                              <span className="font-semibold">{formatCurrency(project.pTotalConsumed)}</span>
+                              <span className="font-semibold">{formatCurrency(project.pTotalConsumed, project.currency, true)}</span>
                             </div>
                             <div className="w-full bg-surface-dim rounded-full h-2 overflow-hidden">
                               <div 
@@ -540,7 +540,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                               />
                             </div>
                             <div className="text-right text-xs text-text-tertiary">
-                              sur {formatCurrency(project.pTotalBudget)}
+                              sur {formatCurrency(project.pTotalBudget, project.currency, true)}
                             </div>
                           </div>
 
