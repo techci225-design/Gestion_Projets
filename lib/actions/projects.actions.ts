@@ -168,13 +168,13 @@ export async function createProjectWithBudget(payload: any) {
   // Get active organization (Support mode override or payload)
   let activeOrgId = payload.organization_id
 
+  const { data: profile } = await supabase.from('profiles').select('is_super_admin').eq('id', user.id).single()
+  const isSuperAdmin = profile?.is_super_admin === true
+
   if (!activeOrgId) {
     const cookieStore = await cookies()
     activeOrgId = cookieStore.get('active_org_id')?.value
     const supportOrgId = cookieStore.get('support_org_id')?.value
-
-    const { data: profile } = await supabase.from('profiles').select('is_super_admin').eq('id', user.id).single()
-    const isSuperAdmin = profile?.is_super_admin === true
 
     if (isSuperAdmin && supportOrgId) {
       activeOrgId = supportOrgId
