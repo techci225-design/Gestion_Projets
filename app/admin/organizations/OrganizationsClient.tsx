@@ -20,7 +20,7 @@ export function OrganizationsClient({ orgs }: { orgs: any[] }) {
   const [deleteError, setDeleteError] = useState('')
   
   const handleSupportMode = (orgId: string) => {
-    Cookies.set('support_org_id', orgId, { expires: 1 }) // 1 day
+    Cookies.set('support_org_id', orgId, { expires: 1, path: '/' }) // 1 day
     router.push('/projects')
   }
 
