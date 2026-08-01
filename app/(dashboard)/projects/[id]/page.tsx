@@ -138,7 +138,7 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
                 <span className="text-sm font-medium text-white/80">Budget Global</span>
                 <Target className="w-4 h-4 text-white/80" />
               </div>
-              <div className="text-xl font-bold whitespace-nowrap">{formatCurrency(totalBudget, 'FCFA', true)}</div>
+              <div className="text-xl font-bold whitespace-nowrap">{formatCurrency(totalBudget, project.currency, true)}</div>
             </div>
 
             <div className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between">
@@ -146,7 +146,7 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
                 <span className="text-sm font-medium text-text-secondary">Engagé</span>
                 <ArrowUpRight className="w-4 h-4 text-warning" />
               </div>
-              <div className="text-xl font-bold text-text-primary whitespace-nowrap">{formatCurrency(totalEngage, 'FCFA', true)}</div>
+              <div className="text-xl font-bold text-text-primary whitespace-nowrap">{formatCurrency(totalEngage, project.currency, true)}</div>
               <div className="text-xs text-text-secondary mt-1">
                 {totalBudget > 0 ? ((totalEngage / totalBudget) * 100).toFixed(1) : 0}% du budget
               </div>
@@ -157,7 +157,7 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
                 <span className="text-sm font-medium text-text-secondary">Décaissé</span>
                 <Wallet className="w-4 h-4 text-success" />
               </div>
-              <div className="text-xl font-bold text-text-primary whitespace-nowrap">{formatCurrency(totalDecaisse, 'FCFA', true)}</div>
+              <div className="text-xl font-bold text-text-primary whitespace-nowrap">{formatCurrency(totalDecaisse, project.currency, true)}</div>
               <div className="text-xs text-text-secondary mt-1">
                 {totalEngage > 0 ? ((totalDecaisse / totalEngage) * 100).toFixed(1) : 0}% des engagements
               </div>
@@ -168,7 +168,7 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
                 <span className="text-sm font-medium text-text-secondary">Solde (Dispo)</span>
                 <ArrowDownRight className="w-4 h-4 text-primary" />
               </div>
-              <div className="text-xl font-bold text-text-primary whitespace-nowrap">{formatCurrency(soldeDisponible, 'FCFA', true)}</div>
+              <div className="text-xl font-bold text-text-primary whitespace-nowrap">{formatCurrency(soldeDisponible, project.currency, true)}</div>
               <div className="text-xs text-text-secondary mt-1">
                 Reste à engager
               </div>
