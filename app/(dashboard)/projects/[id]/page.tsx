@@ -46,8 +46,9 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
   const totalBudgetFromLines = budgetConsumption?.reduce((acc, curr) => acc + (Number(curr.initial_allocated_amount) || 0), 0) || 0
   const totalFunding = fundingSources?.reduce((acc, curr) => acc + (Number(curr.amount_committed) || 0), 0) || 0
   
-  // Utilise par ordre de priorité: Lignes budgétaires > Sources de financement > Budget global projet
-  const totalBudget = totalBudgetFromLines > 0 ? totalBudgetFromLines : (totalFunding > 0 ? totalFunding : (project.budget || 0))
+  // LOGIQUE CORRIGÉE : Le budget global est d'abord défini par les Bailleurs de Fonds (totalFunding).
+  // S'il n'y a pas de bailleur, on prend la somme des lignes budgétaires, sinon le budget du projet.
+  const totalBudget = totalFunding > 0 ? totalFunding : (totalBudgetFromLines > 0 ? totalBudgetFromLines : (project.budget || 0))
   
   const totalEngage = budgetConsumption?.reduce((acc, curr) => acc + (Number(curr.total_engage) || 0), 0) || 0
   const totalDecaisse = budgetConsumption?.reduce((acc, curr) => acc + (Number(curr.total_decaisse) || 0), 0) || 0

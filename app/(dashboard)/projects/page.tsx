@@ -79,6 +79,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
   let evmSummaries: any[] | null = []
   let budgetLines: any[] | null = []
   let budgetConsumption: any[] | null = []
+  let fundingSources: any[] | null = []
   let risks: any[] | null = []
 
   if (projectIds.length > 0) {
@@ -107,6 +108,12 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
       .eq('criticality', 9)
       .in('project_id', projectIds)
     risks = r
+
+    const { data: fs } = await supabase
+      .from('funding_sources')
+      .select('project_id, amount_committed')
+      .in('project_id', projectIds)
+    fundingSources = fs
   }
 
   // Checklist Data Fetching
@@ -169,8 +176,14 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
   const projectsData = projects?.map(p => {
     const summary = evmSummaries?.find(s => s.project_id === p.id)
     const pBudgetConsumption = budgetConsumption?.filter(bc => bc.project_id === p.id) || []
+    const pFundingSources = fundingSources?.filter(fs => fs.project_id === p.id) || []
     
-    const pTotalBudget = pBudgetConsumption.reduce((sum, bc) => sum + Number(bc.initial_allocated_amount), 0)
+    const pTotalBudgetFromLines = pBudgetConsumption.reduce((sum, bc) => sum + Number(bc.initial_allocated_amount), 0)
+    const pTotalFunding = pFundingSources.reduce((sum, fs) => sum + Number(fs.amount_committed), 0)
+    
+    // NOUVELLE LOGIQUE: Bailleurs en priorité, puis Lignes, puis budget projet
+    const pTotalBudget = pTotalFunding > 0 ? pTotalFunding : (pTotalBudgetFromLines > 0 ? pTotalBudgetFromLines : (p.budget || 0))
+    
     const pTotalConsumed = pBudgetConsumption.reduce((sum, bc) => sum + Number(bc.total_engage) + Number(bc.total_decaisse), 0)
     const pTauxConso = pTotalBudget > 0 ? pTotalConsumed / pTotalBudget : 0
     
