@@ -666,7 +666,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
       </div>
 
       {isBudgetModalOpen && (
-        <AddBudgetModal projectId={projectId} onClose={() => setIsBudgetModalOpen(false)} />
+        <AddBudgetModal projectId={projectId} onClose={() => setIsBudgetModalOpen(false)} currency={project?.currency} />
       )}
       
       {isWbsModalOpen && (
