@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { getDisplayCurrency } from '@/lib/utils/currency'
+import { X } from 'lucide-react'
 import { updateBudgetLine } from '@/lib/actions/budget.actions'
 import { useRouter } from 'next/navigation'
 
