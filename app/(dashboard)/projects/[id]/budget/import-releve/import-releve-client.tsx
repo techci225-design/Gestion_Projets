@@ -19,7 +19,10 @@ interface MatchResult {
   confidence: number
 }
 
-export function ImportReleveClient({ projectId, operations }: { projectId: string, operations: any[] }) {
+import { getDisplayCurrency } from '@/lib/utils/currency'
+
+export function ImportReleveClient({ projectId, operations, currency = 'XOF' }: { projectId: string, operations: any[], currency?: string }) {
+  const displayCurrency = getDisplayCurrency(currency)
   const router = useRouter()
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [matches, setMatches] = useState<MatchResult[]>([])
@@ -193,7 +196,7 @@ export function ImportReleveClient({ projectId, operations }: { projectId: strin
                   <tr className="bg-surface-dim/50 border-b border-border">
                     <th className="p-3 font-medium text-text-secondary w-24">Date</th>
                     <th className="p-3 font-medium text-text-secondary">Libellé Relevé</th>
-                    <th className="p-3 font-medium text-text-secondary text-right w-32">Montant (FCFA)</th>
+                    <th className="p-3 font-medium text-text-secondary text-right w-32">Montant ({displayCurrency})</th>
                     <th className="p-3 font-medium text-text-secondary w-1/3">Opération Journal Proposée</th>
                     <th className="p-3 font-medium text-text-secondary text-center w-24">Confiance</th>
                   </tr>

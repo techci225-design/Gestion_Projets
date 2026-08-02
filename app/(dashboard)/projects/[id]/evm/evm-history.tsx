@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 import { Trash2, Save, Edit2, X } from 'lucide-react'
+import { getDisplayCurrency } from '@/lib/utils/currency'
 import { deleteEvmSnapshot, updateEvmSnapshotNotes } from '@/lib/actions/evm-snapshots.actions'
 import { formatCurrency } from '@/lib/utils/format-currency'
 
@@ -70,7 +71,15 @@ function EditableNotes({ snapshotId, projectId, initialNotes }: { snapshotId: st
   )
 }
 
-export function EvmHistory({ projectId, snapshots, currentSummary }: { projectId: string, snapshots: any[], currentSummary: any }) {
+interface EvmHistoryProps {
+  projectId: string
+  snapshots: any[]
+  currentSummary: any
+  currency?: string
+}
+
+export function EvmHistory({ projectId, snapshots, currentSummary, currency }: EvmHistoryProps) {
+  const displayCurrency = getDisplayCurrency(currency)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
 
   const handleDelete = async (id: string) => {
@@ -96,9 +105,9 @@ export function EvmHistory({ projectId, snapshots, currentSummary }: { projectId
             <thead>
               <tr className="bg-surface-dim border-b border-border">
                 <th className="p-4 text-xs font-medium text-text-secondary w-32">Date d'arrêté</th>
-                <th className="p-4 text-xs font-medium text-text-secondary w-32 text-right">BAC (FCFA)</th>
-                <th className="p-4 text-xs font-medium text-text-secondary w-32 text-right">EAC (FCFA)</th>
-                <th className="p-4 text-xs font-medium text-text-secondary w-32 text-right">VAC (FCFA)</th>
+                <th className="p-4 text-xs font-medium text-text-secondary w-32 text-right">BAC ({displayCurrency})</th>
+                <th className="p-4 text-xs font-medium text-text-secondary w-32 text-right">EAC ({displayCurrency})</th>
+                <th className="p-4 text-xs font-medium text-text-secondary w-32 text-right">VAC ({displayCurrency})</th>
                 <th className="p-4 text-xs font-medium text-text-secondary w-20 text-center">CPI</th>
                 <th className="p-4 text-xs font-medium text-text-secondary w-20 text-center">SPI</th>
                 <th className="p-4 text-xs font-medium text-text-secondary">Notes</th>

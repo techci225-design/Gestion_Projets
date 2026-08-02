@@ -43,6 +43,7 @@ export default async function ProcurementPage({ params }: { params: Promise<{ id
         <ProcurementClient 
           projectId={id} 
           initialData={procurementPlan} 
+          currency={project.currency}
         />
       </div>
     </div>

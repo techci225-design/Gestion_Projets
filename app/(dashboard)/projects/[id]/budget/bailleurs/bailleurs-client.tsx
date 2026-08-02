@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { formatCurrency } from '@/lib/utils/format-currency'
+import { getDisplayCurrency } from '@/lib/utils/currency'
 import { Plus } from 'lucide-react'
 
 function AlertBadge({ value }: { value: number }) {
@@ -33,9 +34,10 @@ function ProgressBar({ percentage }: { percentage: number }) {
 import { AddBailleurModal } from './add-bailleur-modal'
 import { Edit2 } from 'lucide-react'
 
-export function BailleursClient({ projectId, bailleurs }: { projectId: string, bailleurs: any[] }) {
+export function BailleursClient({ projectId, bailleurs, currency = 'XOF' }: { projectId: string, bailleurs: any[], currency?: string }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingBailleur, setEditingBailleur] = useState<any>(null)
+  const displayCurrency = getDisplayCurrency(currency)
 
   const handleOpenEdit = (item: any) => {
     setEditingBailleur(item)
@@ -70,9 +72,9 @@ export function BailleursClient({ projectId, bailleurs }: { projectId: string, b
               <tr className="bg-surface-dim border-b border-border">
                 <th className="p-4 text-xs font-medium text-text-secondary">Bailleur</th>
                 <th className="p-4 text-xs font-medium text-text-secondary">Type</th>
-                <th className="p-4 text-xs font-medium text-text-secondary text-right">Montant Engagé (FCFA)</th>
-                <th className="p-4 text-xs font-medium text-text-secondary text-right">Total Décaissé (FCFA)</th>
-                <th className="p-4 text-xs font-medium text-text-secondary text-right">Solde Restant (FCFA)</th>
+                <th className="p-4 text-xs font-medium text-text-secondary text-right">Montant Engagé ({displayCurrency})</th>
+                <th className="p-4 text-xs font-medium text-text-secondary text-right">Total Décaissé ({displayCurrency})</th>
+                <th className="p-4 text-xs font-medium text-text-secondary text-right">Solde Restant ({displayCurrency})</th>
                 <th className="p-4 text-xs font-medium text-text-secondary w-40">Taux d'utilisation</th>
                 <th className="p-4 w-12"></th>
               </tr>

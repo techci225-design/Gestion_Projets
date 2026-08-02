@@ -1,13 +1,13 @@
 'use client'
 
 import React, { useState } from 'react'
-import { X } from 'lucide-react'
+import { getDisplayCurrency } from '@/lib/utils/currency'
 import { createBudgetLine } from '@/lib/actions/budget.actions'
 import { useRouter } from 'next/navigation'
 
 export function AddBudgetModal({ 
   projectId,
-  currency = 'FCFA',
+  currency = 'XOF',
   onClose
 }: { 
   projectId: string
@@ -105,7 +105,7 @@ export function AddBudgetModal({
               <input type="number" min="0" step="any" name="quantity" value={qty} onChange={(e) => setQty(e.target.value ? Number(e.target.value) : '')} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">Coût unitaire ({currency})</label>
+              <label className="block text-sm font-medium text-text-primary mb-1">Coût unitaire ({getDisplayCurrency(currency)})</label>
               <input type="number" min="0" step="any" name="unit_cost" value={unitCost} onChange={(e) => setUnitCost(e.target.value ? Number(e.target.value) : '')} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
           </div>

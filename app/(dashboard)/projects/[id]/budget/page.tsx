@@ -18,7 +18,7 @@ export default async function BudgetPage({
   let fundingData = null
   let operationsData = null
   let logframeData = null
-  let projectCurrency = 'FCFA'
+  let projectCurrency = 'XOF'
   let queryError = null
 
   try {
@@ -76,7 +76,7 @@ export default async function BudgetPage({
       .select('currency')
       .eq('id', id)
       .single()
-    projectCurrency = getDisplayCurrency(resProject.data?.currency)
+    projectCurrency = resProject.data?.currency || 'XOF'
 
     queryError = res.error || resFunding.error || resRawBudget.error || resOps.error || resLogframe.error || resProject.error
   } catch (err: any) {

@@ -3,18 +3,24 @@
 import { useState, useTransition } from 'react'
 import { X } from 'lucide-react'
 import { updateEvmTask } from '@/lib/actions/evm.actions'
+import { getDisplayCurrency } from '@/lib/utils/currency'
+
+interface EditEvmTaskModalProps {
+  isOpen: boolean
+  onClose: () => void
+  projectId: string
+  task: any
+  currency?: string
+}
 
 export function EditEvmTaskModal({ 
   isOpen, 
   onClose, 
   projectId,
-  task
-}: { 
-  isOpen: boolean, 
-  onClose: () => void, 
-  projectId: string,
-  task: any
-}) {
+  task,
+  currency
+}: EditEvmTaskModalProps) {
+  const displayCurrency = getDisplayCurrency(currency)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [percent, setPercent] = useState(task.percent_complete || 0)
@@ -125,7 +131,7 @@ export function EditEvmTaskModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">Budget Alloué (FCFA)</label>
+              <label className="block text-sm font-medium text-text-primary mb-1">Budget Alloué ({displayCurrency})</label>
               <input
                 name="budget_allocated"
                 type="number"
@@ -153,7 +159,7 @@ export function EditEvmTaskModal({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">Coût Réel (FCFA)</label>
+              <label className="block text-sm font-medium text-text-primary mb-1">Coût Réel ({displayCurrency})</label>
               <input
                 name="actual_cost"
                 type="number"

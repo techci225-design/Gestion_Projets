@@ -251,8 +251,8 @@ export function EvmClient({
                         </div>
                       </div>
                     </td>
-                    <td className="p-4 text-right font-medium">{formatCurrency(item.budget_allocated)}</td>
-                    <td className="p-4 text-right font-medium">{formatCurrency(item.actual_cost)}</td>
+                    <td className="p-4 text-right font-medium">{formatCurrency(item.budget_allocated, project?.currency, true)}</td>
+                    <td className="p-4 text-right font-medium">{formatCurrency(item.actual_cost, project?.currency, true)}</td>
                     <td className="p-4 text-center">
                       <AlertBadge value={Number(item.cpi)} />
                     </td>
@@ -314,12 +314,13 @@ export function EvmClient({
         )}
       </div>
 
-      <EvmHistory projectId={projectId} snapshots={snapshots} currentSummary={summary} />
+      <EvmHistory projectId={projectId} snapshots={snapshots} currentSummary={summary} currency={project?.currency} />
 
       <AddEvmTaskModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         projectId={projectId} 
+        currency={project?.currency}
       />
 
       {taskToEdit && (
@@ -328,6 +329,7 @@ export function EvmClient({
           onClose={() => setTaskToEdit(null)} 
           projectId={projectId}
           task={taskToEdit}
+          currency={project?.currency}
         />
       )}
     </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { X, CheckCircle2, Sparkles, AlertTriangle, AlertOctagon } from 'lucide-react'
+import { getDisplayCurrency } from '@/lib/utils/currency'
 import { createOperation, updateOperation } from '@/lib/actions/budget.actions'
 import { useRouter } from 'next/navigation'
 
@@ -9,7 +10,7 @@ export function AddOperationModal({
   projectId,
   budgetLines,
   fundingSources,
-  currency = 'FCFA',
+  currency = 'XOF',
   editItem,
   onClose
 }: { 
@@ -279,7 +280,7 @@ export function AddOperationModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1">Coût Prévu ({currency}) *</label>
+            <label className="block text-sm font-medium text-text-primary mb-1">Coût Prévu ({getDisplayCurrency(currency)}) *</label>
             <div className="relative">
               <input required type="number" min="0" step="any" value={plannedCostVal || ''} onChange={e => { setPlannedCostVal(Number(e.target.value)); setAnomalyLevel(0) }} className="w-full border border-border rounded-lg px-3 py-2.5 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-right" placeholder="0" />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary text-sm">{currency}</span>
@@ -288,7 +289,7 @@ export function AddOperationModal({
 
           {status === 'decaisse' && (
             <div className="animate-in fade-in slide-in-from-top-2">
-              <label className="block text-sm font-medium text-text-primary mb-1">Coût Réel ({currency})</label>
+              <label className="block text-sm font-medium text-text-primary mb-1">Coût Réel ({getDisplayCurrency(currency)})</label>
               <div className="relative">
                 <input type="number" min="0" step="any" value={actualCostVal || ''} onChange={e => { setActualCostVal(Number(e.target.value)); setAnomalyLevel(0) }} className="w-full border border-border rounded-lg px-3 py-2.5 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-right" placeholder="0" />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary text-sm">{currency}</span>

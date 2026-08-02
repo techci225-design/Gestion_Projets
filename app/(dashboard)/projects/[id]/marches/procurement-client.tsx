@@ -12,13 +12,17 @@ import { AttachmentsTab } from '@/components/dashboard/AttachmentsTab'
 interface ProcurementClientProps {
   projectId: string
   initialData: ProcurementItem[]
+  currency?: string
 }
 
 const MARKET_TYPES = ['Travaux', 'Biens', 'Services de Consultants', 'Services Autres']
 const METHODS = ['AOI (Appel d\'Offres International)', 'AON (Appel d\'Offres National)', 'SFQC (Sélection Fondée sur la Qualité et Coût)', 'SMC (Sélection Moindre Coût)', 'Entente Directe']
 const STATUSES = ['Planifié', 'En cours', 'Attribué', 'Annulé']
 
-export function ProcurementClient({ projectId, initialData }: ProcurementClientProps) {
+import { getDisplayCurrency } from '@/lib/utils/currency'
+
+export function ProcurementClient({ projectId, initialData, currency }: ProcurementClientProps) {
+  const displayCurrency = getDisplayCurrency(currency)
   const [data, setData] = useState<ProcurementItem[]>(initialData)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<ProcurementItem | null>(null)
@@ -340,7 +344,7 @@ export function ProcurementClient({ projectId, initialData }: ProcurementClientP
 
                 <div className="col-span-1 md:col-span-2">
                   <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Montant Estimé (FCFA) <span className="text-red-500">*</span>
+                    Montant Estimé ({displayCurrency}) <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"

@@ -13,9 +13,13 @@ interface PtbaClientProps {
   currentYear: number
   initialData: PtbaActivity[]
   logframeActivities: LogframeItem[]
+  currency?: string
 }
 
-export function PtbaClient({ projectId, currentYear, initialData, logframeActivities }: PtbaClientProps) {
+import { getDisplayCurrency } from '@/lib/utils/currency'
+
+export function PtbaClient({ projectId, currentYear, initialData, logframeActivities, currency }: PtbaClientProps) {
+  const displayCurrency = getDisplayCurrency(currency)
   const router = useRouter()
   const [data, setData] = useState<PtbaActivity[]>(initialData)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
@@ -356,7 +360,7 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
 
                 <div>
                   <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Budget Prévu (FCFA) <span className="text-red-500">*</span>
+                    Budget Prévu ({displayCurrency}) <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"

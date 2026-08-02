@@ -5,6 +5,7 @@ import { Plus, Download, CheckCircle2, WalletCards, Trash2, AlertTriangle, Penci
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { AddBudgetModal } from './add-budget-modal'
 import { EditBudgetModal } from './edit-budget-modal'
+import { getDisplayCurrency } from '@/lib/utils/currency'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { deleteBudgetLine } from '@/lib/actions/budget.actions'
 
@@ -26,7 +27,8 @@ export interface BudgetConsumption {
   funding_source_id?: string
 }
 
-export function BudgetClient({ items, fundingSources, operations, objectifsSpecifiques = [], projectId, currency = 'FCFA', isNewProject }: { items: BudgetConsumption[], fundingSources?: any[], operations?: any[], objectifsSpecifiques?: string[], projectId: string, currency?: string, isNewProject?: boolean }) {
+export function BudgetClient({ items, fundingSources, operations, objectifsSpecifiques = [], projectId, currency = 'XOF', isNewProject }: { items: BudgetConsumption[], fundingSources?: any[], operations?: any[], objectifsSpecifiques?: string[], projectId: string, currency?: string, isNewProject?: boolean }) {
+  const displayCurrency = getDisplayCurrency(currency)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingBudgetLine, setEditingBudgetLine] = useState<BudgetConsumption | null>(null)
   const searchParams = useSearchParams()

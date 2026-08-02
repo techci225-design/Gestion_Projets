@@ -55,6 +55,7 @@ export default async function PtbaPage({ params, searchParams }: { params: Promi
           currentYear={currentYear} 
           initialData={ptbaActivities} 
           logframeActivities={logframeActivities}
+          currency={project.currency}
         />
       </div>
     </div>
