@@ -200,15 +200,15 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
               <div className="space-y-2 text-sm text-text-secondary">
                 <div className="flex justify-between">
                   <span>Engagé:</span>
-                  <span className="font-medium text-text-primary">{formatCurrency(Number(fs.total_engage))}</span>
+                  <span className="font-medium text-text-primary">{formatCurrency(Number(fs.total_engage), currency)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Décaissé:</span>
-                  <span className="font-medium text-text-primary">{formatCurrency(Number(fs.total_decaisse))}</span>
+                  <span className="font-medium text-text-primary">{formatCurrency(Number(fs.total_decaisse), currency)}</span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-border mt-2">
                   <span>Solde restant:</span>
-                  <span className="font-bold text-primary">{formatCurrency(Number(fs.solde_restant))}</span>
+                  <span className="font-bold text-primary">{formatCurrency(Number(fs.solde_restant), currency)}</span>
                 </div>
               </div>
             </div>
