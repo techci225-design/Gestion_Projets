@@ -453,7 +453,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                     <div key={fs.id} className="p-4 bg-white border border-border shadow-sm rounded-lg flex justify-between items-center group">
                       <div>
                         <h4 className="font-bold text-text-primary">{fs.name}</h4>
-                        <p className="text-sm font-mono text-text-secondary mt-1">Montant : {formatCurrency(Number(fs.amount_committed))}</p>
+                        <p className="text-sm font-mono text-text-secondary mt-1">Montant : {formatCurrency(Number(fs.amount_committed), project?.currency, true)}</p>
                       </div>
                       {canEdit && (
                         <button 
@@ -538,7 +538,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                     <tr>
                       <th className="p-3">Code</th>
                       <th className="p-3">Libellé</th>
-                      <th className="p-3 text-right">Budget Alloué (FCFA)</th>
+                      <th className="p-3 text-right">Budget Alloué ({displayCurrency})</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border bg-white">
@@ -546,7 +546,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                       <tr key={line.id} className="hover:bg-slate-50">
                         <td className="p-3 font-medium text-text-primary">{line.code}</td>
                         <td className="p-3 text-text-secondary">{line.label}</td>
-                        <td className="p-3 text-right font-mono">{formatCurrency(Number(line.initial_allocated_amount))}</td>
+                        <td className="p-3 text-right font-mono">{formatCurrency(Number(line.initial_allocated_amount), project?.currency, true)}</td>
                       </tr>
                     ))}
                     {budgetLines.length === 0 && (
@@ -581,7 +581,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                       <th className="p-3">Code / Phase</th>
                       <th className="p-3">Description</th>
                       <th className="p-3">Responsable</th>
-                      <th className="p-3 text-right">Budget (FCFA)</th>
+                      <th className="p-3 text-right">Budget ({displayCurrency})</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border bg-white">
@@ -594,7 +594,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                         <td className="p-3 font-medium text-text-primary">{task.code}</td>
                         <td className="p-3 text-text-secondary max-w-xs truncate">{task.description}</td>
                         <td className="p-3 text-text-secondary">{task.responsible || '—'}</td>
-                        <td className="p-3 text-right font-mono">{formatCurrency(Number(task.budget_allocated))}</td>
+                        <td className="p-3 text-right font-mono">{formatCurrency(Number(task.budget_allocated), project?.currency, true)}</td>
                       </tr>
                     ))}
                     {wbsTasks.length === 0 && (
