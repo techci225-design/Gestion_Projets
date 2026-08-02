@@ -670,7 +670,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
       )}
       
       {isWbsModalOpen && (
-        <AddEvmTaskModal projectId={projectId} isOpen={isWbsModalOpen} onClose={() => setIsWbsModalOpen(false)} />
+        <AddEvmTaskModal projectId={projectId} isOpen={isWbsModalOpen} onClose={() => setIsWbsModalOpen(false)} currency={project?.currency} />
       )}
 
       {selectedWbsTask && (
