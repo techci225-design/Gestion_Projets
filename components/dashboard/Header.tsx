@@ -1,8 +1,10 @@
 'use client'
 
 import React from 'react'
-import { Bell, Search, Menu, Building2, ChevronDown } from 'lucide-react'
+import { Bell, Search, Menu, Building2, ChevronDown, LogOut } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { logout } from '@/app/(auth)/login/actions'
 import { NotificationBell } from './NotificationBell'
 import { GlobalSearch } from './GlobalSearch'
 import { useOrganization } from '@/lib/hooks/useOrganization'
@@ -14,6 +16,12 @@ interface HeaderProps {
 
 export function Header({ title, userFullName }: HeaderProps) {
   const { activeOrganization, organizations, setActiveOrganization, isLoading, isSuperAdmin } = useOrganization()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    await logout()
+    router.push('/login')
+  }
 
   return (
     <header className="h-16 flex items-center justify-between px-6 bg-surface border-b border-border sticky top-0 z-10 gap-4">
@@ -65,8 +73,27 @@ export function Header({ title, userFullName }: HeaderProps) {
         {activeOrganization && <GlobalSearch currentOrgId={activeOrganization.id} />}
         <NotificationBell />
         {userFullName && (
-          <div className="hidden md:flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold uppercase">
-            {userFullName.charAt(0)}
+          <div className="relative group hidden md:block">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold uppercase cursor-pointer hover:bg-primary/30 transition-colors">
+              {userFullName.charAt(0)}
+            </div>
+            
+            <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-border rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 py-2">
+              <div className="px-4 py-3 border-b border-border">
+                <p className="text-sm font-semibold text-text-primary truncate">{userFullName}</p>
+              </div>
+              <div className="py-1">
+                <Link href="/settings" className="flex items-center px-4 py-2 text-sm text-text-secondary hover:bg-surface-hover hover:text-primary transition-colors">
+                  Mon Profil
+                </Link>
+              </div>
+              <div className="border-t border-border py-1">
+                <button onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-danger hover:bg-danger/10 transition-colors">
+                  <LogOut className="w-4 h-4" />
+                  Déconnexion
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

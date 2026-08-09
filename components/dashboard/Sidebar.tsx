@@ -129,20 +129,6 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
           >
             <span>💬</span> Support TSBC
           </a>
-          <div className="flex items-center gap-3 justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold uppercase">
-                {userFullName.charAt(0)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-text-primary truncate">{userFullName}</p>
-                <Link href="/settings" className="text-xs text-text-secondary hover:text-primary transition-colors">Mon Profil</Link>
-              </div>
-            </div>
-            <button onClick={handleLogout} className="p-2 text-text-secondary hover:text-danger hover:bg-danger/10 rounded-lg transition-colors">
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
         </div>
       </aside>
 
