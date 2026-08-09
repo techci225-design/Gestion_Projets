@@ -485,93 +485,16 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
               </div>
             </div>
 
-            {/* 4. CARTES EXISTANTES */}
-            <div className="space-y-4 pt-6 border-t border-border">
-              <h3 className="text-xl font-bold text-text-primary">Détail par projet</h3>
-              {projects?.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-12 text-center bg-surface border border-border rounded-xl shadow-sm my-8">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-                    <Briefcase className="w-8 h-8 text-primary" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-text-primary mb-2">Bienvenue sur ProjetPilote !</h2>
-                  <p className="text-text-secondary max-w-md mx-auto mb-8">
-                    {canCreateProject
-                      ? "Commencez par créer votre premier projet bailleur pour accéder aux fonctionnalités de suivi financier et EVM."
-                      : "Aucun projet bailleur n'est disponible. Demandez à un administrateur d'en créer un."}
-                  </p>
-                  {canCreateProject && (
-                    <>
-                      <AddProjectModal />
-                      <a href="/import-excel" className="text-sm font-medium text-text-secondary hover:text-primary transition-colors mt-6 underline underline-offset-4">
-                        Ou importer depuis un fichier Excel existant
-                      </a>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {projectsData.map((project) => (
-                    <Link key={project.id} href={`/projects/${project.id}`}>
-                      <div className="bg-surface rounded-lg shadow-sm border border-border p-5 hover:border-primary/50 transition-colors cursor-pointer flex flex-col h-full group">
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wider mb-1 block">
-                              {project.code || 'SANS CODE'}
-                            </span>
-                            <h3 className="text-lg font-bold text-text-primary group-hover:text-primary transition-colors line-clamp-2">
-                              {project.name}
-                            </h3>
-                          </div>
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            project.status === 'actif' ? 'bg-success/10 text-success' : 
-                            project.status === 'clos' ? 'bg-text-tertiary/10 text-text-secondary' : 
-                            'bg-warning/10 text-warning'
-                          }`}>
-                            {project.status}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-4 text-sm text-text-secondary mb-6">
-                          <div className="flex items-center gap-1.5">
-                            <Calendar className="w-4 h-4" />
-                            <span>
-                              {project.start_date ? new Date(project.start_date).getFullYear() : 'N/A'} - {project.end_date ? new Date(project.end_date).getFullYear() : 'N/A'}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="mt-auto space-y-4">
-                          <div className="space-y-1.5">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-text-secondary">Consommation ({(project.pTauxConso * 100).toFixed(0)}%)</span>
-                              <span className="font-semibold">{formatCurrency(project.pTotalConsumed, project.currency, true)}</span>
-                            </div>
-                            <div className="w-full bg-surface-dim rounded-full h-2 overflow-hidden">
-                              <div 
-                                className={`h-full rounded-full ${project.pTauxConso >= 1 ? 'bg-danger' : project.pTauxConso >= 0.8 ? 'bg-warning' : 'bg-primary'}`} 
-                                style={{ width: `${Math.min(project.pTauxConso * 100, 100)}%` }}
-                              />
-                            </div>
-                            <div className="text-right text-xs text-text-tertiary">
-                              sur {formatCurrency(project.pTotalBudget, project.currency, true)}
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between pt-4 border-t border-border mt-4">
-                            <div className="flex items-center gap-2">
-                              <AlertBadge value={project.cpi} type="cpi" />
-                              <AlertBadge value={project.spi} type="spi" />
-                            </div>
-                            <div className="text-sm font-medium text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                              Gérer <ChevronRight className="w-4 h-4" />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
+            {/* 4. LIEN VERS TOUS LES PROJETS */}
+            <div className="flex justify-center pt-6 border-t border-border mt-8">
+              <Link 
+                href="/projects/list" 
+                className="flex items-center gap-2 px-6 py-3 bg-surface border border-border hover:border-primary/50 rounded-xl text-text-primary font-medium hover:text-primary transition-all shadow-sm hover:shadow-md"
+              >
+                <Briefcase className="w-5 h-5" />
+                Voir tous les projets en détail
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </Link>
             </div>
           </>
         )}

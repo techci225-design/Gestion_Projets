@@ -82,8 +82,20 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
               }`}
             >
               {isProjectRoute ? <ArrowLeft className="w-4 h-4" /> : <LayoutGrid className="w-4 h-4" />}
-              {isProjectRoute ? 'Retour au Portefeuille' : 'Projets'}
+              {isProjectRoute ? 'Retour au Portefeuille' : 'Tableau de bord'}
             </Link>
+
+            {!isProjectRoute && (
+              <Link 
+                href="/projects/list"
+                className={`flex items-center gap-3 px-3 py-2 mt-1 rounded-md text-sm font-medium transition-colors ${
+                  pathname === '/projects/list' ? 'bg-primary/10 text-primary' : 'text-text-secondary hover:text-text-primary hover:bg-surface-dim'
+                }`}
+              >
+                <BriefcaseBusiness className="w-4 h-4" />
+                Projets
+              </Link>
+            )}
 
             {/* Sub-menu if a project is selected */}
             {isProjectRoute && (
