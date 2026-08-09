@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { Search, Loader2, Clock, MapPin, Briefcase, AlertTriangle, ListTodo, X } from 'lucide-react'
+import { Search, Loader2, Clock, MapPin, Briefcase, AlertTriangle, ListTodo, X, LayoutGrid, FolderTree, Settings, CalendarDays, Wallet, Receipt, FileUp, TrendingUp, ShoppingCart, ShieldAlert, Home } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 
 export function GlobalSearch({ currentOrgId }: { currentOrgId: string }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -15,6 +15,25 @@ export function GlobalSearch({ currentOrgId }: { currentOrgId: string }) {
   const searchInputRef = useRef<HTMLInputElement>(null)
   const supabase = createClient()
   const router = useRouter()
+  const pathname = usePathname()
+
+  const segments = pathname.split('/')
+  const isProjectRoute = segments[1] === 'projects' && segments.length > 2
+  const projectId = isProjectRoute ? segments[2] : null
+
+  const projectLinks = [
+    { name: 'Vue d\'ensemble', href: `/projects/${projectId}`, icon: 'Home' },
+    { name: 'Configuration', href: `/projects/${projectId}/parametres`, icon: 'Settings' },
+    { name: 'Cadre Logique', href: `/projects/${projectId}/logframe`, icon: 'FolderTree' },
+    { name: 'PTBA', href: `/projects/${projectId}/ptba`, icon: 'CalendarDays' },
+    { name: 'Budget', href: `/projects/${projectId}/budget`, icon: 'Wallet' },
+    { name: 'Journal des opérations', href: `/projects/${projectId}/budget/journal`, icon: 'Receipt' },
+    { name: 'Import Relevé', href: `/projects/${projectId}/budget/import-releve`, icon: 'FileUp' },
+    { name: 'Suivi EVM (Tâches)', href: `/projects/${projectId}/evm`, icon: 'TrendingUp' },
+    { name: 'Passation des Marchés', href: `/projects/${projectId}/marches`, icon: 'ShoppingCart' },
+    { name: 'Risques', href: `/projects/${projectId}/risques`, icon: 'AlertTriangle' },
+    { name: 'Journal d\'Audit', href: `/projects/${projectId}/audit`, icon: 'ShieldAlert' },
+  ]
 
   useEffect(() => {
     // Keyboard shortcut CMD+K / CTRL+K
@@ -62,13 +81,33 @@ export function GlobalSearch({ currentOrgId }: { currentOrgId: string }) {
 
   const performSearch = async (searchQuery: string) => {
     setIsSearching(true)
+    let combinedResults: any[] = []
+
+    // 1. Check for navigation modules (Command Palette behavior)
+    if (projectId) {
+      const navMatches = projectLinks.filter(link => 
+        link.name.toLowerCase().includes(searchQuery.toLowerCase())
+      ).map(link => ({
+        type: 'navigation',
+        title: link.name,
+        subtitle: 'Aller à ce module',
+        href: link.href,
+        iconName: link.icon
+      }))
+      combinedResults = [...navMatches]
+    }
+
+    // 2. Search database
     const { data, error } = await supabase.rpc('search_global', {
       query_text: searchQuery,
       org_id: currentOrgId
     })
+    
     if (!error && data) {
-      setResults(data)
+      combinedResults = [...combinedResults, ...data]
     }
+    
+    setResults(combinedResults)
     setIsSearching(false)
   }
 
@@ -81,7 +120,9 @@ export function GlobalSearch({ currentOrgId }: { currentOrgId: string }) {
     setIsOpen(false)
     
     // Navigate based on type
-    if (item.type === 'operation') {
+    if (item.type === 'navigation') {
+      router.push(item.href)
+    } else if (item.type === 'operation') {
       router.push(`/projects/${item.project_id}/budget/journal`)
     } else if (item.type === 'marche') {
       router.push(`/projects/${item.project_id}/marches`)
@@ -89,25 +130,47 @@ export function GlobalSearch({ currentOrgId }: { currentOrgId: string }) {
       router.push(`/projects/${item.project_id}/risques`)
     } else if (item.type === 'tache_evm') {
       router.push(`/projects/${item.project_id}/parametres`)
+    } else if (item.type === 'projet') {
+      router.push(`/projects/${item.project_id}`)
     }
   }
 
-  const getIcon = (type: string) => {
+  const getIcon = (type: string, iconName?: string) => {
+    if (type === 'navigation') {
+      switch (iconName) {
+        case 'Home': return <Home className="w-5 h-5 text-text-primary" />
+        case 'Settings': return <Settings className="w-5 h-5 text-text-primary" />
+        case 'FolderTree': return <FolderTree className="w-5 h-5 text-text-primary" />
+        case 'CalendarDays': return <CalendarDays className="w-5 h-5 text-text-primary" />
+        case 'Wallet': return <Wallet className="w-5 h-5 text-text-primary" />
+        case 'Receipt': return <Receipt className="w-5 h-5 text-text-primary" />
+        case 'FileUp': return <FileUp className="w-5 h-5 text-text-primary" />
+        case 'TrendingUp': return <TrendingUp className="w-5 h-5 text-text-primary" />
+        case 'ShoppingCart': return <ShoppingCart className="w-5 h-5 text-text-primary" />
+        case 'AlertTriangle': return <AlertTriangle className="w-5 h-5 text-text-primary" />
+        case 'ShieldAlert': return <ShieldAlert className="w-5 h-5 text-text-primary" />
+        default: return <LayoutGrid className="w-5 h-5 text-text-primary" />
+      }
+    }
+    
     switch (type) {
       case 'operation': return <Briefcase className="w-5 h-5 text-blue-500" />
       case 'marche': return <ListTodo className="w-5 h-5 text-purple-500" />
       case 'risque': return <AlertTriangle className="w-5 h-5 text-red-500" />
       case 'tache_evm': return <MapPin className="w-5 h-5 text-green-500" />
+      case 'projet': return <LayoutGrid className="w-5 h-5 text-indigo-500" />
       default: return <Search className="w-5 h-5 text-gray-500" />
     }
   }
 
   const getTypeLabel = (type: string) => {
     switch (type) {
+      case 'navigation': return 'Navigation'
       case 'operation': return 'Opération'
       case 'marche': return 'Marché'
       case 'risque': return 'Risque'
       case 'tache_evm': return 'Tâche WBS'
+      case 'projet': return 'Projet'
       default: return type
     }
   }
@@ -140,7 +203,7 @@ export function GlobalSearch({ currentOrgId }: { currentOrgId: string }) {
                 ref={searchInputRef}
                 value={query}
                 onChange={e => setQuery(e.target.value)}
-                placeholder="Rechercher une opération, marché, risque..."
+                placeholder="Rechercher un module, projet, opération..."
                 className="flex-1 bg-transparent border-none outline-none text-lg text-text-primary placeholder:text-text-tertiary"
               />
               {query && (
@@ -173,7 +236,7 @@ export function GlobalSearch({ currentOrgId }: { currentOrgId: string }) {
                         className="w-full flex items-start gap-4 p-3 bg-white hover:bg-primary/5 rounded-lg border border-transparent hover:border-primary/20 transition-colors text-left"
                       >
                         <div className="mt-0.5 p-1.5 bg-surface-dim rounded-md">
-                          {getIcon(item.type)}
+                          {getIcon(item.type, item.iconName)}
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="text-sm font-medium text-text-primary truncate">{item.title}</h4>
