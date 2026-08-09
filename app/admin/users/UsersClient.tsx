@@ -161,9 +161,13 @@ export function UsersClient({ users }: { users: any[] }) {
                     </span>
                   </td>
                   <td className="px-3 py-3 text-center">
-                    {user.pending_invitations > 0 ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[10px] font-medium border border-amber-200">
-                        <Mail className="w-3 h-3" /> {user.pending_invitations}
+                    {user.total_invitations > 0 ? (
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                        user.pending_invitations > 0 
+                          ? 'bg-amber-50 text-amber-700 border-amber-200' 
+                          : 'bg-gray-100 text-gray-700 border-gray-200'
+                      }`}>
+                        <Mail className="w-3 h-3" /> {user.total_invitations}
                       </span>
                     ) : (
                       <span className="text-gray-400 text-xs">-</span>

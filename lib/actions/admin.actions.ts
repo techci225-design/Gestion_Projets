@@ -103,6 +103,7 @@ export async function getAdminUsers() {
   const formattedData = data.map((p: any) => {
     const orgMember = p.organization_members && p.organization_members.length > 0 ? p.organization_members[0] : null
     const pendingInvitations = p.invitations ? p.invitations.filter((i: any) => i.status === 'pending').length : 0
+    const totalInvitations = p.invitations ? p.invitations.length : 0
     return {
       id: p.id,
       full_name: p.full_name,
@@ -114,7 +115,8 @@ export async function getAdminUsers() {
       organization_plan: orgMember?.organizations?.plan || null,
       org_role: orgMember?.org_role || null,
       nb_projects: p.project_members && p.project_members.length > 0 ? p.project_members[0].count : 0,
-      pending_invitations: pendingInvitations
+      pending_invitations: pendingInvitations,
+      total_invitations: totalInvitations
     }
   })
   
