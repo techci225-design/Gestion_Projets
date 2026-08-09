@@ -147,12 +147,12 @@ export function UsersClient({ users }: { users: any[] }) {
                     <span className={`px-2 py-1 rounded-full text-[10px] font-medium border ${
                       user.org_role === 'owner' ? 'bg-purple-50 text-purple-700 border-purple-200' :
                       user.org_role === 'admin' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                      user.org_role ? 'bg-gray-50 text-gray-700 border-gray-200' :
+                      user.org_role === 'member' ? 'bg-gray-50 text-gray-700 border-gray-200' :
                       'bg-transparent text-gray-400 border-transparent'
                     }`}>
                       {user.org_role === 'owner' ? 'Propriétaire' : 
                        user.org_role === 'admin' ? 'Admin' : 
-                       user.org_role === 'user' ? 'Utilisateur' : '-'}
+                       user.org_role === 'member' ? 'Membre' : '-'}
                     </span>
                   </td>
                   <td className="px-3 py-3 text-center">
