@@ -7,7 +7,7 @@ import { logout } from '@/app/(auth)/login/actions'
 import { 
   BriefcaseBusiness, LayoutGrid, Settings, FolderTree, 
   CalendarDays, Wallet, Receipt, TrendingUp, ShoppingCart, 
-  AlertTriangle, Users, Home, MoreHorizontal, ShieldAlert, X, LogOut, Landmark, FileUp
+  AlertTriangle, Users, Home, MoreHorizontal, ShieldAlert, X, LogOut, Landmark, FileUp, ArrowLeft
 } from 'lucide-react'
 
 interface SidebarProps {
@@ -81,8 +81,8 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
                 pathname === '/projects' ? 'bg-primary/10 text-primary' : 'text-text-secondary hover:text-text-primary hover:bg-surface-dim'
               }`}
             >
-              <LayoutGrid className="w-4 h-4" />
-              Projets
+              {isProjectRoute ? <ArrowLeft className="w-4 h-4" /> : <LayoutGrid className="w-4 h-4" />}
+              {isProjectRoute ? 'Retour au Portefeuille' : 'Projets'}
             </Link>
 
             {/* Sub-menu if a project is selected */}
