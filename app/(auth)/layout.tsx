@@ -1,4 +1,5 @@
 import { BriefcaseBusiness, Calendar, Users, TrendingUp, ShieldCheck, Heart, Shield, Headphones } from 'lucide-react'
+import ScaleWrapper from './ScaleWrapper'
 
 export default function AuthLayout({
   children,
@@ -6,23 +7,13 @@ export default function AuthLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex min-h-[100dvh] relative overflow-auto bg-slate-900 min-w-[1024px]">
-      {/* Global Background Image with strong overlay */}
-      <div 
-        className="absolute inset-0 bg-cover bg-[80%_center] md:bg-center bg-no-repeat z-0 min-w-[1024px]"
-        style={{ backgroundImage: 'url("/bridge-bg.jpg")' }}
-      >
-        <div className="absolute inset-0 bg-[#0f172a]/85 mix-blend-multiply"></div>
-        {/* Subtle gradient to highlight the left text */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#030712]/90 to-transparent"></div>
-      </div>
-
-      <div className="relative z-10 w-full max-w-[1400px] mx-auto flex flex-row items-center justify-between p-8 md:p-12 gap-12 min-h-screen">
+    <ScaleWrapper>
+      <div className="relative z-10 w-full max-w-[1400px] mx-auto flex flex-row items-center justify-between p-6 md:p-8 lg:p-12 gap-8 lg:gap-12 h-full">
         
         {/* Left Column (Text & Features) - Always visible */}
-        <div className="flex flex-col flex-1 max-w-2xl text-white mt-8">
+        <div className="flex flex-col flex-1 max-w-2xl text-white py-4 h-full max-h-[750px] justify-center">
           {/* Top Logo */}
-          <div className="flex items-center gap-4 mb-16">
+          <div className="flex items-center gap-4 mb-8 lg:mb-12">
             <div className="flex items-center justify-center bg-white rounded-lg p-2.5">
               <div className="flex items-end gap-0.5">
                 <div className="w-2.5 h-6 bg-orange-500 rounded-sm"></div>
@@ -39,12 +30,12 @@ export default function AuthLayout({
           </div>
 
           {/* Main Headline */}
-          <h2 className="text-5xl font-extrabold tracking-tight mb-6 leading-tight">
+          <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight mb-4 lg:mb-6 leading-tight">
             Pilotez vos projets <br />
             <span className="text-orange-500">avec efficacité</span>
           </h2>
           
-          <p className="text-lg text-gray-300 mb-12 max-w-lg leading-relaxed">
+          <p className="text-base lg:text-lg text-gray-300 mb-8 lg:mb-12 max-w-lg leading-relaxed">
             La solution intelligente de gestion de projets pour les administrations, les entreprises publiques et les PME.
           </p>
 
@@ -69,7 +60,7 @@ export default function AuthLayout({
           </div>
 
           {/* Bottom Footer */}
-          <div className="mt-16 pt-8 border-t border-white/10 flex items-center justify-between text-sm text-gray-400">
+          <div className="mt-12 lg:mt-16 pt-6 lg:pt-8 border-t border-white/10 flex items-center justify-between text-sm text-gray-400">
             <div className="flex items-center gap-6">
               <span className="flex items-center gap-2"><Shield className="w-4 h-4" /> Sécurisé</span>
               <span className="flex items-center gap-2"><Headphones className="w-4 h-4" /> Support 24/7</span>
@@ -84,6 +75,6 @@ export default function AuthLayout({
         </div>
 
       </div>
-    </div>
+    </ScaleWrapper>
   )
 }

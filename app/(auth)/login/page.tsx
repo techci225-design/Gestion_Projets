@@ -72,12 +72,12 @@ export default function LoginPage() {
     <div className="bg-white w-full rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col items-center">
       
       {/* Form Content Wrapper */}
-      <div className="w-full px-8 py-10 sm:px-12 pt-12 flex flex-col items-center">
+      <div className="w-full px-8 py-8 sm:px-12 pt-8 lg:pt-10 flex flex-col items-center">
         
         {/* Header */}
-        <div className="text-center mb-10 w-full flex flex-col items-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-orange-500/30 text-white">
-            <BriefcaseBusiness className="w-8 h-8" />
+        <div className="text-center mb-8 w-full flex flex-col items-center">
+          <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg shadow-orange-500/30 text-white">
+            <BriefcaseBusiness className="w-7 h-7" />
           </div>
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
             Smart-Project-Manager
@@ -85,7 +85,7 @@ export default function LoginPage() {
           <p className="text-sm font-medium text-slate-500 mt-1">
             Plateforme de gestion de projets
           </p>
-          <div className="h-1 w-12 bg-orange-500 rounded-full mt-4"></div>
+          <div className="h-1 w-12 bg-orange-500 rounded-full mt-3"></div>
         </div>
 
         {/* Error Message */}
@@ -118,7 +118,7 @@ export default function LoginPage() {
         ) : null}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="w-full space-y-5">
+        <form onSubmit={handleSubmit} className="w-full space-y-4 lg:space-y-5">
           
           <div className="space-y-1.5">
             <label htmlFor="email" className="block text-sm font-bold text-slate-700 flex items-center gap-2">
@@ -184,7 +184,7 @@ export default function LoginPage() {
       </div>
 
       {/* Footer Block */}
-      <div className="w-full bg-slate-50 border-t border-slate-100 p-6 flex justify-center mt-2">
+      <div className="w-full bg-slate-50 border-t border-slate-100 p-5 flex justify-center mt-0 lg:mt-2">
         <p className="text-sm font-medium text-slate-600 flex items-center gap-2">
           <BriefcaseBusiness className="w-4 h-4 text-slate-400" /> Pas encore de compte ?{' '}
           <Link href="/register" className="font-bold text-orange-600 hover:text-orange-700">
