@@ -89,11 +89,13 @@ export async function sendInvitation(payload: {
 
   const token = invitation.token
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
   // Send via Supabase native invite system
   const { data, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(
     payload.email,
     {
-      redirectTo: `https://gestion-projets-e3uj.vercel.app/invite/${token}`,
+      redirectTo: `${siteUrl}/invite/${token}`,
       data: { invitation_token: token }
     }
   )
@@ -107,7 +109,8 @@ export async function sendInvitation(payload: {
       const { error: magicLinkError } = await adminClient.auth.signInWithOtp({
         email: payload.email,
         options: {
-          emailRedirectTo: `https://gestion-projets-e3uj.vercel.app/invite/${token}`,
+          emailRedirectTo: `${siteUrl}/invite/${token}`,
+          data: { invitation_token: token }
         }
       })
       
