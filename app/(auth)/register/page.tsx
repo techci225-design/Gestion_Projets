@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { BriefcaseBusiness, Lock, Eye, EyeOff } from 'lucide-react'
 import { z } from 'zod'
@@ -111,178 +112,194 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="bg-surface w-full rounded-lg shadow-sm sm:shadow-lg p-6 sm:p-8 max-w-md mx-auto my-auto relative overflow-hidden">
+    <div className="bg-white w-full rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col items-center">
       
-      {/* Header */}
-      <div className="text-center mb-6">
-        <div className="flex items-center justify-center gap-2 mb-1 text-primary">
-          <BriefcaseBusiness className="w-8 h-8" />
-          <h1 className="text-2xl font-bold tracking-tight">ProjetPilote</h1>
-        </div>
-        <p className="text-text-secondary text-sm">
-          Pilotage de vos projets bailleurs
-        </p>
-      </div>
-
-      {/* Error Message */}
-      {error === 'SIGNUPS_DISABLED' ? (
-        <div className="mb-6 bg-danger/10 border border-danger/20 text-danger text-sm p-4 rounded-lg flex flex-col gap-3">
-          <p className="font-semibold">Les inscriptions sont temporairement suspendues.</p>
-          <p>Contactez TSBC pour créer votre accès :<br/>tsbcafrique@yahoo.fr / +225 07 07 36 30 20</p>
-          <a href="mailto:tsbcafrique@yahoo.fr" className="bg-danger text-white text-center py-2 rounded-md hover:bg-danger/90 font-medium transition-colors">
-            Contacter TSBC
-          </a>
-        </div>
-      ) : error ? (
-        <div className="mb-6 bg-danger/10 border border-danger/20 text-danger text-sm p-3 rounded-lg flex items-center justify-between">
-          <span>{error}</span>
-          {error.includes('Connectez-vous') && (
-            <a href="/login" className="font-bold underline ml-2 shrink-0">Connexion</a>
-          )}
-        </div>
-      ) : null}
-
-      {/* Step 1: User Account */}
-      <div className={`transition-all duration-500 ease-in-out ${step === 1 ? 'opacity-100 translate-x-0 relative block' : 'opacity-0 -translate-x-full absolute invisible'}`}>
-        <h2 className="text-xl font-bold text-text-primary mb-4">Créer votre espace ProjetPilote</h2>
+      {/* Form Content Wrapper */}
+      <div className="w-full px-8 py-10 sm:px-12 pt-12 flex flex-col items-center relative min-h-[400px]">
         
-        <form onSubmit={handleStep1Submit} className="space-y-3">
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-text-primary mb-1">Prénom</label>
-              <input
-                type="text"
-                name="firstName"
-                value={userForm.firstName}
-                onChange={handleUserChange}
-                required
-                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
-                placeholder="Jean"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-text-primary mb-1">Nom</label>
-              <input
-                type="text"
-                name="lastName"
-                value={userForm.lastName}
-                onChange={handleUserChange}
-                required
-                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
-                placeholder="Dupont"
-              />
-            </div>
+        {/* Header */}
+        <div className="text-center mb-8 w-full flex flex-col items-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-orange-500/30 text-white">
+            <BriefcaseBusiness className="w-8 h-8" />
           </div>
+          <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
+            Créer un compte
+          </h1>
+          <p className="text-sm font-medium text-slate-500 mt-1">
+            Rejoignez Smart-Project-Manager
+          </p>
+          <div className="h-1 w-12 bg-orange-500 rounded-full mt-4"></div>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1">Email professionnel</label>
-            <input
-              type="email"
-              name="email"
-              value={userForm.email}
-              onChange={handleUserChange}
-              required
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow"
-              placeholder="jean.dupont@entreprise.com"
-            />
+        {/* Error Message */}
+        {error === 'SIGNUPS_DISABLED' ? (
+          <div className="mb-6 w-full bg-red-50 border border-red-200 text-red-800 text-sm p-4 rounded-xl flex flex-col gap-3">
+            <p className="font-semibold text-red-700">Les inscriptions sont temporairement suspendues.</p>
+            <p className="text-red-600/90">Contactez l'administrateur pour créer votre accès.</p>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1">Mot de passe</label>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                value={userForm.password}
-                onChange={handleUserChange}
-                required
-                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow pr-10"
-                placeholder="••••••••"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-tertiary hover:text-text-secondary focus:outline-none"
-              >
-                {showPassword ? <EyeOff className="w-5 h-5 text-gray-500" /> : <Eye className="w-5 h-5 text-gray-500" />}
-              </button>
-            </div>
-            {/* Password strength bar */}
-            {userForm.password && (
-              <div className="mt-2 flex gap-1 h-1">
-                <div className={`flex-1 rounded-full ${passwordScore >= 25 ? 'bg-danger' : 'bg-border'}`}></div>
-                <div className={`flex-1 rounded-full ${passwordScore >= 50 ? 'bg-warning' : 'bg-border'}`}></div>
-                <div className={`flex-1 rounded-full ${passwordScore >= 75 ? 'bg-success' : 'bg-border'}`}></div>
-                <div className={`flex-1 rounded-full ${passwordScore >= 100 ? 'bg-primary' : 'bg-border'}`}></div>
-              </div>
+        ) : error ? (
+          <div className="mb-6 w-full bg-red-50 border border-red-200 text-red-600 text-sm p-3 rounded-xl font-medium flex items-center justify-between">
+            <span>{error}</span>
+            {error.includes('Connectez-vous') && (
+              <a href="/login" className="font-bold underline ml-2 shrink-0 hover:text-red-700">Connexion</a>
             )}
           </div>
+        ) : null}
 
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1">Confirmer le mot de passe</label>
-            <div className="relative">
+        {/* Step 1: User Account */}
+        <div className={`w-full transition-all duration-500 ease-in-out ${step === 1 ? 'opacity-100 translate-x-0 relative' : 'opacity-0 -translate-x-full absolute invisible'}`}>
+          
+          <form onSubmit={handleStep1Submit} className="w-full space-y-4">
+            <div className="flex gap-4">
+              <div className="flex-1 space-y-1.5">
+                <label className="block text-sm font-bold text-slate-700">Prénom</label>
+                <input
+                  type="text"
+                  name="firstName"
+                  value={userForm.firstName}
+                  onChange={handleUserChange}
+                  required
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-medium text-sm"
+                  placeholder="Jean"
+                />
+              </div>
+              <div className="flex-1 space-y-1.5">
+                <label className="block text-sm font-bold text-slate-700">Nom</label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={userForm.lastName}
+                  onChange={handleUserChange}
+                  required
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-medium text-sm"
+                  placeholder="Dupont"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-sm font-bold text-slate-700 flex items-center gap-2">
+                Email professionnel
+              </label>
               <input
-                type={showConfirmPassword ? 'text' : 'password'}
-                name="confirmPassword"
-                value={userForm.confirmPassword}
+                type="email"
+                name="email"
+                value={userForm.email}
                 onChange={handleUserChange}
                 required
-                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow pr-10"
-                placeholder="••••••••"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-medium text-sm"
+                placeholder="jean.dupont@entreprise.com"
               />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-sm font-bold text-slate-700 flex items-center gap-2">
+                Mot de passe
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={userForm.password}
+                  onChange={handleUserChange}
+                  required
+                  className="w-full px-4 py-3 pr-12 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-medium text-sm tracking-widest"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-transparent text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              {/* Password strength bar */}
+              {userForm.password && (
+                <div className="mt-2 flex gap-1 h-1.5 w-full">
+                  <div className={`flex-1 rounded-full transition-colors duration-300 ${passwordScore >= 25 ? 'bg-red-500' : 'bg-slate-200'}`}></div>
+                  <div className={`flex-1 rounded-full transition-colors duration-300 ${passwordScore >= 50 ? 'bg-orange-500' : 'bg-slate-200'}`}></div>
+                  <div className={`flex-1 rounded-full transition-colors duration-300 ${passwordScore >= 75 ? 'bg-green-400' : 'bg-slate-200'}`}></div>
+                  <div className={`flex-1 rounded-full transition-colors duration-300 ${passwordScore >= 100 ? 'bg-green-600' : 'bg-slate-200'}`}></div>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-sm font-bold text-slate-700 flex items-center gap-2">
+                Confirmer le mot de passe
+              </label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  name="confirmPassword"
+                  value={userForm.confirmPassword}
+                  onChange={handleUserChange}
+                  required
+                  className="w-full px-4 py-3 pr-12 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-medium text-sm tracking-widest"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-transparent text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-4">
               <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-tertiary hover:text-text-secondary focus:outline-none"
+                type="submit"
+                disabled={isPending}
+                className="w-full flex items-center justify-center gap-2 bg-[#e86915] hover:bg-[#d55e10] text-white py-3.5 rounded-xl font-bold text-base transition-all shadow-lg shadow-orange-500/20 active:scale-[0.98]"
               >
-                {showConfirmPassword ? <EyeOff className="w-5 h-5 text-gray-500" /> : <Eye className="w-5 h-5 text-gray-500" />}
+                {isPending ? 'Création...' : 'Continuer'}
               </button>
             </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isPending}
-            className="w-full bg-primary text-white font-medium py-2.5 rounded-lg hover:bg-primary/90 transition-colors mt-2"
-          >
-            {isPending ? 'Création en cours...' : 'Continuer →'}
-          </button>
-        </form>
-
-        <div className="mt-4 text-center">
-          <a href="/login" className="text-sm font-medium text-primary hover:underline">
-            Déjà un compte ? Se connecter
-          </a>
+          </form>
         </div>
+
+        {/* Step 2: Email Confirmation (Fallback) */}
+        <div className={`w-full transition-all duration-500 ease-in-out ${step === 2 ? 'opacity-100 translate-x-0 relative' : 'opacity-0 translate-x-full absolute invisible'}`}>
+          <div className="flex flex-col items-center justify-center text-center py-6">
+            <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mb-6">
+              <span className="text-4xl">✉️</span>
+            </div>
+            <h2 className="text-2xl font-bold text-slate-800 mb-4">Vérifiez votre email</h2>
+            
+            <div className="bg-slate-50 p-6 rounded-xl border border-slate-100 space-y-4 mb-8 text-left max-w-sm w-full">
+              <p className="text-slate-600 text-sm font-medium leading-relaxed">
+                Un email de confirmation a été envoyé à <strong className="text-slate-900">{userForm.email}</strong>.
+              </p>
+              <p className="text-slate-600 text-sm font-medium leading-relaxed">
+                Cliquez sur le lien pour activer votre compte.
+              </p>
+              <p className="text-slate-600 text-sm font-medium leading-relaxed">
+                Une fois confirmé, revenez ici et connectez-vous pour finaliser la création.
+              </p>
+            </div>
+            
+            <button
+              onClick={() => router.push('/login')}
+              className="text-sm font-bold text-orange-600 hover:text-orange-700 transition-colors"
+            >
+              ← Retour à la connexion
+            </button>
+          </div>
+        </div>
+
       </div>
 
-      {/* Step 2: Email Confirmation (Fallback) */}
-      <div className={`transition-all duration-500 ease-in-out ${step === 2 ? 'opacity-100 translate-x-0 relative block' : 'opacity-0 translate-x-full absolute invisible'}`}>
-        <div className="flex flex-col items-center justify-center text-center py-6">
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-            <span className="text-3xl">✉️</span>
-          </div>
-          <h2 className="text-2xl font-bold text-text-primary mb-4">Vérifiez votre email</h2>
-          
-          <div className="bg-surface-dim p-6 rounded-xl border border-border space-y-4 mb-8 text-left max-w-sm">
-            <p className="text-text-secondary text-sm">
-              Un email de confirmation a été envoyé à <strong className="text-text-primary">{userForm.email}</strong>.
-            </p>
-            <p className="text-text-secondary text-sm">
-              Cliquez sur le lien pour activer votre compte.
-            </p>
-            <p className="text-text-secondary text-sm">
-              Une fois confirmé, revenez ici et connectez-vous pour finaliser la création de votre organisation.
-            </p>
-          </div>
-          
-          <button
-            onClick={() => router.push('/login')}
-            className="text-sm font-medium text-primary hover:underline"
-          >
-            ← Retour à la connexion
-          </button>
-        </div>
+      {/* Footer Block */}
+      <div className="w-full bg-slate-50 border-t border-slate-100 p-6 flex justify-center mt-2">
+        <p className="text-sm font-medium text-slate-600 flex items-center gap-2">
+          Déjà un compte ?{' '}
+          <Link href="/login" className="font-bold text-orange-600 hover:text-orange-700">
+            Se connecter
+          </Link>
+        </p>
       </div>
 
     </div>
