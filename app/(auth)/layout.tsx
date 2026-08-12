@@ -6,10 +6,10 @@ export default function AuthLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex min-h-[100dvh] relative overflow-hidden bg-slate-900">
+    <div className="flex min-h-[100dvh] relative overflow-auto bg-slate-900 min-w-[1024px]">
       {/* Global Background Image with strong overlay */}
       <div 
-        className="fixed inset-0 bg-cover bg-[80%_center] md:bg-center bg-no-repeat z-0"
+        className="absolute inset-0 bg-cover bg-[80%_center] md:bg-center bg-no-repeat z-0 min-w-[1024px]"
         style={{ backgroundImage: 'url("/bridge-bg.jpg")' }}
       >
         <div className="absolute inset-0 bg-[#0f172a]/85 mix-blend-multiply"></div>
@@ -17,10 +17,10 @@ export default function AuthLayout({
         <div className="absolute inset-0 bg-gradient-to-r from-[#030712]/90 to-transparent"></div>
       </div>
 
-      <div className="relative z-10 w-full max-w-[1400px] mx-auto flex flex-col lg:flex-row items-center justify-between p-4 sm:p-8 md:p-12 gap-12 min-h-screen">
+      <div className="relative z-10 w-full max-w-[1400px] mx-auto flex flex-row items-center justify-between p-8 md:p-12 gap-12 min-h-screen">
         
-        {/* Left Column (Text & Features) - Hidden on smaller screens */}
-        <div className="hidden lg:flex flex-col flex-1 max-w-2xl text-white mt-8">
+        {/* Left Column (Text & Features) - Always visible */}
+        <div className="flex flex-col flex-1 max-w-2xl text-white mt-8">
           {/* Top Logo */}
           <div className="flex items-center gap-4 mb-16">
             <div className="flex items-center justify-center bg-white rounded-lg p-2.5">
