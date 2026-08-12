@@ -1,5 +1,4 @@
 import { BriefcaseBusiness, Calendar, Users, TrendingUp, ShieldCheck, Heart, Shield, Headphones } from 'lucide-react'
-import ScaleWrapper from './ScaleWrapper'
 
 export default function AuthLayout({
   children,
@@ -7,11 +6,21 @@ export default function AuthLayout({
   children: React.ReactNode
 }) {
   return (
-    <ScaleWrapper>
-      <div className="relative z-10 w-full max-w-[1400px] mx-auto flex flex-row items-center justify-between p-6 md:p-8 lg:p-12 gap-8 lg:gap-12 h-full">
+    <div className="flex min-h-[100dvh] relative overflow-y-auto overflow-x-hidden bg-slate-900">
+      {/* Global Background Image with strong overlay */}
+      <div 
+        className="absolute inset-0 bg-cover bg-[80%_center] md:bg-center bg-no-repeat z-0"
+        style={{ backgroundImage: 'url("/bridge-bg.jpg")' }}
+      >
+        <div className="absolute inset-0 bg-[#0f172a]/85 mix-blend-multiply"></div>
+        {/* Subtle gradient to highlight the left text */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#030712]/90 to-transparent"></div>
+      </div>
+
+      <div className="relative z-10 w-full max-w-[1400px] mx-auto flex flex-col lg:flex-row items-center justify-center lg:justify-between p-4 sm:p-8 lg:p-12 gap-8 lg:gap-12 min-h-screen">
         
-        {/* Left Column (Text & Features) - Always visible */}
-        <div className="flex flex-col flex-1 max-w-2xl text-white py-4 h-full max-h-[750px] justify-center">
+        {/* Left Column (Text & Features) - Always visible on desktop */}
+        <div className="hidden lg:flex flex-col flex-1 max-w-2xl text-white py-4 h-full max-h-[750px] justify-center">
           {/* Top Logo */}
           <div className="flex items-center gap-4 mb-8 lg:mb-12">
             <div className="flex items-center justify-center bg-white rounded-lg p-2.5">
@@ -34,7 +43,7 @@ export default function AuthLayout({
             Pilotez vos projets <br />
             <span className="text-orange-500">avec efficacité</span>
           </h2>
-          
+
           <p className="text-base lg:text-lg text-gray-300 mb-8 lg:mb-12 max-w-lg leading-relaxed">
             La solution intelligente de gestion de projets pour les administrations, les entreprises publiques et les PME.
           </p>
@@ -62,19 +71,29 @@ export default function AuthLayout({
           {/* Bottom Footer */}
           <div className="mt-12 lg:mt-16 pt-6 lg:pt-8 border-t border-white/10 flex items-center justify-between text-sm text-gray-400">
             <div className="flex items-center gap-6">
-              <span className="flex items-center gap-2"><Shield className="w-4 h-4" /> Sécurisé</span>
-              <span className="flex items-center gap-2"><Headphones className="w-4 h-4" /> Support 24/7</span>
+               <span className="flex items-center gap-2"><Shield className="w-4 h-4" /> Sécurisé</span>
+               <span className="flex items-center gap-2"><Headphones className="w-4 h-4" /> Support 24/7</span>
             </div>
-            <span>© 2024 Smart-Project-Manager — Tous droits réservés</span>
+            <span>© 2026 Smart-Project-Manager — Tous droits réservés</span>
           </div>
         </div>
 
         {/* Right Column (Auth Form) */}
-        <div className="w-full max-w-[440px] flex-shrink-0">
+        <div className="w-full max-w-[440px] flex-shrink-0 flex flex-col items-center">
+          {/* Mobile Logo (Visible only on small screens) */}
+          <div className="flex lg:hidden items-center justify-center gap-3 mb-6 w-full">
+            <div className="flex items-center justify-center bg-white rounded-lg p-2 shadow-lg">
+              <BriefcaseBusiness className="w-6 h-6 text-orange-500" />
+            </div>
+            <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-1 shadow-black drop-shadow-md">
+              Smart-Project<span className="text-orange-500">-Manager</span>
+            </h1>
+          </div>
+          
           {children}
         </div>
 
       </div>
-    </ScaleWrapper>
+    </div>
   )
 }
