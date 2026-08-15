@@ -62,7 +62,7 @@ export async function GET(request: Request) {
       cpi: evmSummary?.cpi_global,
       spi: evmSummary?.spi_global,
       risks: risks?.length || 0,
-      budget_consumption_rate: (budgetConsumption.reduce((acc: number, curr: any) => acc + (curr.total_decaisse || 0), 0) / budgetConsumption.reduce((acc: number, curr: any) => acc + (curr.initial_allocated_amount || 0), 0)) * 100
+      budget_consumption_rate: ((budgetConsumption ?? []).reduce((acc: number, curr: any) => acc + (curr.total_decaisse || 0), 0) / (budgetConsumption ?? []).reduce((acc: number, curr: any) => acc + (curr.initial_allocated_amount || 0), 1)) * 100
     })
   } catch (e) {
     console.error('Claude AI Error:', e)

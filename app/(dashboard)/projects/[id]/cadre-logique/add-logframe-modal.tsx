@@ -38,6 +38,9 @@ export function AddLogframeModal({
         target: formData.get('target') as string || null,
         verification_source: formData.get('verification_source') as string || null,
         risks_assumptions: formData.get('risks_assumptions') as string || null,
+        s1_value: null,
+        s2_value: null,
+        s3_value: null,
       })
 
       setLoading(false)
