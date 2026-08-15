@@ -32,8 +32,8 @@ export default async function DashboardLayout({
   }
 
   // Ensure they have a password set
-  const adminClient = await import('@/lib/supabase/admin').then(m => m.createAdminClient())
-  const { data: authUser } = await adminClient.auth.admin.getUserById(user.id)
+  const authAdminClient = createAdminClient()
+  const { data: authUser } = await authAdminClient.auth.admin.getUserById(user.id)
   
   // Checking if identities exist and are linked to a password provider, 
   // or explicitly checking if they need to setup profile.
@@ -48,7 +48,7 @@ export default async function DashboardLayout({
   // BUT to be absolutely certain, let's just create the setup-profile logic.
 
   // Check if they have ANY pending invitations. If they do, FORCE them to the invite confirmation screen.
-  const { data: pendingInvs } = await adminClient
+  const { data: pendingInvs } = await authAdminClient
     .from('invitations')
     .select('token')
     .ilike('invited_email', user.email || '')
