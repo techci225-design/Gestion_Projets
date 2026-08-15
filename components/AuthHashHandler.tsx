@@ -15,12 +15,55 @@ export default function AuthHashHandler() {
       setIsProcessing(true)
       const supabase = createClient()
       
-      // The Supabase client automatically processes the hash.
-      // We listen for the session to be established.
+      // Manually parse the hash to ensure the session is set
+      const hash = window.location.hash.substring(1)
+      const params = new URLSearchParams(hash)
+      const accessToken = params.get('access_token')
+      const refreshToken = params.get('refresh_token')
+      const type = params.get('type')
+
+      const establishSession = async () => {
+        if (accessToken && refreshToken) {
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          })
+
+          if (!error && data.session) {
+            if (type === 'invite') {
+              router.push('/setup-profile')
+            } else {
+              router.push('/projects')
+            }
+            router.refresh()
+            return true
+          }
+        }
+        
+        // If manual parsing fails, check if the client already established it automatically
+        const { data } = await supabase.auth.getSession()
+        if (data.session) {
+          if (type === 'invite' || window.location.hash.includes('type=invite')) {
+            router.push('/setup-profile')
+          } else {
+            router.push('/projects')
+          }
+          router.refresh()
+          return true
+        }
+        
+        return false
+      }
+
+      establishSession().then((success) => {
+        if (!success) {
+          // If we couldn't establish the session, wait for onAuthStateChange
+        }
+      })
+
       const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
         if (session) {
-          const isInvite = window.location.hash.includes('type=invite')
-          // Force a router refresh and push to appropriate page so the server picks up the new session cookie
+          const isInvite = window.location.hash.includes('type=invite') || type === 'invite'
           if (isInvite) {
             router.push('/setup-profile')
           } else {
@@ -29,21 +72,6 @@ export default function AuthHashHandler() {
           router.refresh()
         }
       })
-
-      // Fallback: Check explicitly in case the event already fired or if it fails
-      const checkSession = async () => {
-        const { data } = await supabase.auth.getSession()
-        if (data.session) {
-          const isInvite = window.location.hash.includes('type=invite')
-          if (isInvite) {
-            router.push('/setup-profile')
-          } else {
-            router.push('/projects')
-          }
-          router.refresh()
-        }
-      }
-      checkSession()
 
       // Give it 5 seconds. If nothing happens, redirect to login with error
       const timeoutId = setTimeout(() => {
