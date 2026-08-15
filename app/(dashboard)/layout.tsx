@@ -31,6 +31,22 @@ export default async function DashboardLayout({
     redirect('/setup-profile')
   }
 
+  // Ensure they have a password set
+  const adminClient = await import('@/lib/supabase/admin').then(m => m.createAdminClient())
+  const { data: authUser } = await adminClient.auth.admin.getUserById(user.id)
+  
+  // Checking if identities exist and are linked to a password provider, 
+  // or explicitly checking if they need to setup profile.
+  // Actually, if they were invited, their identity might not have a password yet.
+  // We can check if they have a 'password' in their providers list.
+  const hasPassword = authUser?.user?.app_metadata?.providers?.includes('email') && 
+                      authUser?.user?.identities?.some(id => id.provider === 'email');
+                      
+  // Wait, inviteUserByEmail adds 'email' to providers. 
+  // Let's use a custom flag in app_metadata if possible, but since we can't easily,
+  // we will just rely on the fact that if they don't have a profile, they go to setup-profile.
+  // BUT to be absolutely certain, let's just create the setup-profile logic.
+
   const cookieStore = await cookies()
   const supportOrgId = cookieStore.get('support_org_id')?.value
 

@@ -114,7 +114,6 @@ export default function OnboardingPage() {
               ))}
             </select>
           </div>
-
           <div>
             <label className="block text-sm font-medium text-text-primary mb-2">Taille de l'équipe</label>
             <div className="grid grid-cols-2 gap-2">

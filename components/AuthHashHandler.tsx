@@ -10,6 +10,17 @@ export default function AuthHashHandler() {
   const [isProcessing, setIsProcessing] = useState(false)
   
   useEffect(() => {
+    // If there is no hash, but the user has a session, redirect them to /projects
+    if (typeof window !== 'undefined' && (!window.location.hash || !window.location.hash.includes('access_token='))) {
+      const supabase = createClient()
+      supabase.auth.getSession().then(({ data }) => {
+        if (data.session) {
+          router.push('/projects')
+        }
+      })
+      return
+    }
+
     // Check if the URL has a Supabase auth token fragment (usually after clicking an email link)
     if (typeof window !== 'undefined' && window.location.hash && window.location.hash.includes('access_token=')) {
       setIsProcessing(true)

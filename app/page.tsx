@@ -14,10 +14,6 @@ export default async function LandingPage({ searchParams }: { searchParams: Prom
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (user) {
-    redirect('/projects')
-  }
-
   return (
     <div className="min-h-screen bg-white text-slate-800 selection:bg-indigo-200">
       <AuthHashHandler />
