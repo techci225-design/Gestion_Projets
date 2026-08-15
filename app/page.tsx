@@ -4,7 +4,13 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import AuthHashHandler from '@/components/AuthHashHandler'
 
-export default async function LandingPage() {
+export default async function LandingPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+  const params = await searchParams
+  
+  if (params.code && typeof params.code === 'string') {
+    redirect(`/api/auth/callback?code=${params.code}`)
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
