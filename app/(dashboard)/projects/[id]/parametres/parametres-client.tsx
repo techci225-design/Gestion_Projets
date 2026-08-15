@@ -127,7 +127,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border border-border overflow-hidden flex flex-col md:flex-row">
+      <div className="bg-white rounded-lg shadow-sm border border-border flex flex-col md:flex-row">
         
         {/* Sidebar Nav */}
         <div className="w-full md:w-64 bg-surface-dim border-b md:border-b-0 md:border-r border-border p-4 flex flex-col gap-2">
