@@ -95,7 +95,7 @@ export async function sendInvitation(payload: {
   const { data, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(
     payload.email,
     {
-      redirectTo: `${siteUrl}/invite/${token}`,
+      redirectTo: `${siteUrl}/api/auth/callback?next=/invite/${token}`,
       data: { invitation_token: token }
     }
   )
@@ -109,7 +109,7 @@ export async function sendInvitation(payload: {
       const { error: magicLinkError } = await adminClient.auth.signInWithOtp({
         email: payload.email,
         options: {
-          emailRedirectTo: `${siteUrl}/invite/${token}`,
+          emailRedirectTo: `${siteUrl}/api/auth/callback?next=/invite/${token}`,
           data: { invitation_token: token }
         }
       })
