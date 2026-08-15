@@ -12,8 +12,6 @@ import { AddBudgetModal } from '../budget/add-budget-modal'
 import { AddEvmTaskModal } from '../evm/add-evm-task-modal'
 import { RightDrawer } from '@/components/ui/RightDrawer'
 import { CommentsTab } from '@/components/dashboard/CommentsTab'
-import { MembresClient } from '../membres/membres-client'
-import { Users } from 'lucide-react'
 
 interface ParametresClientProps {
   projectId: string
@@ -22,13 +20,11 @@ interface ParametresClientProps {
   wbsTasks: any[]
   userRole: string
   project?: any
-  members?: any[]
-  invitations?: any[]
 }
 
-export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTasks, userRole, project, members = [], invitations = [] }: ParametresClientProps) {
+export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTasks, userRole, project }: ParametresClientProps) {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<'general' | 'bailleurs' | 'budget' | 'wbs' | 'statuts' | 'membres'>('general')
+  const [activeTab, setActiveTab] = useState<'general' | 'bailleurs' | 'budget' | 'wbs' | 'statuts'>('general')
   const displayCurrency = getDisplayCurrency(project?.currency)
   
   // Modals state
@@ -155,16 +151,6 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
               >
                 <Wallet className="w-5 h-5" />
                 Sources de Financement
-              </button>
-              
-              <button
-                onClick={() => setActiveTab('membres')}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left ${
-                  activeTab === 'membres' ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
-                }`}
-              >
-                <Users className="w-5 h-5" />
-                Équipe (Membres)
               </button>
             </>
           )}
@@ -651,18 +637,6 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
             </div>
           )}
 
-          {/* TAB: Membres */}
-          {activeTab === 'membres' && (
-            <div className="animate-in fade-in duration-300 h-full">
-              <MembresClient 
-                projectId={projectId} 
-                organizationId={project?.organization_id} 
-                members={members} 
-                pendingInvitations={invitations} 
-                currentUserRole={userRole as any} 
-              />
-            </div>
-          )}
 
         </div>
       </div>

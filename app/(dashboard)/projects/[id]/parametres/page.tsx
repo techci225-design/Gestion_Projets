@@ -59,19 +59,7 @@ export default async function ParametresPage({ params }: { params: Promise<{ id:
     .eq('project_id', id)
     .order('code', { ascending: true })
 
-  // 5. Fetch Members
-  const { data: members } = await supabase
-    .from('project_members')
-    .select('*, profiles(email, full_name)')
-    .eq('project_id', id)
 
-  // 6. Fetch Invitations
-  const { data: invitations } = await supabase
-    .from('invitations')
-    .select('*, invited_by_profile:profiles!invited_by(full_name)')
-    .eq('project_id', id)
-    .eq('status', 'pending')
-    .order('created_at', { ascending: false })
 
   return (
     <ParametresClient
@@ -81,8 +69,6 @@ export default async function ParametresPage({ params }: { params: Promise<{ id:
       budgetLines={budgetLines || []}
       wbsTasks={wbsTasks || []}
       userRole={userRole}
-      members={members || []}
-      invitations={invitations || []}
     />
   )
 }
