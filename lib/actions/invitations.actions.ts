@@ -276,12 +276,22 @@ export async function autoAcceptPendingInvitations() {
   const { data: pendingInvs, error } = await adminClient
     .from('invitations')
     .select('*')
-    .eq('invited_email', user.email)
+    .ilike('invited_email', user.email)
     .eq('status', 'pending')
 
   if (error || !pendingInvs || pendingInvs.length === 0) return 0
 
   let acceptedCount = 0
+
+  // Ensure profile exists
+  const { data: profile } = await adminClient.from('profiles').select('id').eq('id', user.id).single()
+  if (!profile) {
+    await adminClient.from('profiles').upsert({
+      id: user.id,
+      email: user.email,
+      full_name: user.email.split('@')[0]
+    })
+  }
 
   for (const inv of pendingInvs) {
     // 1. Add to organization

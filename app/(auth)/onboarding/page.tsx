@@ -6,7 +6,6 @@ import { Building2, Users } from 'lucide-react'
 import { createOrganizationOnboarding } from '@/lib/actions/onboarding.actions'
 
 const COUNTRIES = [
-  "Côte d'Ivoire",
   "Sénégal",
   "Mali",
   "Burkina Faso",
@@ -33,7 +32,7 @@ export default function OnboardingPage() {
   
   const [orgForm, setOrgForm] = useState({
     name: '',
-    country: "Côte d'Ivoire",
+    country: "Sénégal",
     teamSize: "1 - 5 personnes"
   })
 
@@ -144,7 +143,7 @@ export default function OnboardingPage() {
             disabled={isPending}
             className="w-full bg-success text-white font-medium py-3 rounded-lg hover:bg-success/90 transition-colors mt-4 text-base flex items-center justify-center gap-2"
           >
-            {isPending ? 'Configuration...' : 'Accéder à ProjetPilote ✓'}
+            {isPending ? 'Configuration...' : 'Accéder à Smart-Project-Manager ✓'}
           </button>
         </form>
       </div>
