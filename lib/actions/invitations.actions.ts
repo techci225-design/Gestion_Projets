@@ -181,7 +181,7 @@ export async function acceptInvitation(token: string, formData?: { password?: st
   }
 
   if (!userId) {
-    return { error: 'Utilisateur introuvable. Veuillez créer un compte.' }
+    return { error: 'Utilisateur introuvable. Une erreur est survenue lors de la récupération de votre compte (délai de synchronisation).' }
   }
 
   // Update password using adminClient so we don't rely on the current session
@@ -235,19 +235,31 @@ export async function acceptInvitation(token: string, formData?: { password?: st
     }
   }
 
-  // 6. Mark all pending invitations for this email in this org/project as accepted
-  let updateQuery = adminClient.from('invitations')
+  // 6. Mark the current invitation as accepted
+  const { error: finalUpdateError } = await adminClient.from('invitations')
+    .update({ status: 'accepted' })
+    .eq('id', invitation.id)
+  
+  if (finalUpdateError) {
+    console.error('Failed to mark invitation as accepted:', finalUpdateError)
+    return { error: 'Erreur lors de la validation de l\'invitation.' }
+  }
+
+  // Optionally mark other pending invitations for this org/project as accepted
+  let otherUpdateQuery = adminClient.from('invitations')
     .update({ status: 'accepted' })
     .eq('invited_email', invitation.invited_email)
     .eq('organization_id', invitation.organization_id)
     .eq('status', 'pending')
-
+    
   if (invitation.project_id) {
-    updateQuery = updateQuery.eq('project_id', invitation.project_id)
+    otherUpdateQuery = otherUpdateQuery.eq('project_id', invitation.project_id)
   }
+  
+  await otherUpdateQuery
 
-  await updateQuery
-
+  revalidatePath('/', 'layout')
+  
   return { success: true }
 }
 
