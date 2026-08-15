@@ -283,16 +283,6 @@ export async function autoAcceptPendingInvitations() {
 
   let acceptedCount = 0
 
-  // Ensure profile exists
-  const { data: profile } = await adminClient.from('profiles').select('id').eq('id', user.id).single()
-  if (!profile) {
-    await adminClient.from('profiles').upsert({
-      id: user.id,
-      email: user.email,
-      full_name: user.email.split('@')[0]
-    })
-  }
-
   for (const inv of pendingInvs) {
     // 1. Add to organization
     await adminClient.from('organization_members').upsert({

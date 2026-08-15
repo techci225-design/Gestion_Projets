@@ -21,11 +21,15 @@ export default async function DashboardLayout({
   }
 
   // Get user profile
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('full_name, is_super_admin')
     .eq('id', user.id)
     .single()
+
+  if (profileError || !profile) {
+    redirect('/setup-profile')
+  }
 
   const cookieStore = await cookies()
   const supportOrgId = cookieStore.get('support_org_id')?.value

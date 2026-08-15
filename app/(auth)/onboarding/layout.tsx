@@ -26,6 +26,12 @@ export default async function OnboardingLayout({
     redirect('/projects')
   }
 
+  // Vérifier s'il a un profil. S'il n'en a pas, c'est un utilisateur invité qui n'a pas encore de mot de passe.
+  const { data: profile } = await supabase.from('profiles').select('id').eq('id', user.id).single()
+  if (!profile) {
+    redirect('/setup-profile')
+  }
+
   // Vérifier s'il y a des invitations en attente pour cet email
   // et les accepter automatiquement pour lui éviter de créer sa propre organisation.
   const { autoAcceptPendingInvitations } = await import('@/lib/actions/invitations.actions')
