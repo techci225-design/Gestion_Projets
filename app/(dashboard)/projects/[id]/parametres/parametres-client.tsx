@@ -659,6 +659,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
                 organizationId={project?.organization_id} 
                 members={members} 
                 pendingInvitations={invitations} 
+                currentUserRole={userRole as any} 
               />
             </div>
           )}

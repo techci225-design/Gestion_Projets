@@ -257,7 +257,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
     return `?sort=${field}&order=${newOrder}`
   }
 
-  const globalCurrency = projects?.length > 0 ? (projects[0].currency || 'XOF') : 'XOF'
+  const globalCurrency = (projects && projects.length > 0) ? (projects[0].currency || 'XOF') : 'XOF'
 
   return (
     <>

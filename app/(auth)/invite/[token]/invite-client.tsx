@@ -3,7 +3,7 @@
 import React, { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff } from 'lucide-react'
-import { acceptInvitation } from '@/lib/actions/invitations.actions'
+import { acceptInvitationFlow } from '@/lib/actions/invitations.actions'
 import { createClient } from '@/lib/supabase/client'
 
 export default function InviteClient({ 
@@ -59,11 +59,9 @@ export default function InviteClient({
 
       // We pass the data to server action
       // For existing users, we don't pass the password so we don't overwrite it
-      const res = await acceptInvitation(token, {
-        password: !isExistingUser ? password : undefined,
-        first_name: isExistingUser ? existingFirstName : formData.get('firstName') as string,
-        last_name: isExistingUser ? existingLastName : formData.get('lastName') as string
-      })
+      const res = await acceptInvitationFlow(token, 
+        !isExistingUser ? password : undefined
+      )
 
       if (res.error) {
         setError(res.error)

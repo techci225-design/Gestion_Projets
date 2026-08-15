@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     }
     
     console.error('Verify OTP error:', error)
-    return NextResponse.redirect(`${origin}/login?error=Lien invalide ou expiré&message=${encodeURIComponent(error.message)}`)
+    return NextResponse.redirect(`${origin}/login?error=Lien invalide ou expiré&message=${encodeURIComponent(error?.message || 'Erreur inconnue')}`)
   }
 
   // Si pas de token_hash, on redirige vers le login avec erreur
