@@ -32,13 +32,20 @@ export default async function OnboardingLayout({
     redirect('/setup-profile')
   }
 
-  // Vérifier s'il y a des invitations en attente pour cet email
-  // et les accepter automatiquement pour lui éviter de créer sa propre organisation.
-  const { autoAcceptPendingInvitations } = await import('@/lib/actions/invitations.actions')
-  const acceptedCount = await autoAcceptPendingInvitations()
-  if (acceptedCount > 0) {
-    redirect('/projects')
+  // Check if there are any pending invitations for this email
+  // Instead of auto-accepting silently, FORCE the user to the invite page to confirm and enter password.
+  const adminClient = await import('@/lib/supabase/admin').then(m => m.createAdminClient())
+  const { data: pendingInvs } = await adminClient
+    .from('invitations')
+    .select('token')
+    .ilike('invited_email', user.email || '')
+    .eq('status', 'pending')
+    .limit(1)
+
+  if (pendingInvs && pendingInvs.length > 0) {
+    redirect(`/invite/${pendingInvs[0].token}`)
   }
 
+  // If no pending invitations, and they have no org, they must create one
   return <>{children}</>
 }

@@ -42,13 +42,25 @@ export default function InviteClient({
     }
 
     startTransition(async () => {
-      // Pour gérer le cas de l'utilisateur créé via "inviteUserByEmail" de Supabase :
-      // On s'assure qu'on envoie le nouveau mot de passe à la server action qui l'assignera 
-      // ou on utilise l'API signInWithPassword classique si c'est un vieil utilisateur
+      const supabase = createClient()
       
+      // If it's an existing user, authenticate them FIRST to verify their password
+      if (isExistingUser) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: email,
+          password: password
+        })
+        
+        if (signInError) {
+          setError('Mot de passe incorrect.')
+          return
+        }
+      }
+
       // We pass the data to server action
+      // For existing users, we don't pass the password so we don't overwrite it
       const res = await acceptInvitation(token, {
-        password: password,
+        password: !isExistingUser ? password : undefined,
         first_name: isExistingUser ? existingFirstName : formData.get('firstName') as string,
         last_name: isExistingUser ? existingLastName : formData.get('lastName') as string
       })
@@ -56,20 +68,20 @@ export default function InviteClient({
       if (res.error) {
         setError(res.error)
       } else {
-        // Sign in the user automatically with the password they just created/provided
-        const supabase = createClient()
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: email,
-          password: password
-        })
-        
-        if (signInError) {
-           // If sign in fails for some reason, redirect to login so they can try again
-           router.push('/login')
-        } else {
-           router.push('/projects')
-           router.refresh()
+        if (!isExistingUser) {
+          // For new users, we sign them in with the password they just created
+          const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+          })
+          if (signInError) {
+            router.push('/login')
+            return
+          }
         }
+        
+        router.push('/projects')
+        router.refresh()
       }
     })
   }

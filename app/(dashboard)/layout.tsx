@@ -47,6 +47,18 @@ export default async function DashboardLayout({
   // we will just rely on the fact that if they don't have a profile, they go to setup-profile.
   // BUT to be absolutely certain, let's just create the setup-profile logic.
 
+  // Check if they have ANY pending invitations. If they do, FORCE them to the invite confirmation screen.
+  const { data: pendingInvs } = await adminClient
+    .from('invitations')
+    .select('token')
+    .ilike('invited_email', user.email || '')
+    .eq('status', 'pending')
+    .limit(1)
+
+  if (pendingInvs && pendingInvs.length > 0) {
+    redirect(`/invite/${pendingInvs[0].token}`)
+  }
+
   const cookieStore = await cookies()
   const supportOrgId = cookieStore.get('support_org_id')?.value
 
