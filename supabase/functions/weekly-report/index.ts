@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
         .from('organization_members')
         .select('user_id')
         .eq('organization_id', orgId)
-        .in('org_role', ['owner', 'admin', 'chef_projet'])
+        .in('org_role', ['owner', 'admin'])
 
       if (!members || members.length === 0) continue
 

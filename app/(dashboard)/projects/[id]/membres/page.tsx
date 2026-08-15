@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { MembresClient } from './membres-client'
+import { getUserRole, requireProjectPermission } from '@/lib/actions/auth.actions'
 
 export default async function MembresPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -15,6 +16,9 @@ export default async function MembresPage({ params }: { params: Promise<{ id: st
   if (projectError || !project) {
     redirect('/projects')
   }
+
+  // Ensure user has view permission
+  await requireProjectPermission(id, 'view_project')
 
   // Join profiles to get email/full_name
   const { data: members } = await supabase
@@ -34,12 +38,15 @@ export default async function MembresPage({ params }: { params: Promise<{ id: st
     .select('id, email, full_name')
     .order('email')
 
+  const currentUserRole = await getUserRole(id)
+
   return (
     <MembresClient 
       projectId={id} 
       organizationId={project.organization_id}
       members={members || []} 
       pendingInvitations={invitations || []}
+      currentUserRole={currentUserRole}
     />
   )
 }

@@ -41,11 +41,7 @@ export default function AuthHashHandler() {
           })
 
           if (!error && data.session) {
-            if (type === 'invite') {
-              router.push('/setup-profile')
-            } else {
-              router.push('/projects')
-            }
+            router.push('/projects')
             router.refresh()
             return true
           }
@@ -54,11 +50,7 @@ export default function AuthHashHandler() {
         // If manual parsing fails, check if the client already established it automatically
         const { data } = await supabase.auth.getSession()
         if (data.session) {
-          if (type === 'invite' || window.location.hash.includes('type=invite')) {
-            router.push('/setup-profile')
-          } else {
-            router.push('/projects')
-          }
+          router.push('/projects')
           router.refresh()
           return true
         }
@@ -74,12 +66,7 @@ export default function AuthHashHandler() {
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
         if (session) {
-          const isInvite = window.location.hash.includes('type=invite') || type === 'invite'
-          if (isInvite) {
-            router.push('/setup-profile')
-          } else {
-            router.push('/projects')
-          }
+          router.push('/projects')
           router.refresh()
         }
       })

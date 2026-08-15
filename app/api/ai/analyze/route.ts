@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { analyzeProject, generateInputHash } from '@/lib/ai/claude'
-import { requireRole } from '@/lib/actions/auth.actions'
+import { requireProjectPermission } from '@/lib/actions/auth.actions'
 
 export async function POST(req: Request) {
   try {
     const { projectId } = await req.json()
     if (!projectId) return NextResponse.json({ error: 'Project ID is required' }, { status: 400 })
 
-    await requireRole(projectId, ['owner', 'chef_projet', 'comptable', 'bailleur_lecture', 'consultant'])
+    await requireProjectPermission(projectId, 'view_reports')
     
     const supabase = await createClient()
 

@@ -3,10 +3,23 @@
 import { useState } from 'react'
 import { Plus, MoreVertical, Edit2, Trash2 } from 'lucide-react'
 import { InviteMemberModal } from './invite-member-modal'
-import { removeMember, updateMemberRole } from '@/lib/actions/members.actions'
+import { removeMember, updateMemberRole, transferOwnership } from '@/lib/actions/members.actions'
 import { cancelInvitation, sendInvitation } from '@/lib/actions/invitations.actions'
+import { ProjectRole, hasProjectPermission } from '@/lib/permissions/project-permissions'
 
-export function MembresClient({ projectId, organizationId, members, pendingInvitations }: { projectId: string, organizationId: string, members: any[], pendingInvitations: any[] }) {
+export function MembresClient({ 
+  projectId, 
+  organizationId, 
+  members, 
+  pendingInvitations, 
+  currentUserRole 
+}: { 
+  projectId: string, 
+  organizationId: string, 
+  members: any[], 
+  pendingInvitations: any[],
+  currentUserRole: ProjectRole | null
+}) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
@@ -23,6 +36,15 @@ export function MembresClient({ projectId, organizationId, members, pendingInvit
   const handleRoleChange = async (userId: string, newRole: string) => {
     setIsUpdating(true)
     const res = await updateMemberRole(projectId, userId, newRole)
+    setIsUpdating(false)
+    setActiveDropdown(null)
+    if (res?.error) alert(res.error)
+  }
+
+  const handleTransferOwnership = async (userId: string) => {
+    if (!confirm('Transférer la propriété ?\n\nVous allez transférer la propriété du projet à ce membre. Vous perdrez vos privilèges de propriétaire.')) return
+    setIsUpdating(true)
+    const res = await transferOwnership(projectId, userId)
     setIsUpdating(false)
     setActiveDropdown(null)
     if (res?.error) alert(res.error)
@@ -51,16 +73,16 @@ export function MembresClient({ projectId, organizationId, members, pendingInvit
 
   const getRoleBadge = (role: string) => {
     switch(role) {
-      case 'owner':
-        return <span className="bg-blue-900 text-blue-50 text-xs px-2.5 py-1 rounded-md font-medium">Propriétaire</span>
-      case 'chef_projet':
-        return <span className="bg-slate-800 text-slate-50 text-xs px-2.5 py-1 rounded-md font-medium">Chef de Projet</span>
-      case 'comptable':
-        return <span className="bg-emerald-600 text-emerald-50 text-xs px-2.5 py-1 rounded-md font-medium">Comptable</span>
-      case 'bailleur_lecture':
-        return <span className="bg-amber-100 text-amber-800 border border-amber-200 text-xs px-2.5 py-1 rounded-md font-medium">Bailleur (Lecture)</span>
-      case 'consultant':
+      case 'OWNER':
+        return <span className="bg-slate-900 text-slate-50 text-xs px-2.5 py-1 rounded-md font-medium shadow-sm">Propriétaire</span>
+      case 'PROJECT_MANAGER':
+        return <span className="bg-blue-600 text-blue-50 text-xs px-2.5 py-1 rounded-md font-medium shadow-sm">Chef de Projet</span>
+      case 'ACCOUNTANT':
+        return <span className="bg-emerald-600 text-emerald-50 text-xs px-2.5 py-1 rounded-md font-medium shadow-sm">Comptable</span>
+      case 'CONSULTANT':
         return <span className="bg-purple-100 text-purple-800 border border-purple-200 text-xs px-2.5 py-1 rounded-md font-medium">Consultant</span>
+      case 'FUNDER_READONLY':
+        return <span className="bg-amber-100 text-amber-800 border border-amber-200 text-xs px-2.5 py-1 rounded-md font-medium">Bailleur (Lecture)</span>
       default:
         return <span className="bg-slate-100 text-slate-800 border border-slate-200 text-xs px-2.5 py-1 rounded-md font-medium">{role}</span>
     }
@@ -79,13 +101,15 @@ export function MembresClient({ projectId, organizationId, members, pendingInvit
           <h1 className="text-3xl font-bold text-primary mb-2">Équipe du Projet</h1>
           <p className="text-text-secondary">Gérez les accès et les rôles des collaborateurs sur ce projet.</p>
         </div>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="bg-primary text-white text-sm px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-2 shrink-0 whitespace-nowrap"
-        >
-          <Plus className="w-4 h-4" />
-          Inviter un membre
-        </button>
+        {hasProjectPermission(currentUserRole, 'invite_members') && (
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="bg-primary text-white text-sm px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-2 shrink-0 whitespace-nowrap"
+          >
+            <Plus className="w-4 h-4" />
+            Inviter un membre
+          </button>
+        )}
       </div>
 
       <div className="bg-surface-container-lowest rounded-xl shadow-sm border border-border flex flex-col overflow-hidden">
@@ -122,13 +146,15 @@ export function MembresClient({ projectId, organizationId, members, pendingInvit
                       {m.added_at ? new Date(m.added_at).toLocaleDateString('fr-FR') : 'Date inconnue'}
                     </td>
                     <td className="p-4 text-right relative">
-                      <button 
-                        onClick={() => setActiveDropdown(activeDropdown === m.id ? null : m.id)}
-                        disabled={isUpdating}
-                        className="p-2 text-text-secondary hover:bg-surface-dim rounded-full transition-colors disabled:opacity-50"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+                      {(hasProjectPermission(currentUserRole, 'manage_team') || hasProjectPermission(currentUserRole, 'manage_roles')) && (
+                        <button 
+                          onClick={() => setActiveDropdown(activeDropdown === m.id ? null : m.id)}
+                          disabled={isUpdating}
+                          className="p-2 text-text-secondary hover:bg-surface-dim rounded-full transition-colors disabled:opacity-50"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      )}
                       
                       {activeDropdown === m.id && (
                         <>
@@ -137,22 +163,41 @@ export function MembresClient({ projectId, organizationId, members, pendingInvit
                             onClick={() => setActiveDropdown(null)}
                           />
                           <div className="absolute right-8 top-12 w-48 bg-white rounded-lg shadow-lg border border-border py-1 z-20 text-left">
-                            <div className="px-4 py-2 text-xs font-semibold text-text-secondary uppercase">Changer le rôle</div>
-                            <button onClick={() => handleRoleChange(m.user_id, 'owner')} className="w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-dim">Propriétaire</button>
-                            <button onClick={() => handleRoleChange(m.user_id, 'chef_projet')} className="w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-dim">Chef de Projet</button>
-                            <button onClick={() => handleRoleChange(m.user_id, 'comptable')} className="w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-dim">Comptable</button>
-                            <button onClick={() => handleRoleChange(m.user_id, 'consultant')} className="w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-dim">Consultant</button>
-                            <button onClick={() => handleRoleChange(m.user_id, 'bailleur_lecture')} className="w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-dim">Bailleur (Lecture)</button>
                             
-                            <div className="h-px bg-border my-1" />
+                            {hasProjectPermission(currentUserRole, 'manage_roles') && (
+                              <>
+                                <div className="px-4 py-2 text-xs font-semibold text-text-secondary uppercase">Changer le rôle</div>
+                                <button onClick={() => handleRoleChange(m.user_id, 'PROJECT_MANAGER')} className="w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-dim">Chef de Projet</button>
+                                <button onClick={() => handleRoleChange(m.user_id, 'ACCOUNTANT')} className="w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-dim">Comptable</button>
+                                <button onClick={() => handleRoleChange(m.user_id, 'CONSULTANT')} className="w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-dim">Consultant</button>
+                                <button onClick={() => handleRoleChange(m.user_id, 'FUNDER_READONLY')} className="w-full text-left px-4 py-2 text-sm text-text-primary hover:bg-surface-dim">Bailleur (Lecture)</button>
+                              </>
+                            )}
                             
-                            <button 
-                              onClick={() => handleRemove(m.user_id)}
-                              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                              Retirer du projet
-                            </button>
+                            {hasProjectPermission(currentUserRole, 'transfer_ownership') && m.role !== 'OWNER' && (
+                              <>
+                                <div className="h-px bg-border my-1" />
+                                <button 
+                                  onClick={() => handleTransferOwnership(m.user_id)}
+                                  className="w-full text-left px-4 py-2 text-sm text-amber-600 hover:bg-amber-50"
+                                >
+                                  Transférer la propriété
+                                </button>
+                              </>
+                            )}
+                            
+                            {hasProjectPermission(currentUserRole, 'manage_team') && m.role !== 'OWNER' && (
+                              <>
+                                <div className="h-px bg-border my-1" />
+                                <button 
+                                  onClick={() => handleRemove(m.user_id)}
+                                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                  Retirer du projet
+                                </button>
+                              </>
+                            )}
                           </div>
                         </>
                       )}

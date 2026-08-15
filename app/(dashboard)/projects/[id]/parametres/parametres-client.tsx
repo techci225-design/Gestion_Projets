@@ -6,6 +6,7 @@ import { formatCurrency } from '@/lib/utils/format-currency'
 import { getDisplayCurrency } from '@/lib/utils/currency'
 import { addFundingSource, deleteFundingSource } from '@/lib/actions/parametres.actions'
 import { updateProject, deleteProject } from '@/lib/actions/projects.actions'
+import { ProjectRole, hasProjectPermission } from '@/lib/permissions/project-permissions'
 import { useRouter } from 'next/navigation'
 import { AddBudgetModal } from '../budget/add-budget-modal'
 import { AddEvmTaskModal } from '../evm/add-evm-task-modal'
@@ -91,7 +92,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
     })
   }
 
-  const canEdit = ['owner', 'comptable', 'chef_projet'].includes(userRole) || userRole === undefined
+  const canEdit = hasProjectPermission(userRole as ProjectRole, 'edit_settings') || userRole === undefined
 
   const handleAddBailleur = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -144,7 +145,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
             Informations générales
           </button>
           
-          {['owner', 'admin', 'chef_projet'].includes(userRole) && (
+          {hasProjectPermission(userRole as ProjectRole, 'edit_budget') && (
             <>
               <button
                 onClick={() => setActiveTab('bailleurs')}

@@ -45,7 +45,7 @@ export function AddLogframeModal({
 
       setLoading(false)
       onClose()
-      router.refresh()
+      router.refresh() 
     } catch (err: any) {
       setLoading(false)
       setError(err.message || 'Une erreur est survenue')

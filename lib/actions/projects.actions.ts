@@ -258,7 +258,7 @@ export async function updateProject(projectId: string, payload: {
     return { error: 'Erreur de configuration serveur (Clé Admin manquante).' }
   }
 
-  // Verification that the user is the owner, admin, or chef_projet
+  // Verification that the user is the OWNER or PROJECT_MANAGER
   const { data: projectMember } = await supabase
     .from('project_members')
     .select('role')
@@ -271,7 +271,7 @@ export async function updateProject(projectId: string, payload: {
   const activeOrgId = cookieStore.get('active_org_id')?.value
   
   let hasRights = false;
-  if (projectMember && ['owner', 'chef_projet', 'admin'].includes(projectMember.role)) {
+  if (projectMember && ['OWNER', 'PROJECT_MANAGER'].includes(projectMember.role)) {
     hasRights = true;
   } else if (activeOrgId) {
     const { data: orgMember } = await supabase

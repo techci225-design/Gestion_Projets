@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { AuditClient } from './audit-client'
-import { requireRole } from '@/lib/actions/auth.actions'
+import { requireProjectPermission } from '@/lib/actions/auth.actions'
 
 export default async function AuditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -18,8 +18,8 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
   }
 
   try {
-    // Only owner and chef_projet can view audit logs
-    await requireRole(id, ['owner', 'chef_projet'])
+    // Only owner and PROJECT_MANAGER can view audit logs
+    await requireProjectPermission(id, 'view_reports')
   } catch (err) {
     redirect(`/projects/${id}`)
   }

@@ -3,12 +3,13 @@
 import { z } from 'zod'
 import { createClient } from '../supabase/server'
 import { revalidatePath } from 'next/cache'
-import { requireRole } from './auth.actions'
+import { requireProjectPermission } from './auth.actions'
+import { ProjectRole, ProjectAction } from '@/lib/permissions/project-permissions'
 
 const memberSchema = z.object({
   project_id: z.string().uuid(),
   user_id: z.string().uuid(),
-  role: z.enum(['owner', 'chef_projet', 'comptable', 'bailleur_lecture', 'consultant'])
+  role: z.enum(['OWNER', 'PROJECT_MANAGER', 'ACCOUNTANT', 'CONSULTANT', 'FUNDER_READONLY'])
 })
 
 export async function addMember(data: z.infer<typeof memberSchema>) {
@@ -16,7 +17,7 @@ export async function addMember(data: z.infer<typeof memberSchema>) {
   if (!parsed.success) return { error: 'Invalid data', details: parsed.error.issues }
 
   try {
-    await requireRole(parsed.data.project_id, ['owner'])
+    await requireProjectPermission(parsed.data.project_id, 'invite_members')
   } catch (error: any) {
     return { error: error.message }
   }
@@ -31,7 +32,11 @@ export async function addMember(data: z.infer<typeof memberSchema>) {
 
 export async function updateMemberRole(projectId: string, userId: string, newRole: string) {
   try {
-    await requireRole(projectId, ['owner'])
+    await requireProjectPermission(projectId, 'manage_roles')
+    
+    if (newRole === 'OWNER') {
+      return { error: 'Le rôle de propriétaire ne peut pas être attribué de cette manière. Utilisez la fonction de transfert de propriété.' }
+    }
   } catch (error: any) {
     return { error: error.message }
   }
@@ -49,7 +54,7 @@ export async function updateMemberRole(projectId: string, userId: string, newRol
 
 export async function removeMember(projectId: string, userId: string) {
   try {
-    await requireRole(projectId, ['owner'])
+    await requireProjectPermission(projectId, 'manage_team')
   } catch (error: any) {
     return { error: error.message }
   }
@@ -61,7 +66,7 @@ export async function removeMember(projectId: string, userId: string) {
     .from('project_members')
     .select('id')
     .eq('project_id', projectId)
-    .eq('role', 'owner')
+    .eq('role', 'OWNER')
     
   const { data: member } = await supabase
     .from('project_members')
@@ -69,8 +74,8 @@ export async function removeMember(projectId: string, userId: string) {
     .match({ project_id: projectId, user_id: userId })
     .single()
 
-  if (member?.role === 'owner' && owners && owners.length <= 1) {
-    return { error: 'Impossible de supprimer le seul propriétaire du projet.' }
+  if (member?.role === 'OWNER' && owners && owners.length <= 1) {
+    return { error: 'Impossible de supprimer le seul propriétaire du projet. Veuillez transférer la propriété avant.' }
   }
 
   const { error } = await supabase
@@ -79,6 +84,29 @@ export async function removeMember(projectId: string, userId: string) {
     .match({ project_id: projectId, user_id: userId })
 
   if (error) return { error: error.message }
+  revalidatePath(`/projects/${projectId}/membres`)
+  return { success: true }
+}
+
+export async function transferOwnership(projectId: string, newOwnerId: string) {
+  try {
+    await requireProjectPermission(projectId, 'transfer_ownership')
+  } catch (error: any) {
+    return { error: error.message }
+  }
+
+  const supabase = await createClient()
+
+  // Use the secure RPC function to ensure atomicity
+  const { error } = await supabase.rpc('transfer_project_ownership', {
+    p_project_id: projectId,
+    p_new_owner_id: newOwnerId
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
   revalidatePath(`/projects/${projectId}/membres`)
   return { success: true }
 }

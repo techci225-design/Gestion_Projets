@@ -7,7 +7,7 @@ import { requireRole } from './auth.actions'
 
 export async function updateEvmDate(projectId: string, date: string) {
   try {
-    await requireRole(projectId, ['owner', 'chef_projet'])
+    await requireRole(projectId, ['OWNER', 'PROJECT_MANAGER'])
   } catch (error: any) {
     return { error: error.message }
   }
@@ -47,7 +47,7 @@ export async function createEvmTask(data: z.infer<typeof evmTaskSchema>) {
   }
 
   try {
-    await requireRole(parsed.data.project_id, ['owner', 'chef_projet', 'consultant'])
+    await requireRole(parsed.data.project_id, ['OWNER', 'PROJECT_MANAGER', 'CONSULTANT'])
   } catch (error: any) {
     return { error: error.message }
   }
@@ -92,7 +92,7 @@ export async function updateEvmTask(data: z.infer<typeof updateEvmTaskSchema>) {
   }
 
   try {
-    await requireRole(parsed.data.project_id, ['owner', 'chef_projet', 'consultant'])
+    await requireRole(parsed.data.project_id, ['OWNER', 'PROJECT_MANAGER', 'CONSULTANT'])
   } catch (error: any) {
     return { error: error.message }
   }
@@ -123,7 +123,7 @@ export async function updateEvmTask(data: z.infer<typeof updateEvmTaskSchema>) {
 
 export async function deleteEvmTask(projectId: string, taskId: string) {
   try {
-    await requireRole(projectId, ['owner', 'chef_projet'])
+    await requireRole(projectId, ['OWNER', 'PROJECT_MANAGER'])
   } catch (error: any) {
     return { error: error.message }
   }

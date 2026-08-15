@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { suggestBudgetLine } from '@/lib/ai/claude'
-import { requireRole } from '@/lib/actions/auth.actions'
+import { requireProjectPermission } from '@/lib/actions/auth.actions'
 
 export async function POST(req: Request) {
   try {
@@ -10,7 +10,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 })
     }
 
-    await requireRole(projectId, ['owner', 'chef_projet', 'comptable'])
+    await requireProjectPermission(projectId, 'edit_tasks')
 
     const supabase = await createClient()
     const { data: budgetLines } = await supabase.from('budget_lines').select('code, label').eq('project_id', projectId)

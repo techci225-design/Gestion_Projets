@@ -17,7 +17,7 @@ export async function createEvmSnapshot(projectId: string, snapshotData: any, ov
     .eq('user_id', user.id)
     .single()
 
-  if (!member || !['owner', 'chef_projet'].includes(member.role)) {
+  if (!member || !['OWNER', 'PROJECT_MANAGER'].includes(member.role)) {
     return { error: 'Permissions insuffisantes pour créer un arrêté EVM' }
   }
 

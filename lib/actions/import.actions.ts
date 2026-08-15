@@ -39,7 +39,7 @@ export async function executeImport(projectId: string, formData: FormData, mappi
 
   try {
     // Only owners or chef_projet can import (or anyone with write access, but let's enforce owner/chef_projet for import)
-    await requireRole(projectId, ['owner', 'chef_projet'])
+    await requireRole(projectId, ['OWNER', 'PROJECT_MANAGER'])
   } catch (err: any) {
     return { error: err.message }
   }
@@ -245,7 +245,7 @@ export async function importTasksToExistingProject(projectId: string, tasksData:
   }
 
   try {
-    await requireRole(projectId, ['owner', 'chef_projet']);
+    await requireRole(projectId, ['OWNER', 'PROJECT_MANAGER']);
 
     const wbsTasks = tasksData.map(row => {
       const parseDate = (dateStr: string) => {

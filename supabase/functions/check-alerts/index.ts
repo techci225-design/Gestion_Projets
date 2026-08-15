@@ -181,7 +181,7 @@ Deno.serve(async (req) => {
               'Budget dépassé',
               `La ligne budgétaire "${b.name}" a dépassé 100% de consommation.`,
               `/projects/${pid}/budget`,
-              ['owner', 'chef_projet', 'comptable'],
+              ['OWNER', 'PROJECT_MANAGER', 'ACCOUNTANT'],
               project.name
             )
           } else if (b.taux_consommation >= 0.8) {
@@ -191,7 +191,7 @@ Deno.serve(async (req) => {
               'Alerte budget (80%)',
               `La ligne budgétaire "${b.name}" a atteint ${Math.round(b.taux_consommation * 100)}% de consommation.`,
               `/projects/${pid}/budget`,
-              ['owner', 'chef_projet', 'comptable'],
+              ['OWNER', 'PROJECT_MANAGER', 'ACCOUNTANT'],
               project.name
             )
           }
@@ -221,7 +221,7 @@ Deno.serve(async (req) => {
               'Échéance de marché dépassée',
               `Le marché "${m.description}" a une échéance dépassée.`,
               `/projects/${pid}/marches`,
-              ['owner', 'chef_projet'],
+              ['OWNER', 'PROJECT_MANAGER'],
               project.name
             )
           }
@@ -234,7 +234,7 @@ Deno.serve(async (req) => {
               'Échéance de marché proche',
               `Le marché "${m.description}" arrive à échéance dans moins de 15 jours.`,
               `/projects/${pid}/marches`,
-              ['owner', 'chef_projet'],
+              ['OWNER', 'PROJECT_MANAGER'],
               project.name
             )
           }
@@ -257,7 +257,7 @@ Deno.serve(async (req) => {
             'Risque Critique Détecté',
             `Le risque "${r.title}" est classé critique (9/9).`,
             `/projects/${pid}/risques`,
-            ['owner', 'chef_projet'],
+            ['OWNER', 'PROJECT_MANAGER'],
             project.name
           )
         }
@@ -278,7 +278,7 @@ Deno.serve(async (req) => {
             'Alerte EVM : Coût',
             `L'indice de performance des coûts (CPI) est à ${Number(evm.cpi_global).toFixed(2)}. Un dépassement de budget est probable.`,
             `/projects/${pid}/evm`,
-            ['owner', 'chef_projet'],
+            ['OWNER', 'PROJECT_MANAGER'],
             project.name
           )
         }
@@ -289,7 +289,7 @@ Deno.serve(async (req) => {
             'Alerte EVM : Délai',
             `L'indice de performance des délais (SPI) est à ${Number(evm.spi_global).toFixed(2)}. Un retard est probable.`,
             `/projects/${pid}/evm`,
-            ['owner', 'chef_projet'],
+            ['OWNER', 'PROJECT_MANAGER'],
             project.name
           )
         }

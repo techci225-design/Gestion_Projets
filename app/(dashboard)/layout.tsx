@@ -50,13 +50,15 @@ export default async function DashboardLayout({
   // Check if they have ANY pending invitations. If they do, FORCE them to the invite confirmation screen.
   const { data: pendingInvs } = await authAdminClient
     .from('invitations')
-    .select('token')
+    .select('id')
     .ilike('invited_email', user.email || '')
     .eq('status', 'pending')
     .limit(1)
 
   if (pendingInvs && pendingInvs.length > 0) {
-    redirect(`/invite/${pendingInvs[0].token}`)
+    // Si l'utilisateur arrive ici, il doit finaliser son invitation.
+    // L'ID est passé pour que /invitation/setup puisse faire sa vérification de sécurité.
+    redirect(`/invitation/setup?invitation_id=${pendingInvs[0].id}`)
   }
 
   const cookieStore = await cookies()

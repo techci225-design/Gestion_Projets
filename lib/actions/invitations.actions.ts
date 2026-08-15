@@ -63,7 +63,7 @@ export async function sendInvitation(payload: {
      }
   } else if (payload.project_id) {
      const { data: projMember } = await supabase.from('project_members').select('role').eq('project_id', payload.project_id).eq('user_id', user.id).single();
-     if (!projMember || (projMember.role !== 'chef_projet' && projMember.role !== 'owner')) {
+     if (!projMember || (projMember.role !== 'PROJECT_MANAGER' && projMember.role !== 'OWNER')) {
         return { error: 'Vous devez être chef de projet ou propriétaire pour inviter des membres.' };
      }
   }
@@ -99,8 +99,8 @@ export async function sendInvitation(payload: {
   const { data, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(
     payload.email,
     {
-      redirectTo: `${siteUrl}/api/auth/callback?next=/invite/${token}`,
-      data: { invitation_token: token }
+      redirectTo: `${siteUrl}/auth/confirm`,
+      data: { invitation_id: invitation.id }
     }
   )
 
@@ -110,11 +110,21 @@ export async function sendInvitation(payload: {
     // If the user already exists, Supabase throws an error for inviteUserByEmail.
     // In this case, we send them a Magic Link which will redirect them to the invite page.
     if (inviteError.message.toLowerCase().includes('already') || inviteError.status === 422 || inviteError.status === 400) {
+      // Find the existing user and explicitly update their metadata
+      const { data: usersData } = await adminClient.auth.admin.listUsers()
+      const existingUser = usersData?.users?.find(u => u.email?.toLowerCase() === payload.email.toLowerCase())
+      
+      if (existingUser) {
+        await adminClient.auth.admin.updateUserById(existingUser.id, {
+          user_metadata: { ...existingUser.user_metadata, invitation_id: invitation.id }
+        })
+      }
+
       const { error: magicLinkError } = await adminClient.auth.signInWithOtp({
         email: payload.email,
         options: {
-          emailRedirectTo: `${siteUrl}/api/auth/callback?next=/invite/${token}`,
-          data: { invitation_token: token }
+          emailRedirectTo: `${siteUrl}/auth/confirm`,
+          data: { invitation_id: invitation.id }
         }
       })
       
@@ -133,92 +143,64 @@ export async function sendInvitation(payload: {
   return { success: true }
 }
 
-export async function acceptInvitation(token: string, formData?: { password?: string, first_name?: string, last_name?: string }) {
-  let adminClient
-  try {
-    adminClient = createAdminClient()
-  } catch (err: any) {
-    return { error: 'Erreur configuration admin.' }
+export async function acceptInvitationFlow(invitationId: string, password?: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user || !user.email) {
+    return { error: 'Non authentifié. Veuillez recliquer sur le lien.' }
   }
 
-  // 1. Validate Token
+  const adminClient = createAdminClient()
+
+  // Verify the invitation exists and is pending
   const { data: invitation, error: invError } = await adminClient
     .from('invitations')
     .select('*')
-    .eq('token', token)
+    .eq('id', invitationId)
     .single()
 
   if (invError || !invitation) {
-    return { error: 'Lien d\'invitation invalide.' }
+    return { error: 'Invitation introuvable.' }
   }
 
   if (invitation.status !== 'pending') {
-    return { error: 'Cette invitation a expiré ou a déjà été utilisée.' }
+    return { error: 'Cette invitation a déjà été utilisée ou est expirée.' }
   }
 
-  if (new Date(invitation.expires_at) < new Date()) {
-    // Should be caught by the edge function, but just in case
-    await adminClient.from('invitations').update({ status: 'expired' }).eq('id', invitation.id)
-    return { error: 'Cette invitation a expiré ou a déjà été utilisée.' }
+  if (invitation.invited_email.toLowerCase() !== user.email.toLowerCase()) {
+    return { error: 'Cette invitation est destinée à une autre adresse email.' }
   }
 
-  // 2. Identify User
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  let userId = null
-
-  // We should NEVER update a user password if they are logged in as someone else!
-  if (user && user.email?.toLowerCase() === invitation.invited_email.toLowerCase()) {
-    userId = user.id
-  } else if (user) {
-    return { error: `Vous êtes connecté en tant que ${user.email}. Veuillez vous déconnecter pour accepter cette invitation destinée à ${invitation.invited_email}.` }
-  } else {
-    // User is not logged in. Find them by email in auth.users using adminClient
-    const { data: usersData, error: usersError } = await adminClient.auth.admin.listUsers()
-    if (!usersError && usersData?.users) {
-      const existingUser = usersData.users.find(u => u.email?.toLowerCase() === invitation.invited_email.toLowerCase())
-      if (existingUser) {
-        userId = existingUser.id
-      }
-    }
-  }
-
-  if (!userId) {
-    return { error: 'Utilisateur introuvable. Une erreur est survenue lors de la récupération de votre compte (délai de synchronisation).' }
-  }
-
-  // Update password using adminClient so we don't rely on the current session
-  if (formData?.password) {
-    const { error: updateAuthError } = await adminClient.auth.admin.updateUserById(userId, {
-      password: formData.password
+  // Update password if provided
+  if (password) {
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: password
     })
-    if (updateAuthError) {
-      return { error: 'Erreur lors de la configuration du mot de passe.' }
+    if (updateError) {
+      console.error('Password update error:', updateError)
+      return { error: 'Erreur lors de la création du mot de passe.' }
     }
   }
 
-  // 3. Ensure Profile exists
-  const { data: profile } = await adminClient.from('profiles').select('id').eq('id', userId).single()
+  // Create profile if missing
+  const { data: profile } = await adminClient.from('profiles').select('id').eq('id', user.id).single()
   if (!profile) {
     const { error: profileError } = await adminClient.from('profiles').insert({
-      id: userId,
-      email: invitation.invited_email,
-      full_name: formData?.first_name || formData?.last_name 
-        ? `${formData.first_name || ''} ${formData.last_name || ''}`.trim() 
-        : invitation.invited_email.split('@')[0]
+      id: user.id,
+      email: user.email,
+      full_name: user.email.split('@')[0]
     })
     if (profileError) {
-      console.error('Profile insert error:', profileError)
-      return { error: 'Erreur lors de la création du profil utilisateur.' }
+      return { error: 'Erreur lors de la création du profil.' }
     }
   }
 
-  // 4. Add to organization
+  // Add to organization
   const { error: orgError } = await adminClient.from('organization_members').upsert({
     organization_id: invitation.organization_id,
-    user_id: userId,
-    org_role: 'member'
+    user_id: user.id,
+    org_role: invitation.invited_role === 'owner' ? 'owner' : invitation.invited_role === 'admin' ? 'admin' : 'member'
   }, { onConflict: 'organization_id,user_id' })
 
   if (orgError) {
@@ -226,27 +208,25 @@ export async function acceptInvitation(token: string, formData?: { password?: st
     return { error: 'Erreur critique: Impossible de vous ajouter à l\'organisation.' }
   }
 
-  // 5. Add to project if exists
+  // Add to project if exists
   if (invitation.project_id) {
     const { error: projError } = await adminClient.from('project_members').upsert({
       project_id: invitation.project_id,
-      user_id: userId,
+      user_id: user.id,
       role: invitation.invited_role
     }, { onConflict: 'project_id,user_id' })
     if (projError) {
-      console.error('Proj member insert error', projError)
       return { error: 'Erreur critique: Impossible de vous ajouter au projet.' }
     }
   }
 
-  // 6. Mark the current invitation as accepted
+  // Mark as accepted
   const { error: finalUpdateError } = await adminClient.from('invitations')
     .update({ status: 'accepted' })
     .eq('id', invitation.id)
   
   if (finalUpdateError) {
-    console.error('Failed to mark invitation as accepted:', finalUpdateError)
-    return { error: 'Erreur lors de la validation de l\'invitation.' }
+    return { error: 'Erreur lors de la validation finale de l\'invitation.' }
   }
 
   // Optionally mark other pending invitations for this org/project as accepted

@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
+import { ProjectRole, ProjectAction, hasProjectPermission, normalizeRole } from '@/lib/permissions/project-permissions'
 
 export async function createOrganization(formData: FormData) {
   const supabase = await createClient()
@@ -63,8 +64,6 @@ export async function createOrganization(formData: FormData) {
   return { success: true }
 }
 
-export type ProjectRole = 'owner' | 'chef_projet' | 'comptable' | 'bailleur_lecture' | 'consultant'
-
 export async function getUserRole(projectId: string): Promise<ProjectRole | null> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -78,7 +77,7 @@ export async function getUserRole(projectId: string): Promise<ProjectRole | null
     .eq('user_id', user.id)
     .single()
 
-  if (data) return data.role as ProjectRole
+  if (data) return normalizeRole(data.role)
 
   // 2. Check Super Admin
   const { data: profile } = await supabase
@@ -87,7 +86,7 @@ export async function getUserRole(projectId: string): Promise<ProjectRole | null
     .eq('id', user.id)
     .single()
 
-  if (profile?.is_super_admin) return 'owner'
+  if (profile?.is_super_admin) return 'OWNER'
 
   // 3. Check Organization Admin/Owner
   const { data: project } = await supabase
@@ -105,17 +104,25 @@ export async function getUserRole(projectId: string): Promise<ProjectRole | null
       .single()
 
     if (orgMember && ['owner', 'admin'].includes(orgMember.org_role)) {
-      return 'owner'
+      return 'OWNER'
     }
   }
 
   return null
 }
 
-export async function requireRole(projectId: string, allowedRoles: ProjectRole[]) {
+export async function requireRole(projectId: string, allowedRoles: string[]) {
   const role = await getUserRole(projectId)
-  if (!role || !allowedRoles.includes(role)) {
+  if (!role || !allowedRoles.map(r => normalizeRole(r)).includes(role)) {
     throw new Error('Non autorisé')
+  }
+  return role
+}
+
+export async function requireProjectPermission(projectId: string, action: ProjectAction) {
+  const role = await getUserRole(projectId)
+  if (!hasProjectPermission(role, action)) {
+    throw new Error('Vous n\'avez pas les droits nécessaires pour cette action.')
   }
   return role
 }

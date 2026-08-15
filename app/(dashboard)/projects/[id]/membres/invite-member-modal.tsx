@@ -80,11 +80,10 @@ export function InviteMemberModal({
                 required
                 className="w-full px-3 py-2 border border-border rounded-md text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors bg-white"
               >
-                <option value="owner">Propriétaire</option>
-                <option value="chef_projet">Chef de Projet</option>
-                <option value="comptable">Comptable</option>
-                <option value="bailleur_lecture">Bailleur (Lecture)</option>
-                <option value="consultant">Consultant</option>
+                <option value="PROJECT_MANAGER">Chef de Projet</option>
+                <option value="ACCOUNTANT">Comptable</option>
+                <option value="FUNDER_READONLY">Bailleur (Lecture)</option>
+                <option value="CONSULTANT">Consultant</option>
               </select>
             </div>
           </div>
