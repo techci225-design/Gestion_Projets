@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
 
 export async function sendInvitation(payload: {
   project_id: string,
@@ -89,7 +90,10 @@ export async function sendInvitation(payload: {
 
   const token = invitation.token
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const headersList = await headers()
+  const host = headersList.get('host') || 'localhost:3000'
+  const protocol = host.includes('localhost') ? 'http' : 'https'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || `${protocol}://${host}`
 
   // Send via Supabase native invite system
   const { data, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(
