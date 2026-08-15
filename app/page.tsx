@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { LayoutDashboard, CheckCircle2, ShieldCheck, PieChart, Activity, Target, Banknote, Briefcase, FileText } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import AuthHashHandler from '@/components/AuthHashHandler'
 
 export default async function LandingPage() {
   const supabase = await createClient()
@@ -13,6 +14,7 @@ export default async function LandingPage() {
 
   return (
     <div className="min-h-screen bg-white text-slate-800 selection:bg-indigo-200">
+      <AuthHashHandler />
       {/* SECTION 1 — HERO */}
       <section className="bg-[#1E3A5F] text-white pt-24 pb-32 px-4 relative overflow-hidden">
         <div className="absolute top-0 right-0 -mt-20 -mr-20 w-[600px] h-[600px] bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
