@@ -19,14 +19,40 @@ export default function AuthHashHandler() {
       // We listen for the session to be established.
       const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
         if (session) {
-          // Force a router refresh and push to /projects so the server picks up the new session cookie
-          router.push('/projects')
+          const isInvite = window.location.hash.includes('type=invite')
+          // Force a router refresh and push to appropriate page so the server picks up the new session cookie
+          if (isInvite) {
+            router.push('/setup-profile')
+          } else {
+            router.push('/projects')
+          }
           router.refresh()
         }
       })
 
+      // Fallback: Check explicitly in case the event already fired or if it fails
+      const checkSession = async () => {
+        const { data } = await supabase.auth.getSession()
+        if (data.session) {
+          const isInvite = window.location.hash.includes('type=invite')
+          if (isInvite) {
+            router.push('/setup-profile')
+          } else {
+            router.push('/projects')
+          }
+          router.refresh()
+        }
+      }
+      checkSession()
+
+      // Give it 5 seconds. If nothing happens, redirect to login with error
+      const timeoutId = setTimeout(() => {
+        router.push('/login?error=Lien invalide ou expiré')
+      }, 5000)
+
       return () => {
         subscription.unsubscribe()
+        clearTimeout(timeoutId)
       }
     }
   }, [router])
