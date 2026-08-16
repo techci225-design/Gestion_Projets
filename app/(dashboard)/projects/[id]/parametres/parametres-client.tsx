@@ -354,7 +354,7 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
               </form>
 
               {/* Danger Zone */}
-              {userRole === 'owner' && (
+              {(userRole?.toLowerCase() === 'owner' || hasProjectPermission(userRole as ProjectRole, 'delete_project')) && (
                 <div className="mt-12">
                   <div className="border-b border-danger/20 pb-4 mb-6">
                     <h3 className="text-xl font-semibold text-danger">Zone de danger</h3>
