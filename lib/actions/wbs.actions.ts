@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { hasProjectPermission, ProjectRole } from '../permissions/project-permissions'
 
-const WbsTaskSchema = z.object({
+const WbsTaskBaseSchema = z.object({
   id: z.string().uuid().optional(),
   project_id: z.string().uuid(),
   parent_id: z.string().uuid().nullable().optional(),
@@ -21,7 +21,19 @@ const WbsTaskSchema = z.object({
   budget_allocated: z.number().min(0).default(0),
   actual_cost: z.number().min(0).default(0),
   percent_complete: z.number().min(0).max(100).default(0),
-}).refine(data => new Date(data.date_start) <= new Date(data.date_end), {
+});
+
+const WbsTaskSchema = WbsTaskBaseSchema.refine(data => new Date(data.date_start) <= new Date(data.date_end), {
+  message: "La date de début doit être antérieure ou égale à la date de fin",
+  path: ["date_end"]
+});
+
+const UpdateWbsTaskSchema = WbsTaskBaseSchema.omit({ project_id: true }).partial().refine(data => {
+  if (data.date_start && data.date_end) {
+    return new Date(data.date_start) <= new Date(data.date_end);
+  }
+  return true;
+}, {
   message: "La date de début doit être antérieure ou égale à la date de fin",
   path: ["date_end"]
 });
@@ -182,8 +194,7 @@ export async function updateWbsTask(id: string, projectId: string, data: any) {
     if (data.responsible_user_id === '') data.responsible_user_id = null
     
     // Minimal validation for updates
-    const updateSchema = WbsTaskSchema.omit({ project_id: true }).partial()
-    const validatedData = updateSchema.parse(data)
+    const validatedData = UpdateWbsTaskSchema.parse(data)
     
     const supabase = await createClient()
 

@@ -25,6 +25,31 @@ export function PlanningClient({ projectId, project, initialTasks, teamMembers, 
   // Ref for the scrolling container
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
+  // Expand / Collapse
+  const toggleExpand = (id: string) => {
+    const next = new Set(expandedNodes)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    setExpandedNodes(next)
+  }
+
+  const isVisible = (task: any) => {
+    let current = task.parent_id
+    while (current) {
+      if (!expandedNodes.has(current)) return false
+      const parent = tasks.find((t) => t.id === current)
+      current = parent?.parent_id
+    }
+    
+    if (filterStatus !== 'ALL' && task.status !== filterStatus) return false
+    if (filterResponsible !== 'ALL') {
+      if (filterResponsible === 'UNASSIGNED' && task.responsible_user_id !== null) return false
+      if (filterResponsible !== 'UNASSIGNED' && task.responsible_user_id !== filterResponsible) return false
+    }
+    
+    return true
+  }
+
   // Timeline boundaries calculation
   const timelineInterval = useMemo(() => {
     let earliest = startOfMonth(addDays(new Date(), -7))
@@ -72,30 +97,6 @@ export function PlanningClient({ projectId, project, initialTasks, teamMembers, 
     }
   }
 
-  // Expand / Collapse
-  const toggleExpand = (id: string) => {
-    const next = new Set(expandedNodes)
-    if (next.has(id)) next.delete(id)
-    else next.add(id)
-    setExpandedNodes(next)
-  }
-
-  const isVisible = (task: any) => {
-    let current = task.parent_id
-    while (current) {
-      if (!expandedNodes.has(current)) return false
-      const parent = tasks.find((t) => t.id === current)
-      current = parent?.parent_id
-    }
-    
-    if (filterStatus !== 'ALL' && task.status !== filterStatus) return false
-    if (filterResponsible !== 'ALL') {
-      if (filterResponsible === 'UNASSIGNED' && task.responsible_user_id !== null) return false
-      if (filterResponsible !== 'UNASSIGNED' && task.responsible_user_id !== filterResponsible) return false
-    }
-    
-    return true
-  }
 
   const sortedTasks = useMemo(() => {
     return [...tasks].sort((a, b) => {
