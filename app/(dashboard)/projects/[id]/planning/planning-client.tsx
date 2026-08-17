@@ -27,29 +27,33 @@ export function PlanningClient({ projectId, project, initialTasks, teamMembers, 
 
   // Timeline boundaries calculation
   const timelineInterval = useMemo(() => {
-    let earliest = new Date()
-    let latest = addMonths(new Date(), 6)
+    let earliest = startOfMonth(addDays(new Date(), -7))
+    let latest = endOfMonth(addDays(new Date(), 7))
 
-    const validDates = tasks.filter(t => t.date_start && t.date_end)
+    const validDates = tasks.filter(t => isVisible(t) && t.date_start && t.date_end)
     if (validDates.length > 0) {
       const allStarts = validDates.map(t => new Date(t.date_start))
       const allEnds = validDates.map(t => new Date(t.date_end))
-      const minDate = min(allStarts)
-      const maxDate = max(allEnds)
+      const minDate = min([...allStarts, new Date()])
+      const maxDate = max([...allEnds, new Date()])
       
-      // Pad by 1 month before and after
-      earliest = startOfMonth(addMonths(minDate, -1))
-      latest = endOfMonth(addMonths(maxDate, 1))
-    } else {
-      earliest = startOfMonth(addMonths(new Date(), -1))
-      latest = endOfMonth(addMonths(new Date(), 6))
+      // Pad by 7 days before and after
+      earliest = startOfMonth(addDays(minDate, -7))
+      latest = endOfMonth(addDays(maxDate, 7))
     }
 
     return { start: earliest, end: latest }
-  }, [tasks])
+  }, [tasks, filterStatus, filterResponsible, expandedNodes])
 
   const totalDays = differenceInDays(timelineInterval.end, timelineInterval.start) + 1
-  const DAY_WIDTH = 25 // Pixels per day
+  
+  const DAY_WIDTH = useMemo(() => {
+    if (totalDays > 365 * 3) return 5
+    if (totalDays > 365) return 10
+    if (totalDays > 180) return 20
+    if (totalDays > 90) return 30
+    return 40
+  }, [totalDays])
 
   const months = useMemo(() => {
     return eachMonthOfInterval({ start: timelineInterval.start, end: timelineInterval.end })
@@ -58,6 +62,15 @@ export function PlanningClient({ projectId, project, initialTasks, teamMembers, 
   const today = startOfDay(new Date())
   const todayOffset = differenceInDays(today, timelineInterval.start) * DAY_WIDTH
   const isTodayInTimeline = isWithinInterval(today, { start: timelineInterval.start, end: timelineInterval.end })
+
+  const scrollToDate = (date: Date) => {
+    if (scrollContainerRef.current) {
+      const containerWidth = scrollContainerRef.current.clientWidth
+      const offset = differenceInDays(startOfDay(date), timelineInterval.start) * DAY_WIDTH
+      const scrollTarget = Math.max(0, offset - (containerWidth - 450) / 2)
+      scrollContainerRef.current.scrollTo({ left: scrollTarget, behavior: 'smooth' })
+    }
+  }
 
   // Expand / Collapse
   const toggleExpand = (id: string) => {
@@ -170,14 +183,11 @@ export function PlanningClient({ projectId, project, initialTasks, teamMembers, 
 
   // Scroll to today on mount
   useEffect(() => {
-    if (scrollContainerRef.current && isTodayInTimeline) {
-      // Center today in the view (roughly)
-      const containerWidth = scrollContainerRef.current.clientWidth
-      // subtract left pane width (400px)
-      const scrollTarget = Math.max(0, todayOffset - (containerWidth - 400) / 2)
-      scrollContainerRef.current.scrollTo({ left: scrollTarget, behavior: 'smooth' })
-    }
-  }, [isTodayInTimeline, todayOffset])
+    const timeout = setTimeout(() => {
+      scrollToDate(new Date())
+    }, 100)
+    return () => clearTimeout(timeout)
+  }, [timelineInterval.start, DAY_WIDTH])
 
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] space-y-4">
@@ -217,13 +227,7 @@ export function PlanningClient({ projectId, project, initialTasks, teamMembers, 
           </div>
           
           <button 
-            onClick={() => {
-              if (scrollContainerRef.current) {
-                const containerWidth = scrollContainerRef.current.clientWidth
-                const scrollTarget = Math.max(0, todayOffset - (containerWidth - 400) / 2)
-                scrollContainerRef.current.scrollTo({ left: scrollTarget, behavior: 'smooth' })
-              }
-            }}
+            onClick={() => scrollToDate(new Date())}
             className="flex items-center gap-2 bg-white border border-border hover:bg-slate-50 text-text-primary px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm h-10"
           >
             Aujourd'hui
