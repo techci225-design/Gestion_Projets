@@ -221,7 +221,7 @@ export function TasksClient({ projectId, project, initialTasks, teamMembers, use
                       </div>
                     </td>
                     <td className="p-4 text-text-secondary">
-                      {task.responsible?.profiles?.full_name || task.responsible_user_id || 'Non assigné'}
+                      {task.responsible?.full_name || (task.responsible_user_id ? 'Utilisateur inconnu' : 'Non assigné')}
                     </td>
                     <td className="p-4 align-top text-right font-mono font-medium">
                       {formatCurrency(Number(task.budget_allocated), project?.currency, true)}
