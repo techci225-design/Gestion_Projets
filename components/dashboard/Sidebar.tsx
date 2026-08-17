@@ -37,6 +37,8 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
     { name: 'Équipe', href: `/projects/${projectId}/membres`, icon: Users },
     { name: 'Configuration', href: `/projects/${projectId}/parametres`, icon: Settings },
     { name: 'Cadre Logique', href: `/projects/${projectId}/logframe`, icon: FolderTree },
+    { name: 'WBS / Tâches', href: `/projects/${projectId}/tasks`, icon: LayoutGrid },
+    { name: 'Planning', href: `/projects/${projectId}/planning`, icon: CalendarDays },
     { name: 'PTBA', href: `/projects/${projectId}/ptba`, icon: CalendarDays },
     { name: 'Budget', href: `/projects/${projectId}/budget`, icon: Wallet },
     { name: 'Journal des opérations', href: `/projects/${projectId}/budget/journal`, icon: Receipt },

@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation'
 import { PtbaClient } from './ptba-client'
 import { getPtbaActivities } from '@/lib/actions/ptba.actions'
 import { getLogframe } from '@/lib/actions/logframe.actions'
+import { getWbsTasks } from '@/lib/actions/wbs.actions'
+import { getBudgetLines } from '@/lib/actions/budget.actions'
 
 export const metadata = {
   title: 'PTBA | Gestion de Projets',
@@ -33,14 +35,18 @@ export default async function PtbaPage({ params, searchParams }: { params: Promi
     redirect('/projects')
   }
 
-  // 2. Fetch PTBA and Logframe
-  const [ptbaActivities, logframeItems] = await Promise.all([
+  // 2. Fetch PTBA, Logframe, WBS and Budget
+  const [ptbaActivities, logframeItems, wbsTasksRes, budgetLinesRes] = await Promise.all([
     getPtbaActivities(id, currentYear),
-    getLogframe(id)
+    getLogframe(id),
+    getWbsTasks(id),
+    getBudgetLines(id)
   ])
 
   // Filter logframe to only pass "activities" (or everything, but let's pass all to allow selection)
-  const logframeActivities = logframeItems.filter(item => item.level === 'activite')
+  const logframeActivities = logframeItems.filter((item: any) => item.level === 'activite')
+  const wbsTasks = wbsTasksRes.data || []
+  const budgetLines = budgetLinesRes || []
 
   return (
     <div className="flex-1 overflow-auto bg-background">
@@ -55,6 +61,8 @@ export default async function PtbaPage({ params, searchParams }: { params: Promi
           currentYear={currentYear} 
           initialData={ptbaActivities} 
           logframeActivities={logframeActivities}
+          wbsTasks={wbsTasks}
+          budgetLines={budgetLines}
           currency={project.currency}
         />
       </div>

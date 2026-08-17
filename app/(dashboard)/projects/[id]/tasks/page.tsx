@@ -1,13 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { ParametresClient } from './parametres-client'
+import { TasksClient } from './tasks-client'
+import { getWbsTasks } from '@/lib/actions/wbs.actions'
 
 export const metadata = {
-  title: 'Configuration du Projet | Gestion de Projets',
-  description: 'Le socle de gouvernance du projet'
+  title: 'WBS & Tâches | Gestion de Projets',
+  description: 'Structure de Répartition du Travail'
 }
 
-export default async function ParametresPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function TasksPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -28,7 +29,7 @@ export default async function ParametresPage({ params }: { params: Promise<{ id:
     redirect('/projects')
   }
 
-  // 1b. Get user role in project
+  // 2. Get user role
   const { data: member } = await supabase
     .from('project_members')
     .select('role')
@@ -38,26 +39,25 @@ export default async function ParametresPage({ params }: { params: Promise<{ id:
   
   const userRole = member?.role || ''
 
-  // 2. Fetch Funding Sources
-  const { data: fundingSources } = await supabase
-    .from('funding_sources')
-    .select('*')
+  // 3. Get Project Members for the assignation dropdown
+  const { data: teamMembers } = await supabase
+    .from('project_members')
+    .select(`
+      user_id,
+      role,
+      profiles:user_id (id, full_name, email)
+    `)
     .eq('project_id', id)
-    .order('created_at', { ascending: true })
 
-  // 3. Fetch Budget Lines
-  const { data: budgetLines } = await supabase
-    .from('budget_lines')
-    .select('*')
-    .eq('project_id', id)
-    .order('code', { ascending: true })
+  // 4. Get WBS tasks
+  const { data: wbsTasks } = await getWbsTasks(id)
 
   return (
-    <ParametresClient
+    <TasksClient
       projectId={id}
       project={project}
-      fundingSources={fundingSources || []}
-      budgetLines={budgetLines || []}
+      initialTasks={wbsTasks || []}
+      teamMembers={teamMembers || []}
       userRole={userRole}
     />
   )

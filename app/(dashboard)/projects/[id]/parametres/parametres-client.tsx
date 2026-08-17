@@ -9,7 +9,6 @@ import { updateProject, deleteProject } from '@/lib/actions/projects.actions'
 import { ProjectRole, hasProjectPermission } from '@/lib/permissions/project-permissions'
 import { useRouter } from 'next/navigation'
 import { AddBudgetModal } from '../budget/add-budget-modal'
-import { AddEvmTaskModal } from '../evm/add-evm-task-modal'
 import { RightDrawer } from '@/components/ui/RightDrawer'
 import { CommentsTab } from '@/components/dashboard/CommentsTab'
 
@@ -17,20 +16,17 @@ interface ParametresClientProps {
   projectId: string
   fundingSources: any[]
   budgetLines: any[]
-  wbsTasks: any[]
   userRole: string
   project?: any
 }
 
-export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTasks, userRole, project }: ParametresClientProps) {
+export function ParametresClient({ projectId, fundingSources, budgetLines, userRole, project }: ParametresClientProps) {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<'general' | 'bailleurs' | 'budget' | 'wbs' | 'statuts'>('general')
+  const [activeTab, setActiveTab] = useState<'general' | 'bailleurs' | 'budget' | 'statuts'>('general')
   const displayCurrency = getDisplayCurrency(project?.currency)
   
   // Modals state
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false)
-  const [isWbsModalOpen, setIsWbsModalOpen] = useState(false)
-  const [selectedWbsTask, setSelectedWbsTask] = useState<any>(null)
   
   // Bailleur form state
   const [isPending, startTransition] = useTransition()
@@ -163,15 +159,6 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
           >
             <FileText className="w-5 h-5" />
             Nomenclature Budgétaire
-          </button>
-          <button
-            onClick={() => setActiveTab('wbs')}
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-left ${
-              activeTab === 'wbs' ? 'bg-primary text-white' : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
-            }`}
-          >
-            <Layers className="w-5 h-5" />
-            Structure WBS (Tâches)
           </button>
           <button
             onClick={() => setActiveTab('statuts')}
@@ -547,54 +534,6 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
             </div>
           )}
 
-          {/* TAB: WBS */}
-          {activeTab === 'wbs' && (
-            <div className="space-y-6 animate-in fade-in duration-300">
-              <div className="flex justify-between items-center border-b border-border pb-4">
-                <h3 className="text-xl font-semibold text-text-primary">Structure de Répartition du Travail (WBS)</h3>
-                {canEdit && (
-                  <button 
-                    onClick={() => setIsWbsModalOpen(true)}
-                    className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                  >
-                    <Plus className="w-4 h-4" /> Nouvelle Tâche
-                  </button>
-                )}
-              </div>
-              <div className="overflow-x-auto border border-border rounded-lg">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-surface-dim border-b border-border text-text-secondary">
-                    <tr>
-                      <th className="p-3">Code / Phase</th>
-                      <th className="p-3">Description</th>
-                      <th className="p-3">Responsable</th>
-                      <th className="p-3 text-right">Budget ({displayCurrency})</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border bg-white">
-                    {wbsTasks.map((task: any) => (
-                      <tr 
-                        key={task.id} 
-                        className="hover:bg-slate-50 cursor-pointer"
-                        onClick={() => setSelectedWbsTask(task)}
-                      >
-                        <td className="p-3 font-medium text-text-primary">{task.code}</td>
-                        <td className="p-3 text-text-secondary max-w-xs truncate">{task.description}</td>
-                        <td className="p-3 text-text-secondary">{task.responsible || '—'}</td>
-                        <td className="p-3 text-right font-mono">{formatCurrency(Number(task.budget_allocated), project?.currency, true)}</td>
-                      </tr>
-                    ))}
-                    {wbsTasks.length === 0 && (
-                      <tr>
-                        <td colSpan={4} className="p-6 text-center text-text-secondary">Aucune tâche définie</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
           {/* TAB: Statuts */}
           {activeTab === 'statuts' && (
             <div className="space-y-6 animate-in fade-in duration-300">
@@ -643,33 +582,6 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, wbsTa
 
       {isBudgetModalOpen && (
         <AddBudgetModal projectId={projectId} onClose={() => setIsBudgetModalOpen(false)} currency={project?.currency} />
-      )}
-      
-      {isWbsModalOpen && (
-        <AddEvmTaskModal projectId={projectId} isOpen={isWbsModalOpen} onClose={() => setIsWbsModalOpen(false)} currency={project?.currency} />
-      )}
-
-      {selectedWbsTask && (
-        <RightDrawer
-          isOpen={!!selectedWbsTask}
-          onClose={() => setSelectedWbsTask(null)}
-          title={`Tâche WBS : ${selectedWbsTask.code}`}
-        >
-          <div className="flex border-b border-border px-4 pt-2">
-            <button
-              className="px-4 py-3 text-sm font-medium border-b-2 border-primary text-primary transition-colors"
-            >
-              Commentaires
-            </button>
-          </div>
-          <div className="h-[calc(100vh-130px)] overflow-y-auto">
-            <CommentsTab
-              projectId={projectId}
-              relatedTable="wbs_tasks"
-              relatedId={selectedWbsTask.id}
-            />
-          </div>
-        </RightDrawer>
       )}
     </div>
   )

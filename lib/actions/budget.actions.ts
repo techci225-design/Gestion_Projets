@@ -90,6 +90,25 @@ export async function updateBudgetLine(data: z.infer<typeof updateBudgetLineSche
   return { data: result }
 }
 
+export async function getBudgetLines(projectId: string) {
+  try {
+    await requireRole(projectId, ['owner', 'comptable', 'chef_projet', 'consultant'])
+    const supabase = await createClient()
+
+    const { data, error } = await supabase
+      .from('budget_lines')
+      .select('id, code, label, initial_allocated_amount')
+      .eq('project_id', projectId)
+      .order('code', { ascending: true })
+
+    if (error) throw error
+    return data || []
+  } catch (err: any) {
+    console.error('Error fetching budget lines:', err)
+    return []
+  }
+}
+
 export async function deleteBudgetLine(projectId: string, budgetLineId: string) {
   try {
     await requireRole(projectId, ['owner', 'comptable'])
@@ -123,8 +142,9 @@ export async function deleteBudgetLine(projectId: string, budgetLineId: string) 
 const operationJournalSchema = z.object({
   project_id: z.string().uuid(),
   budget_line_id: z.string().uuid(),
-  task_code: z.string().min(1),
-  phase_wbs: z.string().optional(),
+  wbs_task_id: z.string().uuid().optional().nullable(),
+  task_code: z.string().optional().nullable(),
+  phase_wbs: z.string().optional().nullable(),
   status: z.enum(['planifie', 'engage', 'decaisse', 'annule']),
   planned_cost: z.number().min(0),
   actual_cost: z.number().min(0).optional(),
@@ -181,6 +201,7 @@ export async function updateOperation(data: z.infer<typeof updateOperationJourna
     .from('operations_journal')
     .update({
       budget_line_id: parsed.data.budget_line_id,
+      wbs_task_id: parsed.data.wbs_task_id,
       task_code: parsed.data.task_code,
       phase_wbs: parsed.data.phase_wbs,
       status: parsed.data.status,

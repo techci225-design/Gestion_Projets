@@ -7,18 +7,19 @@ import { PtbaActivity, addPtbaActivity, updatePtbaActivity, deletePtbaActivity }
 import { Plus, Edit2, Trash2, Check, ChevronDown } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { ImportTasksButton } from '@/components/dashboard/ImportTasksButton'
+import { getDisplayCurrency } from '@/lib/utils/currency'
 
 interface PtbaClientProps {
   projectId: string
   currentYear: number
   initialData: PtbaActivity[]
   logframeActivities: LogframeItem[]
+  wbsTasks: any[]
+  budgetLines: any[]
   currency?: string
 }
 
-import { getDisplayCurrency } from '@/lib/utils/currency'
-
-export function PtbaClient({ projectId, currentYear, initialData, logframeActivities, currency }: PtbaClientProps) {
+export function PtbaClient({ projectId, currentYear, initialData, logframeActivities, wbsTasks, budgetLines, currency }: PtbaClientProps) {
   const displayCurrency = getDisplayCurrency(currency)
   const router = useRouter()
   const [data, setData] = useState<PtbaActivity[]>(initialData)
@@ -26,16 +27,13 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
   const [editingItem, setEditingItem] = useState<PtbaActivity | null>(null)
   
   const [formData, setFormData] = useState({
-    code: '',
-    description: '',
+    wbs_task_id: '',
+    budget_line_id: '',
     logframe_item_id: '',
-    responsible: '',
     q1: false,
     q2: false,
     q3: false,
     q4: false,
-    date_start: `${currentYear}-01-01`,
-    date_end: `${currentYear}-12-31`,
     budget_planned: 0
   })
   
@@ -48,16 +46,13 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
   const openAddModal = () => {
     setEditingItem(null)
     setFormData({
-      code: '',
-      description: '',
+      wbs_task_id: '',
+      budget_line_id: '',
       logframe_item_id: '',
-      responsible: '',
       q1: false,
       q2: false,
       q3: false,
       q4: false,
-      date_start: `${currentYear}-01-01`,
-      date_end: `${currentYear}-12-31`,
       budget_planned: 0
     })
     setIsDrawerOpen(true)
@@ -66,16 +61,13 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
   const openEditModal = (item: PtbaActivity) => {
     setEditingItem(item)
     setFormData({
-      code: item.code,
-      description: item.description,
+      wbs_task_id: item.wbs_task_id || '',
+      budget_line_id: item.budget_line_id || '',
       logframe_item_id: item.logframe_item_id || '',
-      responsible: item.responsible || '',
       q1: item.q1,
       q2: item.q2,
       q3: item.q3,
       q4: item.q4,
-      date_start: item.date_start || `${currentYear}-01-01`,
-      date_end: item.date_end || `${currentYear}-12-31`,
       budget_planned: item.budget_planned
     })
     setIsDrawerOpen(true)
@@ -97,31 +89,48 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
     setIsSubmitting(true)
     
     const payload = {
-      code: formData.code,
-      description: formData.description,
+      wbs_task_id: formData.wbs_task_id,
+      budget_line_id: formData.budget_line_id || null,
       logframe_item_id: formData.logframe_item_id || null,
-      responsible: formData.responsible || null,
       fiscal_year: currentYear,
       q1: formData.q1,
       q2: formData.q2,
       q3: formData.q3,
       q4: formData.q4,
-      date_start: formData.date_start,
-      date_end: formData.date_end,
       budget_planned: Number(formData.budget_planned)
     }
 
     try {
       if (editingItem) {
-        const updated = await updatePtbaActivity(projectId, editingItem.id, payload)
-        setData(prev => prev.map(item => item.id === editingItem.id ? { ...item, ...updated } : item))
+        const res = await updatePtbaActivity(projectId, editingItem.id, payload)
+        if (res.error) throw new Error(res.error)
+        
+        // Update local state with new info
+        const updatedWbs = wbsTasks.find(w => w.id === formData.wbs_task_id)
+        const updatedBudget = budgetLines.find(b => b.id === formData.budget_line_id)
+
+        setData(prev => prev.map(item => item.id === editingItem.id ? { 
+          ...item, 
+          ...res.data,
+          wbs_tasks: updatedWbs || item.wbs_tasks,
+          budget_lines: updatedBudget || item.budget_lines
+        } : item))
       } else {
-        const created = await addPtbaActivity(projectId, payload)
-        setData(prev => [...prev, created])
+        const res = await addPtbaActivity(projectId, payload)
+        if (res.error) throw new Error(res.error)
+        
+        const newWbs = wbsTasks.find(w => w.id === formData.wbs_task_id)
+        const newBudget = budgetLines.find(b => b.id === formData.budget_line_id)
+        
+        setData(prev => [...prev, {
+          ...res.data,
+          wbs_tasks: newWbs,
+          budget_lines: newBudget
+        }])
       }
       setIsDrawerOpen(false)
-    } catch (error) {
-      alert('Erreur lors de l\'enregistrement')
+    } catch (error: any) {
+      alert(error.message || 'Erreur lors de l\'enregistrement')
     } finally {
       setIsSubmitting(false)
     }
@@ -159,7 +168,7 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
           >
             <Plus className="w-4 h-4" />
-            Nouvelle Ligne PTBA
+            Programmer une Activité
           </button>
         </div>
       </div>
@@ -169,9 +178,9 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
           <table className="w-full text-left">
             <thead className="bg-background border-b border-border">
               <tr>
-                <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[10%]">Code</th>
-                <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[30%]">Composante / Activité</th>
-                <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[15%]">Responsable</th>
+                <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[10%]">Code WBS</th>
+                <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[25%]">Activité</th>
+                <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[15%]">Ligne Budgétaire</th>
                 <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider text-center">Q1</th>
                 <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider text-center">Q2</th>
                 <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider text-center">Q3</th>
@@ -185,16 +194,16 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
                 data.map((item) => (
                   <tr key={item.id} className="border-b border-border hover:bg-surface-hover transition-colors">
                     <td className="p-4 text-sm font-medium text-text-primary align-middle">
-                      {item.code}
+                      {item.wbs_tasks?.code || item.code}
                     </td>
                     <td className="p-4 text-sm align-middle">
-                      <p className="text-text-primary font-medium">{item.description}</p>
+                      <p className="text-text-primary font-medium">{item.wbs_tasks?.name || item.description}</p>
                       {item.logframe_items?.intervention_label && (
                         <p className="text-xs text-text-secondary mt-1">Lien: {item.logframe_items.intervention_label}</p>
                       )}
                     </td>
                     <td className="p-4 text-sm text-text-secondary align-middle">
-                      {item.responsible || '—'}
+                      {item.budget_lines?.code ? `${item.budget_lines.code} - ${item.budget_lines.label}` : '—'}
                     </td>
                     <td className="p-4 align-middle text-center">
                       {item.q1 ? <div className="w-6 h-6 rounded bg-green-100 flex items-center justify-center mx-auto text-green-700"><Check className="w-4 h-4"/></div> : <span className="text-border">—</span>}
@@ -254,7 +263,7 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
           <div className="bg-surface w-full max-w-2xl rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-6 border-b border-border flex items-center justify-between">
               <h3 className="text-lg font-semibold text-text-primary">
-                {editingItem ? 'Modifier la ligne PTBA' : `Nouvelle ligne PTBA ${currentYear}`}
+                {editingItem ? 'Modifier la programmation' : `Programmer une activité WBS pour ${currentYear}`}
               </h3>
               <button onClick={() => setIsDrawerOpen(false)} className="text-text-secondary hover:text-text-primary p-2">
                 &times;
@@ -263,104 +272,71 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
             
             <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6 flex-1">
               
-              {logframeActivities.length > 0 && (
+              <div className="grid grid-cols-1 gap-6">
+                
+                {/* 1. Sélection de la tâche WBS */}
                 <div>
                   <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Lier à une activité du Cadre Logique (Optionnel)
+                    Activité WBS à programmer <span className="text-red-500">*</span>
                   </label>
                   <select
-                    value={formData.logframe_item_id}
-                    onChange={e => {
-                      const id = e.target.value
-                      const selectedLogframe = logframeActivities.find(l => l.id === id)
-                      setFormData(prev => ({
-                        ...prev,
-                        logframe_item_id: id,
-                        // Auto-fill description if empty
-                        description: prev.description || (selectedLogframe?.intervention_label || '')
-                      }))
-                    }}
-                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
+                    required
+                    disabled={!!editingItem} // Ne pas changer la tâche WBS une fois programmée
+                    value={formData.wbs_task_id}
+                    onChange={e => setFormData({ ...formData, wbs_task_id: e.target.value })}
+                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500 disabled:opacity-50"
                   >
-                    <option value="">-- Indépendant --</option>
-                    {logframeActivities.map(l => (
-                      <option key={l.id} value={l.id}>{l.intervention_label}</option>
+                    <option value="">-- Sélectionner une activité --</option>
+                    {wbsTasks.map(wbs => (
+                      <option key={wbs.id} value={wbs.id}>
+                        {wbs.code} - {wbs.name}
+                      </option>
                     ))}
                   </select>
                 </div>
-              )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* 2. Sélection de la Ligne Budgétaire */}
                 <div>
                   <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Code <span className="text-red-500">*</span>
+                    Ligne Budgétaire (Financement)
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.code}
-                    onChange={e => setFormData({ ...formData, code: e.target.value })}
+                  <select
+                    value={formData.budget_line_id}
+                    onChange={e => setFormData({ ...formData, budget_line_id: e.target.value })}
                     className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                    placeholder="Ex: 1.1.1"
-                  />
+                  >
+                    <option value="">-- Non rattaché --</option>
+                    {budgetLines.map(bl => (
+                      <option key={bl.id} value={bl.id}>
+                        {bl.code} - {bl.label} (Alloué: {formatCurrency(bl.initial_allocated_amount)})
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
-                <div className="col-span-1 md:col-span-2">
-                  <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Composante / Description de l'Activité <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    required
-                    rows={2}
-                    value={formData.description}
-                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                    placeholder="Ex: Études topographiques..."
-                  />
-                </div>
+                {/* 3. Optionnel: Cadre Logique */}
+                {logframeActivities.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-text-secondary mb-1">
+                      Lien avec le Cadre Logique (Optionnel)
+                    </label>
+                    <select
+                      value={formData.logframe_item_id}
+                      onChange={e => setFormData({ ...formData, logframe_item_id: e.target.value })}
+                      className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="">-- Indépendant --</option>
+                      {logframeActivities.map(l => (
+                        <option key={l.id} value={l.id}>{l.intervention_label}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
+                {/* 4. Budget Prévu */}
                 <div>
                   <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Responsable
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.responsible}
-                    onChange={e => setFormData({ ...formData, responsible: e.target.value })}
-                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                    placeholder="Ex: Direction technique"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Date de début <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={formData.date_start}
-                    onChange={e => setFormData({ ...formData, date_start: e.target.value })}
-                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Date de fin <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={formData.date_end}
-                    onChange={e => setFormData({ ...formData, date_end: e.target.value })}
-                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-text-secondary mb-1">
-                    Budget Prévu ({displayCurrency}) <span className="text-red-500">*</span>
+                    Budget Prévu pour {currentYear} ({displayCurrency}) <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
@@ -372,31 +348,38 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
                     className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
                     placeholder="0"
                   />
+                  {formData.wbs_task_id && (
+                    <p className="text-xs text-text-secondary mt-1">
+                      Rappel: Le budget total de l'activité WBS est de {formatCurrency(wbsTasks.find(w => w.id === formData.wbs_task_id)?.budget_allocated || 0)}
+                    </p>
+                  )}
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-text-secondary mb-3">
-                  Planification Trimestrielle
-                </label>
-                <div className="flex items-center gap-6">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={formData.q1} onChange={e => setFormData({...formData, q1: e.target.checked})} className="w-4 h-4 text-blue-600 rounded border-border focus:ring-blue-500" />
-                    <span className="text-sm font-medium text-text-primary">Q1 (Jan-Mar)</span>
+                {/* 5. Planification Trimestrielle */}
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-3">
+                    Planification Trimestrielle
                   </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={formData.q2} onChange={e => setFormData({...formData, q2: e.target.checked})} className="w-4 h-4 text-blue-600 rounded border-border focus:ring-blue-500" />
-                    <span className="text-sm font-medium text-text-primary">Q2 (Avr-Juin)</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={formData.q3} onChange={e => setFormData({...formData, q3: e.target.checked})} className="w-4 h-4 text-blue-600 rounded border-border focus:ring-blue-500" />
-                    <span className="text-sm font-medium text-text-primary">Q3 (Juil-Sep)</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={formData.q4} onChange={e => setFormData({...formData, q4: e.target.checked})} className="w-4 h-4 text-blue-600 rounded border-border focus:ring-blue-500" />
-                    <span className="text-sm font-medium text-text-primary">Q4 (Oct-Déc)</span>
-                  </label>
+                  <div className="flex items-center gap-6">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={formData.q1} onChange={e => setFormData({...formData, q1: e.target.checked})} className="w-4 h-4 text-blue-600 rounded border-border focus:ring-blue-500" />
+                      <span className="text-sm font-medium text-text-primary">Q1 (Jan-Mar)</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={formData.q2} onChange={e => setFormData({...formData, q2: e.target.checked})} className="w-4 h-4 text-blue-600 rounded border-border focus:ring-blue-500" />
+                      <span className="text-sm font-medium text-text-primary">Q2 (Avr-Juin)</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={formData.q3} onChange={e => setFormData({...formData, q3: e.target.checked})} className="w-4 h-4 text-blue-600 rounded border-border focus:ring-blue-500" />
+                      <span className="text-sm font-medium text-text-primary">Q3 (Juil-Sep)</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={formData.q4} onChange={e => setFormData({...formData, q4: e.target.checked})} className="w-4 h-4 text-blue-600 rounded border-border focus:ring-blue-500" />
+                      <span className="text-sm font-medium text-text-primary">Q4 (Oct-Déc)</span>
+                    </label>
+                  </div>
                 </div>
+
               </div>
 
               <div className="pt-4 border-t border-border flex justify-end gap-3">

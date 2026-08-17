@@ -10,6 +10,7 @@ export function AddOperationModal({
   projectId,
   budgetLines,
   fundingSources,
+  wbsTasks = [],
   currency = 'XOF',
   editItem,
   onClose
@@ -17,6 +18,7 @@ export function AddOperationModal({
   projectId: string
   budgetLines: any[]
   fundingSources: any[]
+  wbsTasks?: any[]
   currency?: string
   editItem?: any
   onClose: () => void 
@@ -27,6 +29,7 @@ export function AddOperationModal({
   const [success, setSuccess] = useState(false)
   
   const [status, setStatus] = useState(editItem?.status || 'planifie')
+  const [selectedWbsTaskId, setSelectedWbsTaskId] = useState(editItem?.wbs_task_id || '')
   const [taskDesc, setTaskDesc] = useState(editItem?.task_code || '')
   const [selectedBudgetLine, setSelectedBudgetLine] = useState(editItem?.budget_line_id || '')
   const [fundingSourceId, setFundingSourceId] = useState(editItem?.funding_source_id || '')
@@ -112,8 +115,9 @@ export function AddOperationModal({
     const payload = {
       project_id: projectId,
       budget_line_id: selectedBudgetLine,
+      wbs_task_id: selectedWbsTaskId || undefined,
       task_code: taskDesc,
-      phase_wbs: (formData.get('phase_wbs') as string) || undefined,
+      phase_wbs: undefined, // OBSOLETE: on utilise wbs_task_id maintenant
       status: status as any,
       planned_cost: formPlanned,
       actual_cost: formActual > 0 ? formActual : undefined,
@@ -192,14 +196,35 @@ export function AddOperationModal({
           )}
 
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1">Code / Description Tâche *</label>
+            <label className="block text-sm font-medium text-text-primary mb-1">Activité WBS (Référence) *</label>
+            <select
+              required
+              value={selectedWbsTaskId}
+              onChange={e => {
+                const wbsId = e.target.value
+                setSelectedWbsTaskId(wbsId)
+                const wbs = wbsTasks?.find((w: any) => w.id === wbsId)
+                if (wbs && !taskDesc) {
+                  setTaskDesc(`${wbs.code} - ${wbs.name}`)
+                }
+              }}
+              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-surface"
+            >
+              <option value="">Sélectionner une activité WBS...</option>
+              {wbsTasks?.map((wbs: any) => (
+                <option key={wbs.id} value={wbs.id}>{wbs.code} - {wbs.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-1">Libellé d'exécution (Optionnel)</label>
             <input 
-              required 
               type="text" 
               value={taskDesc}
               onChange={e => setTaskDesc(e.target.value)}
               className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" 
-              placeholder="Ex: T-001 Formation des agents" 
+              placeholder="Ex: T-001 Formation des agents (Lot 1)" 
             />
             {showAiBtn && (
               <button 
@@ -228,11 +253,6 @@ export function AddOperationModal({
                 </button>
               </div>
             )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-text-primary mb-1">Phase / WBS (Optionnel)</label>
-            <input type="text" name="phase_wbs" defaultValue={editItem?.phase_wbs || ''} className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Ex: 1. Diagnostic" />
           </div>
 
           <div>

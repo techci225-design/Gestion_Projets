@@ -37,6 +37,12 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
     .eq('project_id', id)
     .order('name', { ascending: true })
 
+  const { data: wbsTasksRes } = await supabase
+    .from('wbs_tasks')
+    .select('id, code, name')
+    .eq('project_id', id)
+    .order('code', { ascending: true })
+
   if (error) {
     return (
       <div className="p-6">
@@ -73,7 +79,14 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="p-6 pb-24 md:pb-6">
-      <JournalClient items={items} projectId={id} budgetLines={budgetLines || []} fundingSources={fundingSources || []} currency={currency} />
+      <JournalClient 
+        items={items} 
+        projectId={id} 
+        budgetLines={budgetLines || []} 
+        fundingSources={fundingSources || []} 
+        wbsTasks={wbsTasksRes || []}
+        currency={currency} 
+      />
     </div>
   )
 }

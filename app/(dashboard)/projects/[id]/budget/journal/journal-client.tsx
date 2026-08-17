@@ -28,7 +28,7 @@ export interface OperationJournal {
   }
 }
 
-export function JournalClient({ items, projectId, budgetLines, fundingSources, currency = 'XOF' }: { items: OperationJournal[], projectId: string, budgetLines: any[], fundingSources: any[], currency?: string }) {
+export function JournalClient({ items, projectId, budgetLines, fundingSources, wbsTasks, currency = 'XOF' }: { items: OperationJournal[], projectId: string, budgetLines: any[], fundingSources: any[], wbsTasks: any[], currency?: string }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedOperation, setSelectedOperation] = useState<OperationJournal | null>(null)
   const [activeTab, setActiveTab] = useState<'details' | 'docs' | 'comments'>('details')
@@ -212,6 +212,7 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources, c
           projectId={projectId} 
           budgetLines={budgetLines} 
           fundingSources={fundingSources}
+          wbsTasks={wbsTasks}
           currency={currency}
           onClose={() => setIsModalOpen(false)} 
         />
@@ -328,6 +329,7 @@ export function JournalClient({ items, projectId, budgetLines, fundingSources, c
           projectId={projectId} 
           budgetLines={budgetLines} 
           fundingSources={fundingSources}
+          wbsTasks={wbsTasks}
           currency={currency}
           editItem={selectedOperation}
           onClose={() => {
