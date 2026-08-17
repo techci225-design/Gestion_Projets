@@ -92,14 +92,34 @@ export async function getWbsTasks(projectId: string) {
 
   const { data, error } = await supabase
     .from('wbs_tasks')
-    .select(`
-      *,
-      responsible:profiles!wbs_tasks_responsible_user_id_fkey(id, full_name, email)
-    `)
+    .select('*')
     .eq('project_id', projectId)
     .order('sort_order', { ascending: true })
 
-  if (error) return { error: error.message }
+  if (error) {
+    console.error("GET WBS TASKS ERROR:", error)
+    return { error: error.message }
+  }
+
+  // Manually join profiles to avoid PostgREST foreign key issues with auth.users
+  if (data && data.length > 0) {
+    const responsibleIds = Array.from(new Set(data.map((t: any) => t.responsible_user_id).filter(Boolean)))
+    if (responsibleIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .in('id', responsibleIds)
+        
+      if (profiles) {
+        data.forEach((t: any) => {
+          if (t.responsible_user_id) {
+            t.responsible = profiles.find((p: any) => p.id === t.responsible_user_id)
+          }
+        })
+      }
+    }
+  }
+
   return { data }
 }
 
