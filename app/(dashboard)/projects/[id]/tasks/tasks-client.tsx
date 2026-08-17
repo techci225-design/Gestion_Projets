@@ -18,7 +18,7 @@ interface TasksClientProps {
 }
 
 export function TasksClient({ projectId, project, initialTasks, teamMembers, userRole }: TasksClientProps) {
-  const [tasks, setTasks] = useState(initialTasks)
+  const tasks = initialTasks
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(initialTasks.map(t => t.id)))
   const [isPending, startTransition] = useTransition()
   
@@ -323,7 +323,7 @@ export function TasksClient({ projectId, project, initialTasks, teamMembers, use
         <AddTaskModal
           projectId={projectId}
           parentId={parentForNewTask}
-          tasks={initialTasks}
+          tasks={tasks}
           teamMembers={teamMembers}
           onClose={() => setIsAddModalOpen(false)}
         />
@@ -333,7 +333,7 @@ export function TasksClient({ projectId, project, initialTasks, teamMembers, use
         <EditTaskModal
           projectId={projectId}
           task={selectedTask}
-          tasks={initialTasks}
+          tasks={tasks}
           teamMembers={teamMembers}
           onClose={() => { setIsEditModalOpen(false); setSelectedTask(null); }}
         />
