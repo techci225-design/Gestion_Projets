@@ -3,6 +3,7 @@
 import React, { useState, useTransition } from 'react'
 import { X } from 'lucide-react'
 import { createWbsTask } from '@/lib/actions/wbs.actions'
+import { getTeamMemberDisplayName } from '@/lib/utils/user'
 
 export function AddTaskModal({ projectId, parentId, tasks, teamMembers, onClose }: { projectId: string, parentId: string | null, tasks: any[], teamMembers: any[], onClose: () => void }) {
   const [isPending, startTransition] = useTransition()
@@ -124,9 +125,9 @@ export function AddTaskModal({ projectId, parentId, tasks, teamMembers, onClose 
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-text-primary">Responsable</label>
                 <select name="responsible_user_id" className="w-full px-3 py-2 border border-border rounded-lg bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm">
-                  <option value="">-- Non assigné --</option>
-                  {teamMembers.map(m => (
-                    <option key={m.user_id} value={m.user_id}>{m.profiles.full_name || m.profiles.email} ({m.role})</option>
+                  <option value="">-- Sélectionner un responsable --</option>
+                  {teamMembers.map((m) => (
+                    <option key={m.user_id} value={m.user_id}>{getTeamMemberDisplayName(m, teamMembers)}</option>
                   ))}
                 </select>
               </div>

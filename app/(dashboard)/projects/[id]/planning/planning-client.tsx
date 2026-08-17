@@ -5,6 +5,7 @@ import { Folder, CheckSquare, Flag, ChevronRight, ChevronDown, Search, Filter } 
 import { format, startOfMonth, endOfMonth, eachMonthOfInterval, differenceInDays, addMonths, startOfDay, isWithinInterval, addDays, min, max } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { updateTaskDates } from '@/lib/actions/planning.actions'
+import { getTeamMemberDisplayName } from '@/lib/utils/user'
 
 interface PlanningClientProps {
   projectId: string
@@ -210,7 +211,7 @@ export function PlanningClient({ projectId, project, initialTasks, teamMembers, 
               <option value="ALL">Tous les responsables</option>
               <option value="UNASSIGNED">Non assigné</option>
               {teamMembers.map(m => (
-                <option key={m.user_id} value={m.user_id}>{m.profiles?.full_name || m.profiles?.email}</option>
+                <option key={m.user_id} value={m.user_id}>{getTeamMemberDisplayName(m, teamMembers)}</option>
               ))}
             </select>
           </div>
