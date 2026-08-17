@@ -193,7 +193,7 @@ export function ProcurementClient({ projectId, initialData, currency }: Procurem
                       </span>
                     </td>
                     <td className="p-4 align-top text-right font-mono font-medium text-text-primary">
-                      {formatCurrency(item.estimated_amount || 0)}
+                      {formatCurrency(item.estimated_amount || 0, currency)}
                     </td>
                     <td className="p-4 align-top text-right">
                       <div className="flex items-center justify-end gap-1">
@@ -222,7 +222,7 @@ export function ProcurementClient({ projectId, initialData, currency }: Procurem
                     Total Estimé du PPM :
                   </td>
                   <td className="p-4 text-right font-mono text-text-primary">
-                    {formatCurrency(totalEstimated)}
+                    {formatCurrency(totalEstimated, currency)}
                   </td>
                   <td></td>
                 </tr>

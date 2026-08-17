@@ -151,12 +151,6 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
   const activeProjects = projects?.filter(p => p.status === 'actif') || []
   const activeProjectIds = activeProjects.map(p => p.id)
 
-  // We will calculate totalBudgetActif later after projectsData is mapped
-
-  const totalDecaisseActif = budgetConsumption
-    ?.filter(bc => activeProjectIds.includes(bc.project_id))
-    .reduce((sum, bc) => sum + Number(bc.total_decaisse), 0) || 0
-
   let sumBacCpi = 0
   let sumBacSpi = 0
   let totalBacForAvg = 0
@@ -219,10 +213,21 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
 
   const alertProjects = projectsData.filter(p => p.isAlert)
 
-  // Calculate total budget using the mapped projectsData
-  const totalBudgetActif = projectsData
-    .filter(p => p.status === 'actif')
-    .reduce((sum, p) => sum + p.pTotalBudget, 0)
+  // Agrégations par devise pour le portefeuille
+  const activeCurrencies = Array.from(new Set(projectsData.filter(p => p.status === 'actif').map(p => p.currency || 'XOF')))
+  
+  const aggregatesByCurrency = activeCurrencies.map(currency => {
+    const currencyProjects = projectsData.filter(p => p.status === 'actif' && (p.currency || 'XOF') === currency)
+    const cProjectIds = currencyProjects.map(p => p.id)
+    
+    const totalBudget = currencyProjects.reduce((sum, p) => sum + p.pTotalBudget, 0)
+    
+    const totalDecaisse = budgetConsumption
+      ?.filter(bc => cProjectIds.includes(bc.project_id))
+      .reduce((sum, bc) => sum + Number(bc.total_decaisse), 0) || 0
+      
+    return { currency, totalBudget, totalDecaisse }
+  })
 
   // Tri du tableau comparatif
   const sortedProjects = [...projectsData].sort((a, b) => {
@@ -298,6 +303,12 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
           </div>
         ) : (
           <>
+            {activeCurrencies.length > 1 && (
+              <div className="bg-blue-50 text-blue-800 p-3 rounded-lg text-sm border border-blue-200 mb-4 flex items-start gap-2">
+                <span className="text-xl">ℹ️</span>
+                <p>Les montants globaux sont présentés séparément dans la devise de chaque projet. Aucune conversion n'est appliquée.</p>
+              </div>
+            )}
             {/* 1. BLOC KPIs GLOBAUX */}
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between">
@@ -310,25 +321,37 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                 <div className="text-2xl font-bold text-text-primary">{activeProjects.length}</div>
               </div>
               
-              <div className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between min-w-0">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-sm font-medium text-text-secondary">Budget total</span>
-                  <div className="p-2 bg-primary/10 rounded-lg text-primary shrink-0 ml-2">
-                    <Target className="w-4 h-4" />
+              {aggregatesByCurrency.map((agg, idx) => (
+                <div key={`budget-${agg.currency}`} className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between min-w-0">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-sm font-medium text-text-secondary">
+                      Budget total {activeCurrencies.length > 1 ? `(${agg.currency})` : ''}
+                    </span>
+                    <div className="p-2 bg-primary/10 rounded-lg text-primary shrink-0 ml-2">
+                      <Target className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="text-base sm:text-lg font-bold text-text-primary whitespace-nowrap" title={formatCurrency(agg.totalBudget, agg.currency, true)}>
+                    {formatCurrency(agg.totalBudget, agg.currency, true)}
                   </div>
                 </div>
-                <div className="text-base sm:text-lg font-bold text-text-primary whitespace-nowrap" title={formatCurrency(totalBudgetActif, globalCurrency, true)}>{formatCurrency(totalBudgetActif, globalCurrency, true)}</div>
-              </div>
+              ))}
 
-              <div className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between min-w-0">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-sm font-medium text-text-secondary">Décaissements cumulés</span>
-                  <div className="p-2 bg-success/10 rounded-lg text-success shrink-0 ml-2">
-                    <DollarSign className="w-4 h-4" />
+              {aggregatesByCurrency.map((agg, idx) => (
+                <div key={`decaisse-${agg.currency}`} className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between min-w-0">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-sm font-medium text-text-secondary">
+                      Décaissements {activeCurrencies.length > 1 ? `(${agg.currency})` : ''}
+                    </span>
+                    <div className="p-2 bg-success/10 rounded-lg text-success shrink-0 ml-2">
+                      <DollarSign className="w-4 h-4" />
+                    </div>
+                  </div>
+                  <div className="text-base sm:text-lg font-bold text-text-primary whitespace-nowrap" title={formatCurrency(agg.totalDecaisse, agg.currency, true)}>
+                    {formatCurrency(agg.totalDecaisse, agg.currency, true)}
                   </div>
                 </div>
-                <div className="text-base sm:text-lg font-bold text-text-primary whitespace-nowrap" title={formatCurrency(totalDecaisseActif, globalCurrency, true)}>{formatCurrency(totalDecaisseActif, globalCurrency, true)}</div>
-              </div>
+              ))}
 
               <div className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between">
                 <div className="flex justify-between items-start mb-2">

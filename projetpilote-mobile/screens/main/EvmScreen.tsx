@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, SafeAreaView, ScrollView, FlatList, ActivityIndicator, TouchableOpacity, Dimensions } from 'react-native'
 import { supabase } from '../../lib/supabase'
 import { LineChart } from 'react-native-chart-kit'
+import { formatCurrency } from '../../lib/utils'
 
 const screenWidth = Dimensions.get('window').width
 
@@ -16,7 +17,7 @@ export function EvmScreen() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data: p } = await supabase.from('projects').select('id, name, code').eq('status', 'actif')
+        const { data: p } = await supabase.from('projects').select('id, name, code, currency').eq('status', 'actif')
         if (!p || p.length === 0) return
         setProjects(p)
 
@@ -48,11 +49,6 @@ export function EvmScreen() {
     
     fetchData()
   }, [selectedProjectId])
-
-  const formatFCFA = (amount: number) => {
-    if (!amount) return '0'
-    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + ' F'
-  }
 
   if (loading && projects.length === 0) {
     return (
@@ -110,16 +106,16 @@ export function EvmScreen() {
             <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row mb-4">
               <View className="bg-primary/5 p-4 rounded-lg min-w-[110px] mr-4">
                 <Text className="text-xs text-gray-500 mb-1">BAC</Text>
-                <Text className="text-lg font-bold text-primary">{formatFCFA(kpis.bac)}</Text>
+                <Text className="text-lg font-bold text-primary">{formatCurrency(kpis.bac, projects.find(p => p.id === selectedProjectId)?.currency, true)}</Text>
               </View>
               <View className="bg-primary/5 p-4 rounded-lg min-w-[110px] mr-4">
                 <Text className="text-xs text-gray-500 mb-1">EAC</Text>
-                <Text className="text-lg font-bold text-primary">{formatFCFA(kpis.eac)}</Text>
+                <Text className="text-lg font-bold text-primary">{formatCurrency(kpis.eac, projects.find(p => p.id === selectedProjectId)?.currency, true)}</Text>
               </View>
               <View className={`p-4 rounded-lg min-w-[110px] ${kpis.vac < 0 ? 'bg-red-50' : 'bg-green-50'}`}>
                 <Text className={`text-xs mb-1 ${kpis.vac < 0 ? 'text-red-700' : 'text-green-700'}`}>VAC</Text>
                 <Text className={`text-lg font-bold ${kpis.vac < 0 ? 'text-red-700' : 'text-green-700'}`}>
-                  {kpis.vac > 0 ? '+' : ''}{formatFCFA(kpis.vac)}
+                  {kpis.vac > 0 ? '+' : ''}{formatCurrency(kpis.vac, projects.find(p => p.id === selectedProjectId)?.currency, true)}
                 </Text>
               </View>
             </ScrollView>
@@ -165,7 +161,7 @@ export function EvmScreen() {
               </View>
               <View>
                 <Text className="text-xs text-gray-500">EV</Text>
-                <Text className="font-bold text-gray-800">{formatFCFA(item.ev || 0)}</Text>
+                <Text className="font-bold text-gray-800">{formatCurrency(item.ev || 0, projects.find(p => p.id === selectedProjectId)?.currency, true)}</Text>
               </View>
             </View>
           </View>

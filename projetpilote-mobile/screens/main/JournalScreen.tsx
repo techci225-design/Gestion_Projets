@@ -3,6 +3,7 @@ import { View, Text, SafeAreaView, TouchableOpacity, FlatList, ActivityIndicator
 import { Ionicons } from '@expo/vector-icons'
 import { supabase } from '../../lib/supabase'
 import * as ImagePicker from 'expo-image-picker'
+import { formatCurrency } from '../../lib/utils'
 
 export function JournalScreen() {
   const [operations, setOperations] = useState<any[]>([])
@@ -16,7 +17,7 @@ export function JournalScreen() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data: p } = await supabase.from('projects').select('id, name, code').eq('status', 'actif')
+        const { data: p } = await supabase.from('projects').select('id, name, code, currency').eq('status', 'actif')
         if (!p || p.length === 0) return
         setProjects(p)
 
@@ -41,10 +42,6 @@ export function JournalScreen() {
     fetchData()
   }, [selectedProjectId])
 
-  const formatFCFA = (amount: number) => {
-    if (!amount) return '0 FCFA'
-    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + ' FCFA'
-  }
 
   const handleScan = async (operationId: string) => {
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync()
@@ -172,7 +169,9 @@ export function JournalScreen() {
             </View>
             
             <View className="flex-row justify-between items-center mt-3 border-t border-gray-100 pt-3">
-              <Text className="font-bold text-primary text-lg">{formatFCFA(item.amount)}</Text>
+              <View className="mb-2">
+                <Text className="font-bold text-primary text-lg">{formatCurrency(item.amount, projects.find(p => p.id === selectedProjectId)?.currency, true)}</Text>
+              </View>
               
               <TouchableOpacity 
                 onPress={() => handleScan(item.id)}

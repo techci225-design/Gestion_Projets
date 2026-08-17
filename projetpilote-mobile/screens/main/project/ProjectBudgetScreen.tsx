@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, SafeAreaView, FlatList, ActivityIndicator } from 'react-native'
 import { useRoute } from '@react-navigation/native'
 import { supabase } from '../../../lib/supabase'
+import { formatCurrency } from '../../../lib/utils'
 
 export function ProjectBudgetScreen() {
   const route = useRoute<any>()
@@ -9,12 +10,16 @@ export function ProjectBudgetScreen() {
   
   const [loading, setLoading] = useState(true)
   const [lines, setLines] = useState<any[]>([])
+  const [project, setProject] = useState<any>(null)
 
   useEffect(() => {
     async function loadData() {
       try {
         const { data } = await supabase.from('budget_lines').select('*').eq('project_id', projectId)
         setLines(data || [])
+        
+        const { data: p } = await supabase.from('projects').select('currency').eq('id', projectId).single()
+        setProject(p)
       } catch (err) {
         console.error(err)
       } finally {
@@ -24,10 +29,7 @@ export function ProjectBudgetScreen() {
     loadData()
   }, [projectId])
 
-  const formatFCFA = (amount: number) => {
-    if (!amount) return '0 FCFA'
-    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + ' FCFA'
-  }
+
 
   if (loading) {
     return (
@@ -47,11 +49,11 @@ export function ProjectBudgetScreen() {
         <View className="flex-row justify-between mt-2">
           <View>
             <Text className="text-gray-500 text-xs">Alloué</Text>
-            <Text className="text-lg font-bold text-gray-800">{formatFCFA(totalAllocated)}</Text>
+            <Text className="text-lg font-bold text-gray-800">{formatCurrency(totalAllocated, project?.currency, true)}</Text>
           </View>
           <View>
             <Text className="text-gray-500 text-xs">Consommé (Engagé + Décaissé)</Text>
-            <Text className="text-lg font-bold text-primary">{formatFCFA(totalConsumed)}</Text>
+            <Text className="text-lg font-bold text-primary">{formatCurrency(totalConsumed, project?.currency, true)}</Text>
           </View>
         </View>
       </View>
@@ -66,15 +68,15 @@ export function ProjectBudgetScreen() {
             <View className="flex-row justify-between bg-gray-50 p-2 rounded">
               <View>
                 <Text className="text-[10px] text-gray-500">Alloué</Text>
-                <Text className="text-xs font-bold text-gray-700">{formatFCFA(item.initial_allocated_amount)}</Text>
+                <Text className="text-xs font-bold text-gray-700">{formatCurrency(item.initial_allocated_amount, project?.currency, true)}</Text>
               </View>
               <View>
                 <Text className="text-[10px] text-gray-500">Engagé</Text>
-                <Text className="text-xs font-bold text-gray-700">{formatFCFA(item.total_engage)}</Text>
+                <Text className="text-xs font-bold text-gray-700">{formatCurrency(item.total_engage, project?.currency, true)}</Text>
               </View>
               <View>
                 <Text className="text-[10px] text-gray-500">Décaissé</Text>
-                <Text className="text-xs font-bold text-gray-700">{formatFCFA(item.total_decaisse)}</Text>
+                <Text className="text-xs font-bold text-gray-700">{formatCurrency(item.total_decaisse, project?.currency, true)}</Text>
               </View>
             </View>
           </View>

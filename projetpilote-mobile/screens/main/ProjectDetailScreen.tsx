@@ -3,6 +3,7 @@ import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'rea
 import { useRoute, useNavigation } from '@react-navigation/native'
 import { supabase } from '../../lib/supabase'
 import { Ionicons } from '@expo/vector-icons'
+import { formatCurrency } from '../../lib/utils'
 
 export function ProjectDetailScreen() {
   const route = useRoute<any>()
@@ -50,10 +51,7 @@ export function ProjectDetailScreen() {
     loadProjectDetails()
   }, [projectId])
 
-  const formatFCFA = (amount: number) => {
-    if (!amount) return '0 FCFA'
-    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + ' FCFA'
-  }
+
 
   if (loading) {
     return (
@@ -103,11 +101,11 @@ export function ProjectDetailScreen() {
         <View className="flex-row flex-wrap mt-2">
           <View className="w-1/2 mb-4">
             <Text className="text-xs text-gray-500 mb-1">Budget Initial</Text>
-            <Text className="text-base font-bold text-gray-800">{formatFCFA(budget?.totalAllocated || 0)}</Text>
+            <Text className="text-base font-bold text-gray-800">{formatCurrency(budget?.totalAllocated || 0, project?.currency)}</Text>
           </View>
-          <View className="w-1/2 mb-4">
-            <Text className="text-xs text-gray-500 mb-1">Consommé</Text>
-            <Text className="text-base font-bold text-gray-800">{formatFCFA(budget?.totalConsumed || 0)}</Text>
+          <View>
+            <Text className="text-xs text-gray-500">Consommé</Text>
+            <Text className="text-base font-bold text-gray-800">{formatCurrency(budget?.totalConsumed || 0, project?.currency)}</Text>
           </View>
           
           <View className="w-1/2">

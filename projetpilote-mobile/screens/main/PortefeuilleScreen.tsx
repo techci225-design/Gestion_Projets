@@ -5,7 +5,8 @@ import { useNavigation } from '@react-navigation/native'
 
 export function PortefeuilleScreen() {
   const [projects, setProjects] = useState<any[]>([])
-  const [kpis, setKpis] = useState({ actifs: 0, budget: 0, cpi: 0, spi: 0 })
+  const [kpis, setKpis] = useState({ actifs: 0, cpi: 0, spi: 0 })
+  const [aggregates, setAggregates] = useState<{currency: string, budget: number}[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const navigation = useNavigation<any>()
@@ -80,12 +81,18 @@ export function PortefeuilleScreen() {
 
       const avgCpi = totalBacForAvg > 0 ? sumBacCpi / totalBacForAvg : 1
       const avgSpi = totalBacForAvg > 0 ? sumBacSpi / totalBacForAvg : 1
-      const totalBudgetActif = projectsData.reduce((sum, p) => sum + p.pTotalBudget, 0)
+      
+      const activeCurrencies = Array.from(new Set(projectsData.map(p => p.currency || 'XOF')))
+      const aggList = activeCurrencies.map(currency => {
+        const currencyProjects = projectsData.filter(p => (p.currency || 'XOF') === currency)
+        const budget = currencyProjects.reduce((sum, p) => sum + p.pTotalBudget, 0)
+        return { currency, budget }
+      })
       
       setProjects(projectsData)
+      setAggregates(aggList)
       setKpis({
         actifs: projectsData.length,
-        budget: totalBudgetActif,
         cpi: avgCpi, 
         spi: avgSpi  
       })
@@ -106,10 +113,7 @@ export function PortefeuilleScreen() {
     fetchProjects()
   }
 
-  const formatFCFA = (amount: number) => {
-    if (!amount) return '0 FCFA';
-    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + ' FCFA';
-  }
+import { formatCurrency } from '../../lib/utils'
 
   if (loading) {
     return (
@@ -127,10 +131,12 @@ export function PortefeuilleScreen() {
             <Text className="text-xs text-gray-500 mb-1">Projets actifs</Text>
             <Text className="text-xl font-bold text-primary">{String(kpis.actifs)}</Text>
           </View>
-          <View className="bg-primary/5 p-4 rounded-lg min-w-[150px] mr-4">
-            <Text className="text-xs text-gray-500 mb-1">Budget Total</Text>
-            <Text className="text-xl font-bold text-primary">{formatFCFA(kpis.budget)}</Text>
-          </View>
+          {aggregates.map(agg => (
+            <View key={agg.currency} className="bg-primary/5 p-4 rounded-lg min-w-[150px] mr-4">
+              <Text className="text-xs text-gray-500 mb-1">Budget Total {aggregates.length > 1 ? `(${agg.currency})` : ''}</Text>
+              <Text className="text-xl font-bold text-primary">{formatCurrency(agg.budget, agg.currency, true)}</Text>
+            </View>
+          ))}
           <View className="bg-green-50 p-4 rounded-lg min-w-[100px] mr-4">
             <Text className="text-xs text-green-700 mb-1">CPI Moyen</Text>
             <Text className="text-xl font-bold text-green-700">{String(kpis.cpi.toFixed(2))}</Text>

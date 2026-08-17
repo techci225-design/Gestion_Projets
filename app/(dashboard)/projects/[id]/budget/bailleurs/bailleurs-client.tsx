@@ -88,9 +88,9 @@ export function BailleursClient({ projectId, bailleurs, currency = 'XOF' }: { pr
                       {item.type}
                     </span>
                   </td>
-                  <td className="p-4 text-right font-medium">{formatCurrency(item.total_engage)}</td>
-                  <td className="p-4 text-right font-medium">{formatCurrency(item.total_decaisse)}</td>
-                  <td className="p-4 text-right font-semibold">{formatCurrency(item.solde_restant)}</td>
+                  <td className="p-4 text-right font-medium">{formatCurrency(item.total_engage, currency)}</td>
+                  <td className="p-4 text-right font-medium">{formatCurrency(item.total_decaisse, currency)}</td>
+                  <td className="p-4 text-right font-semibold">{formatCurrency(item.solde_restant, currency)}</td>
                   <td className="p-4">
                     <ProgressBar percentage={Number(item.taux_utilisation) * 100} />
                   </td>

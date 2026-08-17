@@ -120,10 +120,10 @@ export function EvmHistory({ projectId, snapshots, currentSummary, currency }: E
                 return (
                   <tr key={item.id} className={`border-b border-border hover:bg-surface-bright transition-colors h-12 ${index % 2 !== 0 ? 'bg-surface-dim/30' : ''}`}>
                     <td className="p-4 font-medium">{new Date(item.control_date).toLocaleDateString('fr-FR')}</td>
-                    <td className="p-4 text-right">{formatCurrency(item.bac_total)}</td>
-                    <td className="p-4 text-right">{formatCurrency(item.eac_global)}</td>
+                    <td className="p-4 text-right">{formatCurrency(item.bac_total, currency)}</td>
+                    <td className="p-4 text-right">{formatCurrency(item.eac_global, currency)}</td>
                     <td className={`p-4 text-right font-semibold ${vac < 0 ? 'text-danger' : 'text-success'}`}>
-                      {vac > 0 ? '+' : ''}{formatCurrency(vac)}
+                      {vac > 0 ? '+' : ''}{formatCurrency(vac, currency)}
                     </td>
                     <td className="p-4 text-center">
                       <AlertBadge value={Number(item.cpi_global)} />

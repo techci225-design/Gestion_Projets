@@ -3,6 +3,7 @@ import { View, Text, SafeAreaView, ScrollView, Dimensions, ActivityIndicator, Fl
 import { useRoute } from '@react-navigation/native'
 import { supabase } from '../../../lib/supabase'
 import { LineChart } from 'react-native-chart-kit'
+import { formatCurrency } from '../../../lib/utils'
 
 const screenWidth = Dimensions.get('window').width
 
@@ -12,12 +13,16 @@ export function ProjectEvmScreen() {
   
   const [loading, setLoading] = useState(true)
   const [tasks, setTasks] = useState<any[]>([])
+  const [project, setProject] = useState<any>(null)
   
   useEffect(() => {
     async function loadData() {
       try {
         const { data } = await supabase.from('v_evm_tasks').select('*').eq('project_id', projectId)
         setTasks(data || [])
+        
+        const { data: p } = await supabase.from('projects').select('currency').eq('id', projectId).single()
+        setProject(p)
       } catch (err) {
         console.error(err)
       } finally {
@@ -59,10 +64,7 @@ export function ProjectEvmScreen() {
     legend: ["Valeur Planifiée (PV)", "Valeur Acquise (EV)", "Coût Réel (AC)"]
   }
 
-  const formatFCFA = (amount: number) => {
-    if (!amount) return '0'
-    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + ' F'
-  }
+
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
@@ -119,15 +121,15 @@ export function ProjectEvmScreen() {
               <View className="flex-row justify-between bg-gray-50 p-2 rounded mt-2">
                 <View>
                   <Text className="text-[10px] text-gray-500">PV</Text>
-                  <Text className="text-xs font-bold text-gray-700">{formatFCFA(item.pv)}</Text>
+                  <Text className="text-xs font-bold text-gray-700">{formatCurrency(item.pv, project?.currency, true)}</Text>
                 </View>
                 <View>
                   <Text className="text-[10px] text-gray-500">EV</Text>
-                  <Text className="text-xs font-bold text-gray-700">{formatFCFA(item.ev)}</Text>
+                  <Text className="text-xs font-bold text-gray-700">{formatCurrency(item.ev, project?.currency, true)}</Text>
                 </View>
                 <View>
                   <Text className="text-[10px] text-gray-500">AC</Text>
-                  <Text className="text-xs font-bold text-gray-700">{formatFCFA(item.ac)}</Text>
+                  <Text className="text-xs font-bold text-gray-700">{formatCurrency(item.ac, project?.currency, true)}</Text>
                 </View>
               </View>
             </View>

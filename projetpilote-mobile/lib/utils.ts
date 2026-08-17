@@ -18,21 +18,18 @@ export function formatCurrency(amount: number | null | undefined, currency: stri
   const { suffix, decimals } = currConfig;
 
   if (compact) {
-    if (Math.abs(amount) >= 1_000_000_000) {
-      return `${(amount / 1_000_000_000).toLocaleString('fr-FR', { maximumFractionDigits: 1 })}\u00A0Md\u00A0${suffix}`
+    if (amount >= 1_000_000_000) {
+      return (amount / 1_000_000_000).toLocaleString(currConfig.locale, { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + ' Md ' + suffix;
     }
-    if (Math.abs(amount) >= 1_000_000) {
-      return `${(amount / 1_000_000).toLocaleString('fr-FR', { maximumFractionDigits: 1 })}\u00A0M\u00A0${suffix}`
+    if (amount >= 1_000_000) {
+      return (amount / 1_000_000).toLocaleString(currConfig.locale, { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + ' M ' + suffix;
     }
   }
 
-  let formatted = new Intl.NumberFormat('fr-FR', {
-    style: 'decimal',
-    maximumFractionDigits: decimals,
-    minimumFractionDigits: decimals
-  }).format(amount)
+  const formatter = new Intl.NumberFormat(currConfig.locale, {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  });
 
-  formatted = formatted.replace(/\u202F|\s/g, '\u00A0')
-
-  return `${formatted}\u00A0${suffix}`
+  return formatter.format(amount) + ' ' + suffix;
 }

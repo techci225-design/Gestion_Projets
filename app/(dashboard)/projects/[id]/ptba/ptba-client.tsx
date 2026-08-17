@@ -218,7 +218,7 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
                       {item.q4 ? <div className="w-6 h-6 rounded bg-green-100 flex items-center justify-center mx-auto text-green-700"><Check className="w-4 h-4"/></div> : <span className="text-border">—</span>}
                     </td>
                     <td className="p-4 text-sm text-right font-mono font-medium text-text-primary align-middle">
-                      {formatCurrency(item.budget_planned)}
+                      {formatCurrency(item.budget_planned, currency)}
                     </td>
                     <td className="p-4 text-right align-middle">
                       <div className="flex items-center justify-end gap-1">
@@ -247,7 +247,7 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
                     Total Budget PTBA {currentYear} :
                   </td>
                   <td className="p-4 text-right font-mono text-text-primary">
-                    {formatCurrency(totalBudget)}
+                    {formatCurrency(totalBudget, currency)}
                   </td>
                   <td></td>
                 </tr>
@@ -308,7 +308,7 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
                     <option value="">-- Non rattaché --</option>
                     {budgetLines.map(bl => (
                       <option key={bl.id} value={bl.id}>
-                        {bl.code} - {bl.label} (Alloué: {formatCurrency(bl.initial_allocated_amount)})
+                        {bl.code} - {bl.label} (Alloué: {formatCurrency(bl.initial_allocated_amount, currency)})
                       </option>
                     ))}
                   </select>
@@ -350,7 +350,7 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
                   />
                   {formData.wbs_task_id && (
                     <p className="text-xs text-text-secondary mt-1">
-                      Rappel: Le budget total de l'activité WBS est de {formatCurrency(wbsTasks.find(w => w.id === formData.wbs_task_id)?.budget_allocated || 0)}
+                      Rappel: Le budget total de l'activité WBS est de {formatCurrency(wbsTasks.find(w => w.id === formData.wbs_task_id)?.budget_allocated || 0, currency)}
                     </p>
                   )}
                 </div>

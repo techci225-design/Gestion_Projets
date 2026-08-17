@@ -19,6 +19,14 @@ export async function GET(request: Request) {
     .select('*')
     .eq('project_id', projectId)
 
+  const { data: projectData } = await supabase
+    .from('projects')
+    .select('currency')
+    .eq('id', projectId)
+    .single()
+
+  const currency = projectData?.currency || 'XOF'
+
   const workbook = new ExcelJS.Workbook()
   
   // Onglet Budget
@@ -37,10 +45,10 @@ export async function GET(request: Request) {
       sheetBudget.addRow({
         code: row.code,
         label: row.label,
-        initial_allocated_amount: formatCurrency(row.initial_allocated_amount),
-        total_engage: formatCurrency(row.total_engage),
-        total_decaisse: formatCurrency(row.total_decaisse),
-        solde_disponible: formatCurrency(row.solde_disponible)
+        initial_allocated_amount: formatCurrency(row.initial_allocated_amount, currency),
+        total_engage: formatCurrency(row.total_engage, currency),
+        total_decaisse: formatCurrency(row.total_decaisse, currency),
+        solde_disponible: formatCurrency(row.solde_disponible, currency)
       })
     })
   }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { View, Text, SafeAreaView, ScrollView, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native'
 import { supabase } from '../../lib/supabase'
+import { formatCurrency } from '../../lib/utils'
 
 export function BudgetScreen() {
   const [budgets, setBudgets] = useState<any[]>([])
@@ -12,7 +13,7 @@ export function BudgetScreen() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data: p } = await supabase.from('projects').select('id, name, code').eq('status', 'actif')
+        const { data: p } = await supabase.from('projects').select('id, name, code, currency').eq('status', 'actif')
         if (!p || p.length === 0) return
         setProjects(p)
 
@@ -37,10 +38,7 @@ export function BudgetScreen() {
     fetchData()
   }, [selectedProjectId])
 
-  const formatFCFA = (amount: number) => {
-    if (!amount) return '0 FCFA'
-    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ") + ' FCFA'
-  }
+
 
   if (loading && projects.length === 0) {
     return (
@@ -72,8 +70,8 @@ export function BudgetScreen() {
 
       <View className="p-4 bg-white border-b border-gray-200">
         <Text className="text-xl font-bold text-primary mb-2">Lignes Budgétaires</Text>
-        <Text className="text-gray-500 text-sm">Budget total alloué (ce projet)</Text>
-        <Text className="text-2xl font-bold text-green-700">{formatFCFA(totalAllocated)}</Text>
+        <Text className="text-gray-500 mb-1">Budget Total {projects.find(p => p.id === selectedProjectId)?.currency ? `(${projects.find(p => p.id === selectedProjectId)?.currency})` : ''}</Text>
+        <Text className="text-2xl font-bold text-green-700">{formatCurrency(totalAllocated, projects.find(p => p.id === selectedProjectId)?.currency, true)}</Text>
       </View>
 
       <FlatList
@@ -86,7 +84,7 @@ export function BudgetScreen() {
             <View className="flex-row justify-between items-center mt-2">
               <View>
                 <Text className="text-xs text-gray-500">Alloué</Text>
-                <Text className="font-bold text-gray-800">{formatFCFA(item.initial_allocated_amount || 0)}</Text>
+                <Text className="font-bold text-gray-800">{formatCurrency(item.initial_allocated_amount || 0, projects.find(p => p.id === selectedProjectId)?.currency, true)}</Text>
               </View>
               <View className="bg-primary/10 px-2 py-1 rounded">
                 <Text className="text-primary text-xs font-bold capitalize">{item.status || 'actif'}</Text>

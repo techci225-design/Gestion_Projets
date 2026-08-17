@@ -235,7 +235,10 @@ export function AddProjectModal() {
                       <option value="XOF">FCFA (XOF) — Afrique de l'Ouest</option>
                       <option value="XAF">FCFA (XAF) — Afrique Centrale</option>
                       <option value="EUR">Euro (EUR)</option>
-                      <option value="USD">Dollar USD</option>
+                      <option value="USD">Dollar Américain (USD)</option>
+                      <option value="GBP">Livre Sterling (GBP)</option>
+                      <option value="CAD">Dollar Canadien (CAD)</option>
+                      <option value="CHF">Franc Suisse (CHF)</option>
                     </select>
                   </div>
                   <div className="grid grid-cols-2 gap-4">

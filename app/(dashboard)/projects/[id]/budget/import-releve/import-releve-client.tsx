@@ -206,7 +206,7 @@ export function ImportReleveClient({ projectId, operations, currency = 'XOF' }: 
                     <tr key={idx} className="border-b border-border hover:bg-surface-bright/50">
                       <td className="p-3 text-text-secondary">{m.row.date}</td>
                       <td className="p-3 font-medium">{m.row.libelle}</td>
-                      <td className="p-3 text-right">{m.row.debit > 0 ? formatCurrency(m.row.debit) : '-'}</td>
+                      <td className="p-3 text-right">{m.row.debit > 0 ? formatCurrency(m.row.debit, currency) : '-'}</td>
                       <td className="p-3">
                         {m.row.debit > 0 ? (
                           <select 
@@ -216,7 +216,7 @@ export function ImportReleveClient({ projectId, operations, currency = 'XOF' }: 
                           >
                             <option value="">-- Ignorer (Aucune correspondance) --</option>
                             {operations.map(op => (
-                              <option key={op.id} value={op.id}>{op.task_code} ({formatCurrency(op.planned_cost)})</option>
+                              <option key={op.id} value={op.id}>{op.task_code} ({formatCurrency(op.planned_cost, currency)})</option>
                             ))}
                           </select>
                         ) : (

@@ -48,7 +48,8 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, userR
     evm_control_date: project?.evm_control_date ? new Date(project.evm_control_date).toISOString().split('T')[0] : '',
     budget: project?.budget || '',
     funder: project?.funder || '',
-    implementing_agency: project?.implementing_agency || ''
+    implementing_agency: project?.implementing_agency || '',
+    currency: project?.currency || 'XOF'
   })
 
   const [deleteConfirmText, setDeleteConfirmText] = useState('')

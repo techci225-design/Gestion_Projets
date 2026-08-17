@@ -23,6 +23,14 @@ export async function GET(request: Request) {
     .eq('project_id', projectId)
     .single()
 
+  const { data: projectData } = await supabase
+    .from('projects')
+    .select('currency')
+    .eq('id', projectId)
+    .single()
+
+  const currency = projectData?.currency || 'XOF'
+
   // In a real application, you would use @react-pdf/renderer or puppeteer here.
   // For the backend plan, we generate a simple HTML string that can be sent to a PDF generator.
   
@@ -45,10 +53,10 @@ export async function GET(request: Request) {
         <table>
           <tr><th>BAC</th><th>PV</th><th>EV</th><th>AC</th><th>CPI</th><th>SPI</th></tr>
           <tr>
-            <td>${formatCurrency(evmData.bac_total)}</td>
-            <td>${formatCurrency(evmData.pv_total)}</td>
-            <td>${formatCurrency(evmData.ev_total)}</td>
-            <td>${formatCurrency(evmData.ac_total)}</td>
+            <td>${formatCurrency(evmData.bac_total, currency)}</td>
+            <td>${formatCurrency(evmData.pv_total, currency)}</td>
+            <td>${formatCurrency(evmData.ev_total, currency)}</td>
+            <td>${formatCurrency(evmData.ac_total, currency)}</td>
             <td>${Number(evmData.cpi_global).toFixed(2)}</td>
             <td>${Number(evmData.spi_global).toFixed(2)}</td>
           </tr>
@@ -67,10 +75,10 @@ export async function GET(request: Request) {
           ${budgetData?.map(row => `
           <tr>
             <td>${row.code} - ${row.label}</td>
-            <td>${formatCurrency(row.initial_allocated_amount)}</td>
-            <td>${formatCurrency(row.total_engage)}</td>
-            <td>${formatCurrency(row.total_decaisse)}</td>
-            <td>${formatCurrency(row.solde_disponible)}</td>
+            <td>${formatCurrency(row.initial_allocated_amount, currency)}</td>
+            <td>${formatCurrency(row.total_engage, currency)}</td>
+            <td>${formatCurrency(row.total_decaisse, currency)}</td>
+            <td>${formatCurrency(row.solde_disponible, currency)}</td>
           </tr>
           `).join('') || '<tr><td colspan="5">Aucune donnée</td></tr>'}
         </table>
