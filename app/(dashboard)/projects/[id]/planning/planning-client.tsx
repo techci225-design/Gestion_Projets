@@ -35,6 +35,33 @@ export function PlanningClient({ projectId, project, initialTasks, teamMembers, 
     setExpandedNodes(next)
   }
 
+  const nodeMatchesFilter = (task: any) => {
+    if (filterStatus !== 'ALL' && task.status !== filterStatus) return false
+    if (filterResponsible !== 'ALL') {
+      if (filterResponsible === 'UNASSIGNED' && task.responsible_user_id !== null) return false
+      if (filterResponsible !== 'UNASSIGNED' && task.responsible_user_id !== filterResponsible) return false
+    }
+    return true
+  }
+
+  const filteredTaskIds = useMemo(() => {
+    if (filterStatus === 'ALL' && filterResponsible === 'ALL') {
+      return new Set(tasks.map(t => t.id))
+    }
+    const matched = new Set<string>()
+    const directMatches = tasks.filter(nodeMatchesFilter)
+    
+    directMatches.forEach(task => {
+      let currentId: string | null | undefined = task.id
+      while (currentId) {
+        matched.add(currentId)
+        const parent = tasks.find(t => t.id === currentId)
+        currentId = parent?.parent_id
+      }
+    })
+    return matched
+  }, [tasks, filterStatus, filterResponsible])
+
   const isVisible = (task: any) => {
     let current = task.parent_id
     while (current) {
@@ -43,14 +70,43 @@ export function PlanningClient({ projectId, project, initialTasks, teamMembers, 
       current = parent?.parent_id
     }
     
-    if (filterStatus !== 'ALL' && task.status !== filterStatus) return false
-    if (filterResponsible !== 'ALL') {
-      if (filterResponsible === 'UNASSIGNED' && task.responsible_user_id !== null) return false
-      if (filterResponsible !== 'UNASSIGNED' && task.responsible_user_id !== filterResponsible) return false
-    }
-    
-    return true
+    return filteredTaskIds.has(task.id)
   }
+
+  const STATUS_LABELS: Record<string, string> = {
+    'PLANNED': 'Planifié',
+    'IN_PROGRESS': 'En cours',
+    'COMPLETED': 'Terminé',
+    'BLOCKED': 'Bloqué',
+    'CANCELLED': 'Annulé'
+  }
+
+  const availableStatuses = useMemo(() => {
+    const statuses = new Set<string>()
+    tasks.forEach(t => {
+      if (t.status) statuses.add(t.status)
+    })
+    return Array.from(statuses)
+  }, [tasks])
+
+  const availableResponsibles = useMemo(() => {
+    const userIds = new Set<string>()
+    let hasUnassigned = false
+    tasks.forEach(t => {
+      if (t.responsible_user_id) userIds.add(t.responsible_user_id)
+      else hasUnassigned = true
+    })
+    
+    const members = Array.from(userIds).map(id => {
+      const member = teamMembers.find(m => m.user_id === id)
+      return {
+        id,
+        name: member ? getTeamMemberDisplayName(member, teamMembers) : 'Utilisateur inconnu'
+      }
+    }).sort((a, b) => a.name.localeCompare(b.name))
+
+    return { members, hasUnassigned }
+  }, [tasks, teamMembers])
 
   // Timeline boundaries calculation
   const timelineInterval = useMemo(() => {
@@ -211,10 +267,9 @@ export function PlanningClient({ projectId, project, initialTasks, teamMembers, 
               className="bg-transparent text-sm text-text-primary focus:outline-none py-1 border-r border-border pr-2"
             >
               <option value="ALL">Tous les statuts</option>
-              <option value="PLANNED">Planifié</option>
-              <option value="IN_PROGRESS">En cours</option>
-              <option value="COMPLETED">Terminé</option>
-              <option value="BLOCKED">Bloqué</option>
+              {availableStatuses.map(status => (
+                <option key={status} value={status}>{STATUS_LABELS[status] || status}</option>
+              ))}
             </select>
             <select 
               value={filterResponsible} 
@@ -222,9 +277,9 @@ export function PlanningClient({ projectId, project, initialTasks, teamMembers, 
               className="bg-transparent text-sm text-text-primary focus:outline-none py-1 pl-2"
             >
               <option value="ALL">Tous les responsables</option>
-              <option value="UNASSIGNED">Non assigné</option>
-              {teamMembers.map(m => (
-                <option key={m.user_id} value={m.user_id}>{getTeamMemberDisplayName(m, teamMembers)}</option>
+              {availableResponsibles.hasUnassigned && <option value="UNASSIGNED">Non assigné</option>}
+              {availableResponsibles.members.map(m => (
+                <option key={m.id} value={m.id}>{m.name}</option>
               ))}
             </select>
           </div>

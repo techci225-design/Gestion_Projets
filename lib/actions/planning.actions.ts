@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { hasProjectPermission, ProjectRole } from '../permissions/project-permissions'
+import { recalculateSummaryDates } from './wbs.actions'
 
 const UpdateDatesSchema = z.object({
   date_start: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Date de début invalide" }),
@@ -68,6 +69,8 @@ export async function updateTaskDates(projectId: string, taskId: string, startDa
       .single()
 
     if (error) throw error
+
+    await recalculateSummaryDates(supabase, projectId)
 
     revalidatePath(`/projects/${projectId}/planning`)
     return { success: true, data: updated }

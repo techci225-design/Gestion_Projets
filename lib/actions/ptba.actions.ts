@@ -135,6 +135,18 @@ export async function addPtbaActivity(projectId: string, data: any) {
 
     if (taskErr || !task) throw new Error("Tâche WBS introuvable dans ce projet")
 
+    // Verify Budget Line exists and belongs to project if provided
+    if (validatedData.budget_line_id) {
+      const { data: bLine, error: bErr } = await supabase
+        .from('budget_lines')
+        .select('id')
+        .eq('id', validatedData.budget_line_id)
+        .eq('project_id', projectId)
+        .single()
+
+      if (bErr || !bLine) throw new Error("Ligne budgétaire introuvable dans ce projet")
+    }
+
     // 2. Insert into PTBA
     const { data: item, error } = await supabase
       .from('ptba_activities')
@@ -175,6 +187,18 @@ export async function updatePtbaActivity(projectId: string, id: string, data: an
     if (data.budget_line_id === '') data.budget_line_id = null
     const validatedData = PtbaActivitySchema.partial().parse(data)
     const supabase = await createClient()
+
+    // Verify Budget Line exists and belongs to project if provided
+    if (validatedData.budget_line_id !== undefined && validatedData.budget_line_id !== null) {
+      const { data: bLine, error: bErr } = await supabase
+        .from('budget_lines')
+        .select('id')
+        .eq('id', validatedData.budget_line_id)
+        .eq('project_id', projectId)
+        .single()
+
+      if (bErr || !bLine) throw new Error("Ligne budgétaire introuvable dans ce projet")
+    }
 
     const { data: item, error } = await supabase
       .from('ptba_activities')

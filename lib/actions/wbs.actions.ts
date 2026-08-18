@@ -97,6 +97,85 @@ async function recalculateWbsCodes(supabase: any, projectId: string) {
   }
 }
 
+export async function recalculateSummaryDates(supabase: any, projectId: string) {
+  const { data: allTasks, error } = await supabase
+    .from('wbs_tasks')
+    .select('id, parent_id, task_type, date_start, date_end')
+    .eq('project_id', projectId);
+
+  if (error || !allTasks) return;
+
+  const updates: any[] = [];
+  
+  const childrenMap = new Map<string, any[]>();
+  allTasks.forEach((t: any) => {
+    if (t.parent_id) {
+      if (!childrenMap.has(t.parent_id)) childrenMap.set(t.parent_id, []);
+      childrenMap.get(t.parent_id)!.push(t);
+    }
+  });
+
+  const computedBounds = new Map<string, { start: string | null, end: string | null }>();
+
+  function computeBounds(nodeId: string): { start: string | null, end: string | null } {
+    if (computedBounds.has(nodeId)) return computedBounds.get(nodeId)!;
+
+    const node = allTasks.find((t: any) => t.id === nodeId);
+    if (!node) return { start: null, end: null };
+
+    const children = childrenMap.get(nodeId) || [];
+    
+    let minStart: string | null = null;
+    let maxEnd: string | null = null;
+
+    if (node.task_type === 'SUMMARY') {
+      for (const child of children) {
+        const childBounds = computeBounds(child.id);
+        if (childBounds.start) {
+          if (!minStart || new Date(childBounds.start) < new Date(minStart)) minStart = childBounds.start;
+        }
+        if (childBounds.end) {
+          if (!maxEnd || new Date(childBounds.end) > new Date(maxEnd)) maxEnd = childBounds.end;
+        }
+      }
+      
+      let newStart = node.date_start;
+      let newEnd = node.date_end;
+
+      if (minStart && maxEnd) {
+        newStart = minStart;
+        newEnd = maxEnd;
+      }
+
+      if (newStart !== node.date_start || newEnd !== node.date_end) {
+        updates.push({ id: node.id, date_start: newStart, date_end: newEnd });
+        node.date_start = newStart;
+        node.date_end = newEnd;
+      }
+
+      const result = { start: newStart, end: newEnd };
+      computedBounds.set(nodeId, result);
+      return result;
+    } else {
+      const result = { start: node.date_start, end: node.date_end };
+      computedBounds.set(nodeId, result);
+      return result;
+    }
+  }
+
+  const rootNodes = allTasks.filter((t: any) => !t.parent_id);
+  for (const root of rootNodes) {
+    computeBounds(root.id);
+  }
+
+  for (const update of updates) {
+    await supabase.from('wbs_tasks').update({ 
+      date_start: update.date_start, 
+      date_end: update.date_end 
+    }).eq('id', update.id);
+  }
+}
+
 export async function getWbsTasks(projectId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -178,6 +257,8 @@ export async function createWbsTask(data: any) {
     if (error) throw error
 
     await recalculateWbsCodes(supabase, data.project_id)
+    await recalculateSummaryDates(supabase, data.project_id)
+
     revalidatePath(`/projects/${data.project_id}/tasks`)
     return { data: inserted }
   } catch (err: any) {
@@ -245,6 +326,7 @@ export async function deleteWbsTask(id: string, projectId: string) {
     if (error) throw error
 
     await recalculateWbsCodes(supabase, projectId)
+    await recalculateSummaryDates(supabase, projectId)
     revalidatePath(`/projects/${projectId}/tasks`)
     return { success: true }
   } catch (err: any) {
@@ -316,6 +398,7 @@ export async function moveWbsTask(id: string, projectId: string, newParentId: st
     if (error) throw error
 
     await recalculateWbsCodes(supabase, projectId)
+    await recalculateSummaryDates(supabase, projectId)
     revalidatePath(`/projects/${projectId}/tasks`)
     return { success: true }
   } catch (err: any) {
