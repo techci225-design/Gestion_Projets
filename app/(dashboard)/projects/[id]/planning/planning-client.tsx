@@ -2,8 +2,10 @@
 
 import React, { useState, useMemo, useRef, useEffect, useTransition } from 'react'
 import { Folder, CheckSquare, Flag, ChevronRight, ChevronDown, Search, Filter } from 'lucide-react'
-import { format, startOfMonth, endOfMonth, eachMonthOfInterval, differenceInDays, addMonths, startOfDay, isWithinInterval, addDays, min, max } from 'date-fns'
+import { format, parse, startOfMonth, endOfMonth, eachMonthOfInterval, differenceInDays, addMonths, startOfDay, isWithinInterval, addDays, min, max } from 'date-fns'
 import { fr } from 'date-fns/locale'
+
+const parseDateString = (dateStr: string) => parse(dateStr, 'yyyy-MM-dd', startOfDay(new Date()))
 import { updateTaskDates } from '@/lib/actions/planning.actions'
 import { getTeamMemberDisplayName } from '@/lib/utils/user'
 
@@ -57,8 +59,8 @@ export function PlanningClient({ projectId, project, initialTasks, teamMembers, 
 
     const validDates = tasks.filter(t => isVisible(t) && t.date_start && t.date_end)
     if (validDates.length > 0) {
-      const allStarts = validDates.map(t => new Date(t.date_start))
-      const allEnds = validDates.map(t => new Date(t.date_end))
+      const allStarts = validDates.map(t => parseDateString(t.date_start))
+      const allEnds = validDates.map(t => parseDateString(t.date_end))
       const minDate = min([...allStarts, new Date()])
       const maxDate = max([...allEnds, new Date()])
       
@@ -123,8 +125,8 @@ export function PlanningClient({ projectId, project, initialTasks, teamMembers, 
     
     setDraggingTask({
       id: task.id,
-      initialStart: new Date(task.date_start),
-      initialEnd: new Date(task.date_end),
+      initialStart: parseDateString(task.date_start),
+      initialEnd: parseDateString(task.date_end),
       currentOffsetDays: 0,
       startMouseX: e.clientX
     })
@@ -308,8 +310,8 @@ export function PlanningClient({ projectId, project, initialTasks, teamMembers, 
                 let barWidth = 0
                 let hasDates = !!(task.date_start && task.date_end)
                 
-                let renderStart = new Date(task.date_start)
-                let renderEnd = new Date(task.date_end)
+                let renderStart = parseDateString(task.date_start)
+                let renderEnd = parseDateString(task.date_end)
 
                 // If currently dragging this task, adjust dates for render
                 if (draggingTask?.id === task.id) {
@@ -350,8 +352,8 @@ export function PlanningClient({ projectId, project, initialTasks, teamMembers, 
                       </div>
                       
                       <div className="flex gap-4 text-xs text-text-secondary shrink-0 font-mono items-center">
-                        <span className="w-16 text-center">{task.date_start ? format(new Date(task.date_start), 'dd/MM/yy') : '-'}</span>
-                        <span className="w-16 text-center">{task.date_end ? format(new Date(task.date_end), 'dd/MM/yy') : '-'}</span>
+                        <span className="w-16 text-center">{task.date_start ? format(parseDateString(task.date_start), 'dd/MM/yy') : '-'}</span>
+                        <span className="w-16 text-center">{task.date_end ? format(parseDateString(task.date_end), 'dd/MM/yy') : '-'}</span>
                         <span className={`w-12 text-center font-medium ${task.percent_complete === 100 ? 'text-success' : ''}`}>{task.percent_complete}%</span>
                       </div>
                     </div>
@@ -372,6 +374,7 @@ export function PlanningClient({ projectId, project, initialTasks, teamMembers, 
                             >
                               {/* Progress Fill */}
                               <div 
+                                onMouseDown={(e) => e.stopPropagation()}
                                 className={`absolute top-0 bottom-0 left-0 ${statusColor}`}
                                 style={{ width: `${task.percent_complete}%` }}
                               />
