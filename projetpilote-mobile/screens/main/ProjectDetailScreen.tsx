@@ -24,8 +24,25 @@ export function ProjectDetailScreen() {
         const { data: p } = await supabase.from('projects').select('*').eq('id', projectId).single()
         setProject(p)
         
-        const { data: e } = await supabase.from('v_evm_project_summary').select('*').eq('project_id', projectId).single()
-        setEvm(e)
+        // Fetch EVM Data from API
+        const { data: sessionData } = await supabase.auth.getSession()
+        const token = sessionData.session?.access_token
+        
+        const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000/api'
+        try {
+          const evmRes = await fetch(`${apiUrl}/projects/${projectId}/evm`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+          if (evmRes.ok) {
+            const evmJson = await evmRes.json()
+            setEvm(evmJson.summary)
+            setTasks(evmJson.indicators || [])
+          }
+        } catch (e) {
+          console.error("Erreur API EVM:", e)
+        }
         
         const { data: b } = await supabase.from('v_budget_consumption').select('*').eq('project_id', projectId)
         if (b && b.length > 0) {
@@ -33,9 +50,6 @@ export function ProjectDetailScreen() {
           const totalConsumed = b.reduce((sum: number, line: any) => sum + Number(line.total_engage) + Number(line.total_decaisse), 0)
           setBudget({ totalAllocated, totalConsumed })
         }
-
-        const { data: t } = await supabase.from('v_evm_tasks').select('*').eq('project_id', projectId)
-        setTasks(t || [])
 
         const { data: o } = await supabase.from('operations_journal').select('*').eq('project_id', projectId).order('date', { ascending: false }).limit(5)
         setOperations(o || [])

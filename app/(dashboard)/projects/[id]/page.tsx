@@ -8,6 +8,12 @@ import { CalendarDays, Wallet, Building2, AlignLeft, Landmark, Clock, Users, Arr
 import { format, differenceInMonths, differenceInDays } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
+import { 
+  calculateProjectBAC, calculateProjectPV, calculateProjectEV, calculateProjectAC, calculateIndicators,
+  calculateTaskBAC, calculateTaskPV, calculateTaskEV, calculateTaskAC,
+  WbsTask, PtbaActivity, OperationJournal
+} from '@/lib/utils/evm'
+
 // Composants du Tableau de Bord EVM
 import { GaugeCPISPI } from '@/components/dashboard/GaugeCPISPI'
 import { SCurveChart } from '@/components/dashboard/SCurveChart'
@@ -54,21 +60,47 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
   const totalDecaisse = budgetConsumption?.reduce((acc, curr) => acc + (Number(curr.total_decaisse) || 0), 0) || 0
   const soldeDisponible = totalBudget - totalEngage
 
-  // 4. Fetch EVM Data
-  const { data: evmSummary } = await supabase.from('v_evm_project_summary').select('*').eq('project_id', id).single()
-  const { data: evmSnapshots } = await supabase.from('evm_snapshots').select('*').eq('project_id', id).order('control_date', { ascending: true })
-  const { data: evmIndicators } = await supabase.from('v_evm_indicators').select('*').eq('project_id', id)
-  const { data: operations } = await supabase.from('operations_journal').select('*').eq('project_id', id).order('created_at', { ascending: true })
+  // 4. Fetch EVM Data for TS Engine
+  const { data: wbsTasksData } = await supabase
+    .from('wbs_tasks')
+    .select('id, parent_id, task_type, code, description, responsible, date_start, date_end, percent_complete')
+    .eq('project_id', id)
 
-  // EVM Calculations
-  const hasEVMData = evmSnapshots && evmSnapshots.length > 0
-  const cpi = hasEVMData ? (evmSummary?.cpi_global || 1) : null
-  const spi = hasEVMData ? (evmSummary?.spi_global || 1) : null
-  const evTotal = evmSummary?.ev_total || 0
-  const bacTotal = evmSummary?.bac_total || totalBudget
+  const { data: ptbaActivitiesData } = await supabase
+    .from('ptba_activities')
+    .select('wbs_task_id, fiscal_year, budget_planned')
+    .in('wbs_task_id', (wbsTasksData || []).map((t: any) => t.id))
+
+  const { data: journalData } = await supabase
+    .from('operations_journal')
+    .select('wbs_task_id, status, actual_cost, operation_date')
+    .in('wbs_task_id', (wbsTasksData || []).map((t: any) => t.id))
+
+  const { data: evmSnapshots } = await supabase.from('evm_snapshots').select('*').eq('project_id', id).order('control_date', { ascending: true })
+
+  // Prepare typed data
+  const wbsTasks = (wbsTasksData || []) as WbsTask[]
+  const ptbaActivities = (ptbaActivitiesData || []) as PtbaActivity[]
+  const operations = (journalData || []) as OperationJournal[]
+  
+  const statusDateStr = project.evm_control_date || new Date().toISOString().split('T')[0]
+
+  // Global EVM Calculations via TS Engine
+  const pBAC = calculateProjectBAC(wbsTasks, ptbaActivities)
+  const pPV = calculateProjectPV(statusDateStr, wbsTasks, ptbaActivities).pv
+  const pEV = calculateProjectEV(wbsTasks, ptbaActivities)
+  const pAC = calculateProjectAC(statusDateStr, wbsTasks, operations)
+  const pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
+  const eacGlobal = pInd.cpi && pInd.cpi !== 0 ? pBAC / pInd.cpi : pBAC
+
+  const hasEVMData = true // Always true now since it's computed dynamically
+  const cpi = pInd.cpi
+  const spi = pInd.spi
+  const evTotal = pEV
+  const bacTotal = pBAC > 0 ? pBAC : totalBudget
   const avancementProgress = bacTotal > 0 ? (evTotal / bacTotal) * 100 : 0
 
-  // 5. Prepare Chart Data
+  // 5. Prepare Chart Data (Keep snapshots for S-Curve)
   const sCurveData = evmSnapshots?.map(s => ({
     name: new Date(s.control_date).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }),
     pv: Number(s.pv_total) || 0,
@@ -76,18 +108,30 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
     ac: Number(s.ac_total) || 0,
   })) || []
 
-  // Top Variances: Top 5 Worst Costs (Negative CV)
-  const topVariances = evmIndicators
-    ?.filter(i => Number(i.cv) < 0)
-    .sort((a, b) => Number(a.cv) - Number(b.cv))
+  // Top Variances: Compute for leaf nodes, sort by CV, take top 5 worst
+  const leafTasks = wbsTasks.filter(t => t.task_type !== 'SUMMARY')
+  const taskIndicators = leafTasks.map(task => {
+    const bac = calculateTaskBAC(task, ptbaActivities)
+    const pvRes = calculateTaskPV(statusDateStr, task, ptbaActivities)
+    const ev = calculateTaskEV(task, ptbaActivities)
+    const ac = calculateTaskAC(statusDateStr, task, operations)
+    return {
+      ...task,
+      ...calculateIndicators(bac, pvRes.pv, ev, ac)
+    }
+  })
+
+  const topVariances = taskIndicators
+    .filter(i => i.cv < 0)
+    .sort((a, b) => a.cv - b.cv)
     .slice(0, 5)
     .map(i => ({
       id: i.id,
       code: i.code,
       description: i.description,
-      cv: Number(i.cv),
-      cpi: Number(i.cpi)
-    })) || []
+      cv: i.cv,
+      cpi: i.cpi
+    }))
 
   // 6. Dates
   const startDate = project.start_date ? new Date(project.start_date) : null

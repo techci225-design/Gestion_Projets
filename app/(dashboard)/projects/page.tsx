@@ -5,6 +5,10 @@ import { cookies } from 'next/headers'
 import { Header } from '@/components/dashboard/Header'
 import { formatCurrency } from '@/lib/utils/format-currency'
 import { AlertBadge } from '@/components/ui/AlertBadge'
+import { 
+  calculateProjectBAC, calculateProjectPV, calculateProjectEV, calculateProjectAC, calculateIndicators,
+  WbsTask, PtbaActivity, OperationJournal
+} from '@/lib/utils/evm'
 import { Plus, Briefcase, Calendar, AlertTriangle, ArrowUpDown, ChevronRight, Activity, DollarSign, Target } from 'lucide-react'
 import { AddProjectModal } from './add-project-modal'
 import { DemoProjectButton } from '@/components/dashboard/DemoProjectButton'
@@ -83,11 +87,53 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
   let risks: any[] | null = []
 
   if (projectIds.length > 0) {
-    const { data: es } = await supabase
-      .from('v_evm_project_summary')
-      .select('*')
+    const { data: wbsTasksData } = await supabase
+      .from('wbs_tasks')
+      .select('id, project_id, parent_id, task_type, code, description, responsible, date_start, date_end, percent_complete')
       .in('project_id', projectIds)
-    evmSummaries = es
+
+    const wbsTaskIds = (wbsTasksData || []).map((t: any) => t.id)
+
+    const { data: ptbaActivitiesData } = await supabase
+      .from('ptba_activities')
+      .select('wbs_task_id, fiscal_year, budget_planned')
+      .in('wbs_task_id', wbsTaskIds)
+
+    const { data: journalData } = await supabase
+      .from('operations_journal')
+      .select('wbs_task_id, status, actual_cost, operation_date')
+      .in('wbs_task_id', wbsTaskIds)
+
+    const allWbsTasks = (wbsTasksData || []) as (WbsTask & { project_id: string })[]
+    const allPtba = (ptbaActivitiesData || []) as PtbaActivity[]
+    const allOps = (journalData || []) as OperationJournal[]
+
+    evmSummaries = projects.map(project => {
+      const pWbsTasks = allWbsTasks.filter(t => t.project_id === project.id)
+      const pWbsTaskIds = pWbsTasks.map(t => t.id)
+      const pPtba = allPtba.filter(p => pWbsTaskIds.includes(p.wbs_task_id))
+      const pOps = allOps.filter(o => pWbsTaskIds.includes(o.wbs_task_id))
+      
+      const statusDateStr = project.evm_control_date || new Date().toISOString().split('T')[0]
+      const pBAC = calculateProjectBAC(pWbsTasks, pPtba)
+      const pPV = calculateProjectPV(statusDateStr, pWbsTasks, pPtba).pv
+      const pEV = calculateProjectEV(pWbsTasks, pPtba)
+      const pAC = calculateProjectAC(statusDateStr, pWbsTasks, pOps)
+      const pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
+
+      return {
+        project_id: project.id,
+        bac_total: pBAC,
+        pv_total: pPV,
+        ev_total: pEV,
+        ac_total: pAC,
+        cv_global: pEV - pAC,
+        sv_global: pEV - pPV,
+        cpi_global: pInd.cpi,
+        spi_global: pInd.spi,
+        vac_global: pInd.cpi !== null && pInd.cpi > 0 ? pBAC - (pBAC / pInd.cpi) : 0
+      }
+    })
 
     const { data: bl } = await supabase
       .from('budget_lines')

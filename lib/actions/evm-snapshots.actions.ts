@@ -4,7 +4,12 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
-export async function createEvmSnapshot(projectId: string, snapshotData: any, overwrite: boolean = false) {
+import { 
+  calculateProjectBAC, calculateProjectPV, calculateProjectEV, calculateProjectAC, calculateIndicators,
+  WbsTask, PtbaActivity, OperationJournal
+} from '@/lib/utils/evm'
+
+export async function createEvmSnapshot(projectId: string, payload: { control_date: string }, overwrite: boolean = false) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Non authentifié' }
@@ -21,41 +26,60 @@ export async function createEvmSnapshot(projectId: string, snapshotData: any, ov
     return { error: 'Permissions insuffisantes pour créer un arrêté EVM' }
   }
 
-  // Utiliser adminClient au cas où la RLS d'insert manque sur evm_snapshots
+  // RECALCULATE ON THE SERVER
+  const statusDateStr = payload.control_date
+
+  const { data: wbsTasksData } = await supabase
+    .from('wbs_tasks')
+    .select('id, parent_id, task_type, code, description, responsible_user_id, responsible, date_start, date_end, percent_complete')
+    .eq('project_id', projectId)
+
+  const { data: ptbaActivitiesData } = await supabase
+    .from('ptba_activities')
+    .select('wbs_task_id, fiscal_year, budget_planned')
+    .in('wbs_task_id', (wbsTasksData || []).map(t => t.id))
+
+  const { data: journalData } = await supabase
+    .from('operations_journal')
+    .select('wbs_task_id, status, actual_cost, operation_date')
+    .in('wbs_task_id', (wbsTasksData || []).map(t => t.id))
+
+  const wbsTasks = (wbsTasksData || []) as WbsTask[]
+  const ptbaActivities = (ptbaActivitiesData || []) as PtbaActivity[]
+  const operations = (journalData || []) as OperationJournal[]
+
+  const pBAC = calculateProjectBAC(wbsTasks, ptbaActivities)
+  const pPV = calculateProjectPV(statusDateStr, wbsTasks, ptbaActivities).pv
+  const pEV = calculateProjectEV(wbsTasks, ptbaActivities)
+  const pAC = calculateProjectAC(statusDateStr, wbsTasks, operations)
+  const pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
+  const eacGlobal = pInd.cpi && pInd.cpi !== 0 ? pBAC / pInd.cpi : pBAC
+
   const adminClient = createAdminClient()
   
+  const snapshotDataToSave = {
+    project_id: projectId,
+    control_date: statusDateStr,
+    bac_total: pBAC,
+    pv_total: pPV,
+    ev_total: pEV,
+    ac_total: pAC,
+    cpi_global: pInd.cpi,
+    spi_global: pInd.spi,
+    eac_global: eacGlobal,
+    created_by: user.id
+  }
+
   if (overwrite) {
     const { error } = await adminClient
       .from('evm_snapshots')
-      .upsert({
-        project_id: projectId,
-        control_date: snapshotData.control_date,
-        bac_total: snapshotData.bac_total,
-        pv_total: snapshotData.pv_total,
-        ev_total: snapshotData.ev_total,
-        ac_total: snapshotData.ac_total,
-        cpi_global: snapshotData.cpi_global,
-        spi_global: snapshotData.spi_global,
-        eac_global: snapshotData.eac_global,
-        created_by: user.id
-      }, { onConflict: 'project_id, control_date' })
+      .upsert(snapshotDataToSave, { onConflict: 'project_id, control_date' })
 
     if (error) return { error: error.message }
   } else {
     const { error } = await adminClient
       .from('evm_snapshots')
-      .insert({
-        project_id: projectId,
-        control_date: snapshotData.control_date,
-        bac_total: snapshotData.bac_total,
-        pv_total: snapshotData.pv_total,
-        ev_total: snapshotData.ev_total,
-        ac_total: snapshotData.ac_total,
-        cpi_global: snapshotData.cpi_global,
-        spi_global: snapshotData.spi_global,
-        eac_global: snapshotData.eac_global,
-        created_by: user.id
-      })
+      .insert(snapshotDataToSave)
 
     if (error) {
       if (error.code === '23505') {

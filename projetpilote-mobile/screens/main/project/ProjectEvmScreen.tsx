@@ -18,8 +18,19 @@ export function ProjectEvmScreen() {
   useEffect(() => {
     async function loadData() {
       try {
-        const { data } = await supabase.from('v_evm_tasks').select('*').eq('project_id', projectId)
-        setTasks(data || [])
+        const { data: sessionData } = await supabase.auth.getSession()
+        const token = sessionData.session?.access_token
+        
+        const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000/api'
+        const evmRes = await fetch(`${apiUrl}/projects/${projectId}/evm`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        if (evmRes.ok) {
+          const evmJson = await evmRes.json()
+          setTasks(evmJson.indicators || [])
+        }
         
         const { data: p } = await supabase.from('projects').select('currency').eq('id', projectId).single()
         setProject(p)
@@ -43,7 +54,7 @@ export function ProjectEvmScreen() {
   // Generate chart data (mocking the time series based on tasks for demonstration)
   // In a real app we would use historical snapshots. Here we just plot EV vs PV vs AC across tasks
   const chartData = {
-    labels: tasks.map(t => t.name.substring(0, 5) + '...'),
+    labels: tasks.map(t => (t.code || t.description || '').substring(0, 5) + '...'),
     datasets: [
       {
         data: tasks.map(t => Number(t.pv) || 0),
@@ -98,23 +109,23 @@ export function ProjectEvmScreen() {
           <Text className="text-lg font-bold text-primary mb-4">Détails des Tâches</Text>
           {tasks.map((item, index) => (
             <View key={index} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-3">
-              <Text className="font-bold text-primary text-base mb-2">{item.name}</Text>
+              <Text className="font-bold text-primary text-base mb-2">{item.code ? item.code + ' - ' : ''}{item.description}</Text>
               <View className="flex-row justify-between mb-2">
                 <View>
                   <Text className="text-xs text-gray-500">CPI</Text>
-                  <Text className={`font-bold ${item.cpi >= 1 ? 'text-green-600' : 'text-red-600'}`}>
-                    {item.cpi ? Number(item.cpi).toFixed(2) : '1.00'}
+                  <Text className={`font-bold ${item.cpi === null ? 'text-gray-500' : (item.cpi >= 1 ? 'text-green-600' : 'text-red-600')}`}>
+                    {item.cpi === null ? 'N/A' : Number(item.cpi).toFixed(2)}
                   </Text>
                 </View>
                 <View>
                   <Text className="text-xs text-gray-500">SPI</Text>
-                  <Text className={`font-bold ${item.spi >= 1 ? 'text-green-600' : 'text-red-600'}`}>
-                    {item.spi ? Number(item.spi).toFixed(2) : '1.00'}
+                  <Text className={`font-bold ${item.spi === null ? 'text-gray-500' : (item.spi >= 1 ? 'text-green-600' : 'text-red-600')}`}>
+                    {item.spi === null ? 'N/A' : Number(item.spi).toFixed(2)}
                   </Text>
                 </View>
                 <View>
                   <Text className="text-xs text-gray-500">Avancement</Text>
-                  <Text className="font-bold text-gray-800">{Number(item.progress_percentage || 0).toFixed(0)}%</Text>
+                  <Text className="font-bold text-gray-800">{Number(item.percent_complete || 0).toFixed(0)}%</Text>
                 </View>
               </View>
               

@@ -7,7 +7,14 @@ import { getDisplayCurrency } from '@/lib/utils/currency'
 import { deleteEvmSnapshot, updateEvmSnapshotNotes } from '@/lib/actions/evm-snapshots.actions'
 import { formatCurrency } from '@/lib/utils/format-currency'
 
-function AlertBadge({ value }: { value: number }) {
+function AlertBadge({ value }: { value: number | null }) {
+  if (value === null || value === undefined) {
+    return (
+      <span className="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-surface-dim text-text-secondary">
+        N/A
+      </span>
+    )
+  }
   if (value >= 1) {
     return (
       <span className="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-[#16A34A]/10 text-[#16A34A] border border-[#16A34A]/20">
@@ -126,10 +133,10 @@ export function EvmHistory({ projectId, snapshots, currentSummary, currency }: E
                       {vac > 0 ? '+' : ''}{formatCurrency(vac, currency)}
                     </td>
                     <td className="p-4 text-center">
-                      <AlertBadge value={Number(item.cpi_global)} />
+                      <AlertBadge value={item.cpi_global} />
                     </td>
                     <td className="p-4 text-center">
-                      <AlertBadge value={Number(item.spi_global)} />
+                      <AlertBadge value={item.spi_global} />
                     </td>
                     <td className="p-4">
                       <EditableNotes snapshotId={item.id} projectId={projectId} initialNotes={item.notes} />
@@ -170,7 +177,7 @@ export function EvmHistory({ projectId, snapshots, currentSummary, currency }: E
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#f8fafc' }}
                   labelFormatter={(val) => new Date(val as any).toLocaleDateString('fr-FR')}
-                  formatter={(value: any, name: any) => [Number(value).toFixed(2), String(name)]}
+                  formatter={(value: any, name: any) => [value === null || value === undefined ? 'N/A' : Number(value).toFixed(2), String(name)]}
                 />
                 <Legend />
                 <ReferenceLine y={1.0} stroke="#16A34A" strokeDasharray="3 3" label={{ position: 'right', value: '1.0 (Optimal)', fill: '#16A34A', fontSize: 12 }} />

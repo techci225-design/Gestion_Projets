@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { LogframeItem } from '@/lib/actions/logframe.actions'
 import { PtbaActivity, addPtbaActivity, updatePtbaActivity, deletePtbaActivity } from '@/lib/actions/ptba.actions'
@@ -25,6 +25,19 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
   const [data, setData] = useState<PtbaActivity[]>(initialData)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<PtbaActivity | null>(null)
+  
+  const sortedWbsTasks = useMemo(() => {
+    return [...wbsTasks].sort((a, b) => {
+      const aParts = (a.code || '').split('.').map(Number)
+      const bParts = (b.code || '').split('.').map(Number)
+      for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+        if (aParts[i] === undefined) return -1
+        if (bParts[i] === undefined) return 1
+        if (aParts[i] !== bParts[i]) return (aParts[i] || 0) - (bParts[i] || 0)
+      }
+      return 0
+    })
+  }, [wbsTasks])
   
   const [formData, setFormData] = useState({
     wbs_task_id: '',
@@ -287,7 +300,7 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
                     className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500 disabled:opacity-50"
                   >
                     <option value="">-- Sélectionner une activité --</option>
-                    {wbsTasks.map(wbs => (
+                    {sortedWbsTasks.map(wbs => (
                       <option key={wbs.id} value={wbs.id}>
                         {wbs.code} - {wbs.name}
                       </option>

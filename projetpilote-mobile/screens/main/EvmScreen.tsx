@@ -24,22 +24,29 @@ export function EvmScreen() {
         const activeProjectId = selectedProjectId || p[0].id
         if (!selectedProjectId) setSelectedProjectId(activeProjectId)
 
-        const { data: evmTasks, error } = await supabase
-          .from('v_evm_tasks')
-          .select('*')
-          .eq('project_id', activeProjectId)
+        const { data: sessionData } = await supabase.auth.getSession()
+        const token = sessionData.session?.access_token
         
-        if (error) throw error
-
-        let bac = 0, eac = 0, vac = 0
-        evmTasks?.forEach(t => {
-          bac += Number(t.budget_allocated) || 0
-          eac += Number(t.eac) || 0
+        const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000/api'
+        const evmRes = await fetch(`${apiUrl}/projects/${activeProjectId}/evm`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
         })
-        vac = bac - eac
-
-        setTasks(evmTasks || [])
-        setKpis({ bac, eac, vac })
+        
+        if (evmRes.ok) {
+          const evmJson = await evmRes.json()
+          setTasks(evmJson.indicators || [])
+          const summary = evmJson.summary || { bac: 0, eac: 0 }
+          setKpis({ 
+            bac: summary.bac, 
+            eac: summary.eac, 
+            vac: summary.bac - summary.eac 
+          })
+        } else {
+          setTasks([])
+          setKpis({ bac: 0, eac: 0, vac: 0 })
+        }
       } catch (err) {
         console.error(err)
       } finally {
@@ -59,7 +66,7 @@ export function EvmScreen() {
   }
 
   const chartData = {
-    labels: tasks.length > 0 ? tasks.map(t => (t.name || '').substring(0, 5) + '..') : ['Aucune'],
+    labels: tasks.length > 0 ? tasks.map(t => (t.code || t.description || '').substring(0, 5) + '..') : ['Aucune'],
     datasets: [
       {
         data: tasks.length > 0 ? tasks.map(t => Number(t.pv) || 0) : [0],
@@ -145,18 +152,18 @@ export function EvmScreen() {
         }
         renderItem={({ item }) => (
           <View className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-3">
-            <Text className="font-bold text-primary text-base mb-2">{item?.name || 'Tâche'}</Text>
+            <Text className="font-bold text-primary text-base mb-2">{item?.code ? item.code + ' - ' : ''}{item?.description || 'Tâche'}</Text>
             <View className="flex-row justify-between">
               <View>
                 <Text className="text-xs text-gray-500">CPI</Text>
-                <Text className={`font-bold ${item.cpi >= 1 ? 'text-green-600' : item.cpi >= 0.9 ? 'text-orange-500' : 'text-red-600'}`}>
-                  {item.cpi ? String(Number(item.cpi).toFixed(2)) : '1.00'}
+                <Text className={`font-bold ${item.cpi === null ? 'text-gray-500' : (item.cpi >= 1 ? 'text-green-600' : item.cpi >= 0.9 ? 'text-orange-500' : 'text-red-600')}`}>
+                  {item.cpi === null ? 'N/A' : String(Number(item.cpi).toFixed(2))}
                 </Text>
               </View>
               <View>
                 <Text className="text-xs text-gray-500">SPI</Text>
-                <Text className={`font-bold ${item.spi >= 1 ? 'text-green-600' : item.spi >= 0.9 ? 'text-orange-500' : 'text-red-600'}`}>
-                  {item.spi ? String(Number(item.spi).toFixed(2)) : '1.00'}
+                <Text className={`font-bold ${item.spi === null ? 'text-gray-500' : (item.spi >= 1 ? 'text-green-600' : item.spi >= 0.9 ? 'text-orange-500' : 'text-red-600')}`}>
+                  {item.spi === null ? 'N/A' : String(Number(item.spi).toFixed(2))}
                 </Text>
               </View>
               <View>

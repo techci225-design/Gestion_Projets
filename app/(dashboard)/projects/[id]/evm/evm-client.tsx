@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Plus, Save, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Save, Pencil, Trash2, AlertTriangle } from 'lucide-react'
 import { updateEvmDate, deleteEvmTask } from '@/lib/actions/evm.actions'
 import { createEvmSnapshot } from '@/lib/actions/evm-snapshots.actions'
 import { formatCurrency } from '@/lib/utils/format-currency'
@@ -11,7 +11,14 @@ import { EvmHistory } from './evm-history'
 import { ImportTasksButton } from '@/components/dashboard/ImportTasksButton'
 import { EvmAiAnalysis } from '@/components/dashboard/evm-ai-analysis'
 
-function AlertBadge({ value }: { value: number }) {
+function AlertBadge({ value }: { value: number | null }) {
+  if (value === null || value === undefined) {
+    return (
+      <span className="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-surface-dim text-text-secondary">
+        N/A
+      </span>
+    )
+  }
   if (value >= 1) {
     return (
       <span className="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-bold bg-secondary-container text-on-secondary-container">
@@ -81,13 +88,6 @@ export function EvmClient({
     try {
       const data = {
         control_date: controlDate,
-        bac_total: summary.bac_total,
-        pv_total: summary.pv_total,
-        ev_total: summary.ev_total,
-        ac_total: summary.ac_total,
-        cpi_global: summary.cpi_global,
-        spi_global: summary.spi_global,
-        eac_global: summary.eac_global,
       }
       const res = await createEvmSnapshot(projectId, data, overwrite)
       if (res.error) {
@@ -104,8 +104,8 @@ export function EvmClient({
     }
   }
 
-  const cpiGlobal = summary?.cpi_global || 1
-  const spiGlobal = summary?.spi_global || 1
+  const cpiGlobal = summary?.cpi_global ?? null
+  const spiGlobal = summary?.spi_global ?? null
 
   const responsables = Array.from(new Set(indicators.map(i => i.responsible).filter(Boolean))) as string[]
   const filteredIndicators = selectedResponsable === 'Tous les responsables'
@@ -120,8 +120,8 @@ export function EvmClient({
     filteredAC += Number(i.actual_cost)
     filteredPV += Number(i.pv)
   })
-  const filteredCPI = filteredAC === 0 ? 1 : filteredEV / filteredAC
-  const filteredSPI = filteredPV === 0 ? 1 : filteredEV / filteredPV
+  const filteredCPI = filteredAC === 0 ? null : filteredEV / filteredAC
+  const filteredSPI = filteredPV === 0 ? null : filteredEV / filteredPV
 
   const totalPages = Math.ceil(filteredIndicators.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
@@ -187,7 +187,7 @@ export function EvmClient({
               </select>
               {selectedResponsable !== 'Tous les responsables' && (
                 <div className="text-[11px] font-medium text-primary mt-1">
-                  CPI filtré : {filteredCPI.toFixed(2)} | SPI filtré : {filteredSPI.toFixed(2)}
+                  CPI filtré : {filteredCPI !== null ? filteredCPI.toFixed(2) : 'N/A'} | SPI filtré : {filteredSPI !== null ? filteredSPI.toFixed(2) : 'N/A'}
                 </div>
               )}
             </div>
@@ -197,13 +197,13 @@ export function EvmClient({
               <div className="flex flex-col items-center">
                 <span className="text-xs font-medium text-text-secondary mb-1">CPI Global</span>
                 <div className="bg-secondary-container text-on-secondary-container text-lg font-semibold px-4 py-1 rounded-full border border-secondary-fixed">
-                  {Number(cpiGlobal).toFixed(2)}
+                  {cpiGlobal !== null ? Number(cpiGlobal).toFixed(2) : 'N/A'}
                 </div>
               </div>
               <div className="flex flex-col items-center">
                 <span className="text-xs font-medium text-text-secondary mb-1">SPI Global</span>
                 <div className="bg-tertiary-fixed text-on-tertiary-container text-lg font-semibold px-4 py-1 rounded-full border border-tertiary-fixed-dim">
-                  {Number(spiGlobal).toFixed(2)}
+                  {spiGlobal !== null ? Number(spiGlobal).toFixed(2) : 'N/A'}
                 </div>
               </div>
             </div>
@@ -239,7 +239,19 @@ export function EvmClient({
                 
                 return (
                   <tr key={item.id} className={`border-b border-border hover:bg-surface-bright transition-colors h-12 ${index % 2 !== 0 ? 'bg-surface-dim/30' : ''}`}>
-                    <td className="p-4 font-medium text-xs">{item.code}</td>
+                    <td className="p-4 font-medium text-xs">
+                      <div className="flex items-center gap-1.5">
+                        {item.code}
+                        {item.warnings && item.warnings.length > 0 && (
+                          <div className="group relative flex items-center">
+                            <AlertTriangle className="w-3.5 h-3.5 text-warning" />
+                            <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-max max-w-xs bg-surface-dimmer text-text-primary text-xs p-2 rounded shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-pre-wrap text-left border border-border">
+                              {item.warnings.join('\n')}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </td>
                     <td className="p-4 font-medium">{item.description}</td>
                     <td className="p-4">{item.responsible || '-'}</td>
                     <td className="p-4 text-text-secondary text-xs">{startDate} – {endDate}</td>
@@ -254,10 +266,10 @@ export function EvmClient({
                     <td className="p-4 text-right font-medium">{formatCurrency(item.budget_allocated, project?.currency, true)}</td>
                     <td className="p-4 text-right font-medium">{formatCurrency(item.actual_cost, project?.currency, true)}</td>
                     <td className="p-4 text-center">
-                      <AlertBadge value={Number(item.cpi)} />
+                      <AlertBadge value={item.cpi} />
                     </td>
                     <td className="p-4 text-center">
-                      <AlertBadge value={Number(item.spi)} />
+                      <AlertBadge value={item.spi} />
                     </td>
                     <td className="p-4 text-center">
                       <div className="flex items-center justify-center gap-2">

@@ -5,99 +5,33 @@ import { useNavigation } from '@react-navigation/native'
 
 export function PortefeuilleScreen() {
   const [projects, setProjects] = useState<any[]>([])
-  const [kpis, setKpis] = useState({ actifs: 0, cpi: 0, spi: 0 })
-  const [aggregates, setAggregates] = useState<{currency: string, budget: number}[]>([])
+  const [portfolios, setPortfolios] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const navigation = useNavigation<any>()
 
   const fetchProjects = async () => {
     try {
-      const { data: projectList, error } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('status', 'actif')
-
-      if (error) throw error
-
-      const projectIds = projectList?.map(p => p.id) || []
-
-      let evmSummaries: any[] = []
-      let budgetConsumption: any[] = []
-      let risksData: any[] = []
-
-      if (projectIds.length > 0) {
-        const { data: es } = await supabase.from('v_evm_project_summary').select('*').in('project_id', projectIds)
-        evmSummaries = es || []
-
-        const { data: bc } = await supabase.from('v_budget_consumption').select('project_id, total_engage, total_decaisse, initial_allocated_amount').in('project_id', projectIds)
-        budgetConsumption = bc || []
-
-        const { data: r } = await supabase.from('risks').select('project_id').eq('status', 'ouvert').eq('criticality', 9).in('project_id', projectIds)
-        risksData = r || []
+      const { data: sessionData } = await supabase.auth.getSession()
+      const token = sessionData.session?.access_token
+      
+      const apiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:3000/api'
+      const evmRes = await fetch(`${apiUrl}/evm/portfolio`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      if (evmRes.ok) {
+        const evmJson = await evmRes.json()
+        setProjects(evmJson.projects || [])
+        setPortfolios(evmJson.portfolio || [])
+      } else {
+        setProjects([])
+        setPortfolios([])
       }
-
-      let sumBacCpi = 0
-      let sumBacSpi = 0
-      let totalBacForAvg = 0
-      
-      const projectsData = projectList?.map(p => {
-        const summary = evmSummaries.find(s => s.project_id === p.id)
-        const pBudgetConsumption = budgetConsumption.filter(bc => bc.project_id === p.id)
-        
-        const pTotalBudget = pBudgetConsumption.reduce((sum, bc) => sum + Number(bc.initial_allocated_amount), 0)
-        const pTotalConsumed = pBudgetConsumption.reduce((sum, bc) => sum + Number(bc.total_engage) + Number(bc.total_decaisse), 0)
-        const pTauxConso = pTotalBudget > 0 ? pTotalConsumed / pTotalBudget : 0
-        
-        const pRisks = risksData.filter(r => r.project_id === p.id)
-        
-        const bac = summary?.bac_total || 0
-        const cpi = summary?.cpi_global ?? 1
-        const spi = summary?.spi_global ?? 1
-
-        if (bac > 0) {
-          sumBacCpi += cpi * bac
-          sumBacSpi += spi * bac
-          totalBacForAvg += bac
-        }
-
-        const alertReasons = []
-        if (cpi < 0.9) alertReasons.push(`CPI = ${cpi.toFixed(2)}`)
-        if (spi < 0.9) alertReasons.push(`SPI = ${spi.toFixed(2)}`)
-        if (pTauxConso > 1.0) alertReasons.push(`Conso = ${(pTauxConso * 100).toFixed(0)}%`)
-        if (pRisks.length > 0) alertReasons.push(`${pRisks.length} Risque(s)`)
-
-        return {
-          ...p,
-          cpi,
-          spi,
-          pTotalBudget,
-          pTotalConsumed,
-          pTauxConso,
-          isAlert: alertReasons.length > 0,
-          alertReasons
-        }
-      }) || []
-
-      const avgCpi = totalBacForAvg > 0 ? sumBacCpi / totalBacForAvg : 1
-      const avgSpi = totalBacForAvg > 0 ? sumBacSpi / totalBacForAvg : 1
-      
-      const activeCurrencies = Array.from(new Set(projectsData.map(p => p.currency || 'XOF')))
-      const aggList = activeCurrencies.map(currency => {
-        const currencyProjects = projectsData.filter(p => (p.currency || 'XOF') === currency)
-        const budget = currencyProjects.reduce((sum, p) => sum + p.pTotalBudget, 0)
-        return { currency, budget }
-      })
-      
-      setProjects(projectsData)
-      setAggregates(aggList)
-      setKpis({
-        actifs: projectsData.length,
-        cpi: avgCpi, 
-        spi: avgSpi  
-      })
     } catch (e) {
-      console.error(e)
+      console.error("Erreur chargement portfolio:", e)
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -129,22 +63,28 @@ import { formatCurrency } from '../../lib/utils'
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
           <View className="bg-primary/5 p-4 rounded-lg min-w-[120px] mr-4">
             <Text className="text-xs text-gray-500 mb-1">Projets actifs</Text>
-            <Text className="text-xl font-bold text-primary">{String(kpis.actifs)}</Text>
+            <Text className="text-xl font-bold text-primary">{String(projects.length)}</Text>
           </View>
-          {aggregates.map(agg => (
-            <View key={agg.currency} className="bg-primary/5 p-4 rounded-lg min-w-[150px] mr-4">
-              <Text className="text-xs text-gray-500 mb-1">Budget Total {aggregates.length > 1 ? `(${agg.currency})` : ''}</Text>
-              <Text className="text-xl font-bold text-primary">{formatCurrency(agg.budget, agg.currency, true)}</Text>
-            </View>
+          {portfolios.map(port => (
+            <React.Fragment key={port.currency}>
+              <View className="bg-primary/5 p-4 rounded-lg min-w-[150px] mr-4">
+                <Text className="text-xs text-gray-500 mb-1">Budget Total {portfolios.length > 1 ? `(${port.currency})` : ''}</Text>
+                <Text className="text-xl font-bold text-primary">{formatCurrency(port.bac, port.currency, true)}</Text>
+              </View>
+              <View className="bg-green-50 p-4 rounded-lg min-w-[100px] mr-4">
+                <Text className="text-xs text-green-700 mb-1">CPI Moyen {portfolios.length > 1 ? `(${port.currency})` : ''}</Text>
+                <Text className={`text-xl font-bold ${port.cpi === null ? 'text-gray-500' : (port.cpi >= 1 ? 'text-green-700' : 'text-red-700')}`}>
+                  {port.cpi === null ? 'N/A' : port.cpi.toFixed(2)}
+                </Text>
+              </View>
+              <View className="bg-green-50 p-4 rounded-lg min-w-[100px] mr-4">
+                <Text className="text-xs text-green-700 mb-1">SPI Moyen {portfolios.length > 1 ? `(${port.currency})` : ''}</Text>
+                <Text className={`text-xl font-bold ${port.spi === null ? 'text-gray-500' : (port.spi >= 1 ? 'text-green-700' : 'text-red-700')}`}>
+                  {port.spi === null ? 'N/A' : port.spi.toFixed(2)}
+                </Text>
+              </View>
+            </React.Fragment>
           ))}
-          <View className="bg-green-50 p-4 rounded-lg min-w-[100px] mr-4">
-            <Text className="text-xs text-green-700 mb-1">CPI Moyen</Text>
-            <Text className="text-xl font-bold text-green-700">{String(kpis.cpi.toFixed(2))}</Text>
-          </View>
-          <View className="bg-green-50 p-4 rounded-lg min-w-[100px]">
-            <Text className="text-xs text-green-700 mb-1">SPI Moyen</Text>
-            <Text className="text-xl font-bold text-green-700">{String(kpis.spi.toFixed(2))}</Text>
-          </View>
         </ScrollView>
       </View>
 
@@ -166,14 +106,14 @@ import { formatCurrency } from '../../lib/utils'
             </View>
             
             <View className="mt-4 flex-row">
-              <View className={`px-2 py-1 rounded mr-2 ${item.cpi < 1 ? 'bg-red-100' : 'bg-green-100'}`}>
-                <Text className={`text-xs font-bold ${item.cpi < 1 ? 'text-red-700' : 'text-green-700'}`}>
-                  CPI {item.cpi ? String(item.cpi.toFixed(2)) : '1.00'}
+              <View className={`px-2 py-1 rounded mr-2 ${item.cpi === null ? 'bg-gray-100' : (item.cpi < 1 ? 'bg-red-100' : 'bg-green-100')}`}>
+                <Text className={`text-xs font-bold ${item.cpi === null ? 'text-gray-500' : (item.cpi < 1 ? 'text-red-700' : 'text-green-700')}`}>
+                  CPI {item.cpi === null ? 'N/A' : String(Number(item.cpi).toFixed(2))}
                 </Text>
               </View>
-              <View className={`px-2 py-1 rounded mr-2 ${item.spi < 1 ? 'bg-red-100' : 'bg-green-100'}`}>
-                <Text className={`text-xs font-bold ${item.spi < 1 ? 'text-red-700' : 'text-green-700'}`}>
-                  SPI {item.spi ? String(item.spi.toFixed(2)) : '1.00'}
+              <View className={`px-2 py-1 rounded mr-2 ${item.spi === null ? 'bg-gray-100' : (item.spi < 1 ? 'bg-red-100' : 'bg-green-100')}`}>
+                <Text className={`text-xs font-bold ${item.spi === null ? 'text-gray-500' : (item.spi < 1 ? 'text-red-700' : 'text-green-700')}`}>
+                  SPI {item.spi === null ? 'N/A' : String(Number(item.spi).toFixed(2))}
                 </Text>
               </View>
               {item.isAlert && (

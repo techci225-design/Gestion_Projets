@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { formatCurrency } from '@/lib/utils/format-currency'
+import { 
+  calculateProjectBAC, calculateProjectPV, calculateProjectEV, calculateProjectAC, calculateIndicators,
+  WbsTask, PtbaActivity, OperationJournal
+} from '@/lib/utils/evm'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -17,19 +21,40 @@ export async function GET(request: Request) {
     .select('*')
     .eq('project_id', projectId)
     
-  const { data: evmData } = await supabase
-    .from('v_evm_project_summary')
-    .select('*')
-    .eq('project_id', projectId)
-    .single()
-
   const { data: projectData } = await supabase
     .from('projects')
-    .select('currency')
+    .select('currency, evm_control_date')
     .eq('id', projectId)
     .single()
 
   const currency = projectData?.currency || 'XOF'
+  const statusDateStr = projectData?.evm_control_date || new Date().toISOString().split('T')[0]
+
+  // EVM Engine
+  const { data: wbsTasksData } = await supabase
+    .from('wbs_tasks')
+    .select('id, parent_id, task_type, code, description, responsible, date_start, date_end, percent_complete')
+    .eq('project_id', projectId)
+
+  const { data: ptbaActivitiesData } = await supabase
+    .from('ptba_activities')
+    .select('wbs_task_id, fiscal_year, budget_planned')
+    .in('wbs_task_id', (wbsTasksData || []).map((t: any) => t.id))
+
+  const { data: journalData } = await supabase
+    .from('operations_journal')
+    .select('wbs_task_id, status, actual_cost, operation_date')
+    .in('wbs_task_id', (wbsTasksData || []).map((t: any) => t.id))
+
+  const wbsTasks = (wbsTasksData || []) as WbsTask[]
+  const ptbaActivities = (ptbaActivitiesData || []) as PtbaActivity[]
+  const operations = (journalData || []) as OperationJournal[]
+
+  const pBAC = calculateProjectBAC(wbsTasks, ptbaActivities)
+  const pPV = calculateProjectPV(statusDateStr, wbsTasks, ptbaActivities).pv
+  const pEV = calculateProjectEV(wbsTasks, ptbaActivities)
+  const pAC = calculateProjectAC(statusDateStr, wbsTasks, operations)
+  const pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
 
   // In a real application, you would use @react-pdf/renderer or puppeteer here.
   // For the backend plan, we generate a simple HTML string that can be sent to a PDF generator.
@@ -49,16 +74,16 @@ export async function GET(request: Request) {
         <h1>Rapport de Synthèse</h1>
         
         <h2>Indicateurs EVM (Global)</h2>
-        ${evmData ? `
+        ${pBAC > 0 || pPV > 0 || pEV > 0 || pAC > 0 ? `
         <table>
           <tr><th>BAC</th><th>PV</th><th>EV</th><th>AC</th><th>CPI</th><th>SPI</th></tr>
           <tr>
-            <td>${formatCurrency(evmData.bac_total, currency)}</td>
-            <td>${formatCurrency(evmData.pv_total, currency)}</td>
-            <td>${formatCurrency(evmData.ev_total, currency)}</td>
-            <td>${formatCurrency(evmData.ac_total, currency)}</td>
-            <td>${Number(evmData.cpi_global).toFixed(2)}</td>
-            <td>${Number(evmData.spi_global).toFixed(2)}</td>
+            <td>${formatCurrency(pBAC, currency)}</td>
+            <td>${formatCurrency(pPV, currency)}</td>
+            <td>${formatCurrency(pEV, currency)}</td>
+            <td>${formatCurrency(pAC, currency)}</td>
+            <td>${pInd.cpi === null ? 'N/A' : pInd.cpi.toFixed(2)}</td>
+            <td>${pInd.spi === null ? 'N/A' : pInd.spi.toFixed(2)}</td>
           </tr>
         </table>
         ` : '<p>Aucune donnée EVM</p>'}

@@ -34,6 +34,9 @@ export function AddOperationModal({
   const [selectedBudgetLine, setSelectedBudgetLine] = useState(editItem?.budget_line_id || '')
   const [fundingSourceId, setFundingSourceId] = useState(editItem?.funding_source_id || '')
   
+  const defaultDate = new Date().toISOString().split('T')[0]
+  const [operationDate, setOperationDate] = useState(editItem?.operation_date || (editItem?.created_at ? new Date(editItem.created_at).toISOString().split('T')[0] : defaultDate))
+  
   // AI Suggestion State
   const [suggesting, setSuggesting] = useState(false)
   const [aiSuggestion, setAiSuggestion] = useState<{code: string, label: string, id: string} | null>(null)
@@ -122,6 +125,7 @@ export function AddOperationModal({
       planned_cost: formPlanned,
       actual_cost: formActual > 0 ? formActual : undefined,
       funding_source_id: fundingSourceId || undefined,
+      operation_date: operationDate || undefined,
     }
 
     const result = editItem 
@@ -297,6 +301,17 @@ export function AddOperationModal({
               <option value="decaisse">Décaissé</option>
               <option value="annule">Annulé</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-1">Date de l'opération *</label>
+            <input 
+              required
+              type="date"
+              value={operationDate}
+              onChange={e => setOperationDate(e.target.value)}
+              className="w-full border border-border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-surface"
+            />
           </div>
 
           <div>

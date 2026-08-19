@@ -201,11 +201,11 @@ export const RapportDocument = ({ data }: { data: any }) => {
             </View>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>CPI Global</Text>
-              <Text style={[styles.summaryValue, { color: cpi >= 1 ? '#16A34A' : cpi >= 0.9 ? '#F59E0B' : '#DC2626' }]}>{Number(cpi).toFixed(2)}</Text>
+              <Text style={[styles.summaryValue, { color: cpi === null ? '#6B7280' : (cpi >= 1 ? '#16A34A' : cpi >= 0.9 ? '#F59E0B' : '#DC2626') }]}>{cpi === null ? 'N/A' : Number(cpi).toFixed(2)}</Text>
             </View>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>SPI Global</Text>
-              <Text style={[styles.summaryValue, { color: spi >= 1 ? '#16A34A' : spi >= 0.9 ? '#F59E0B' : '#DC2626' }]}>{Number(spi).toFixed(2)}</Text>
+              <Text style={[styles.summaryValue, { color: spi === null ? '#6B7280' : (spi >= 1 ? '#16A34A' : spi >= 0.9 ? '#F59E0B' : '#DC2626') }]}>{spi === null ? 'N/A' : Number(spi).toFixed(2)}</Text>
             </View>
           </View>
           
@@ -219,15 +219,15 @@ export const RapportDocument = ({ data }: { data: any }) => {
               <View style={[styles.tableCol, { width: '7%' }]}><Text style={styles.tableCellHeader}>CPI</Text></View>
               <View style={[styles.tableCol, { width: '8%', borderRightWidth: 0 }]}><Text style={styles.tableCellHeader}>SPI</Text></View>
             </View>
-            {evmIndicators.map((ind: any, i: number) => (
+            {evmIndicators.filter((ind: any) => ind.task_type !== 'SUMMARY').map((ind: any, i: number) => (
               <View key={ind.id} style={[styles.tableRow, i % 2 !== 0 ? styles.tableRowAlt : {}]}>
                 <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCell}>{ind.code}</Text></View>
-                <View style={[styles.tableCol, { width: '30%' }]}><Text style={styles.tableCell}>{ind.name}</Text></View>
+                <View style={[styles.tableCol, { width: '30%' }]}><Text style={styles.tableCell}>{ind.description}</Text></View>
                 <View style={[styles.tableCol, { width: '10%' }]}><Text style={styles.tableCell}>{ind.percent_complete}%</Text></View>
-                <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCell}>{formatCurrency(ind.budget_allocated)}</Text></View>
-                <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCell}>{formatCurrency(ind.actual_cost)}</Text></View>
-                <View style={[styles.tableCol, { width: '7%', backgroundColor: ind.cpi < 0.9 ? '#FEE2E2' : 'transparent' }]}><Text style={styles.tableCell}>{Number(ind.cpi).toFixed(2)}</Text></View>
-                <View style={[styles.tableCol, { width: '8%', borderRightWidth: 0, backgroundColor: ind.spi < 0.9 ? '#FEE2E2' : 'transparent' }]}><Text style={styles.tableCell}>{Number(ind.spi).toFixed(2)}</Text></View>
+                <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCell}>{formatCurrency(ind.bac)}</Text></View>
+                <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCell}>{formatCurrency(ind.ac)}</Text></View>
+                <View style={[styles.tableCol, { width: '7%', backgroundColor: ind.cpi !== null && ind.cpi < 0.9 ? '#FEE2E2' : 'transparent' }]}><Text style={styles.tableCell}>{ind.cpi === null ? 'N/A' : Number(ind.cpi).toFixed(2)}</Text></View>
+                <View style={[styles.tableCol, { width: '8%', borderRightWidth: 0, backgroundColor: ind.spi !== null && ind.spi < 0.9 ? '#FEE2E2' : 'transparent' }]}><Text style={styles.tableCell}>{ind.spi === null ? 'N/A' : Number(ind.spi).toFixed(2)}</Text></View>
               </View>
             ))}
           </View>

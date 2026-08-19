@@ -264,11 +264,31 @@ Deno.serve(async (req) => {
       }
 
       // D. EVM
-      const { data: evm } = await supabase
-        .from('v_evm_project_summary')
-        .select('*')
-        .eq('project_id', pid)
-        .single()
+      // API URL resolution: if running locally, use host.docker.internal, otherwise use NEXT_PUBLIC_SITE_URL or Vercel URL
+      const appUrl = Deno.env.get('NEXT_PUBLIC_SITE_URL') || 'https://gestion-projets-e3uj.vercel.app'
+      const apiUrl = `${appUrl.replace(/\/$/, '')}/api/internal/evm/projects`
+      
+      let evmData = null
+      try {
+        const evmRes = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseKey}` // server-to-server auth
+          },
+          body: JSON.stringify({ projectIds: [pid] })
+        })
+        if (evmRes.ok) {
+          const results = await evmRes.json()
+          evmData = results[pid]
+        } else {
+          console.error(`EVM API error for project ${pid}:`, await evmRes.text())
+        }
+      } catch (e) {
+        console.error(`Fetch error to EVM API for project ${pid}:`, e)
+      }
+
+      const evm = evmData
 
       if (evm) {
         if (evm.cpi_global !== null && evm.cpi_global < 0.90) {

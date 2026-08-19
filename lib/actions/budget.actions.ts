@@ -17,7 +17,7 @@ const budgetLineSchema = z.object({
   responsible: z.string().optional().nullable()
 })
 
-import { requireRole } from './auth.actions'
+import { requireRole, requireProjectPermission } from './auth.actions'
 
 export async function createBudgetLine(data: z.infer<typeof budgetLineSchema>) {
   const parsed = budgetLineSchema.safeParse(data)
@@ -148,7 +148,8 @@ const operationJournalSchema = z.object({
   status: z.enum(['planifie', 'engage', 'decaisse', 'annule']),
   planned_cost: z.number().min(0),
   actual_cost: z.number().min(0).optional(),
-  funding_source_id: z.string().uuid().optional()
+  funding_source_id: z.string().uuid().optional(),
+  operation_date: z.string().optional().nullable()
 })
 
 export async function createOperation(data: z.infer<typeof operationJournalSchema>) {
@@ -158,12 +159,28 @@ export async function createOperation(data: z.infer<typeof operationJournalSchem
   }
 
   try {
-    await requireRole(parsed.data.project_id, ['owner', 'comptable'])
+    await requireProjectPermission(parsed.data.project_id, 'edit_budget')
   } catch (error: any) {
     return { error: error.message }
   }
 
   const supabase = await createClient()
+
+  // Validate budget_line_id belongs to this project
+  if (parsed.data.budget_line_id) {
+    const { data: bl } = await supabase.from('budget_lines').select('project_id').eq('id', parsed.data.budget_line_id).single()
+    if (!bl || bl.project_id !== parsed.data.project_id) {
+      return { error: 'La ligne budgétaire est invalide ou appartient à un autre projet.' }
+    }
+  }
+
+  // Validate wbs_task_id belongs to this project
+  if (parsed.data.wbs_task_id) {
+    const { data: wbs } = await supabase.from('wbs_tasks').select('project_id').eq('id', parsed.data.wbs_task_id).single()
+    if (!wbs || wbs.project_id !== parsed.data.project_id) {
+      return { error: 'La tâche WBS est invalide ou appartient à un autre projet.' }
+    }
+  }
 
   const { data: result, error } = await supabase
     .from('operations_journal')
@@ -190,12 +207,28 @@ export async function updateOperation(data: z.infer<typeof updateOperationJourna
   }
 
   try {
-    await requireRole(parsed.data.project_id, ['owner', 'comptable'])
+    await requireProjectPermission(parsed.data.project_id, 'edit_budget')
   } catch (error: any) {
     return { error: error.message }
   }
 
   const supabase = await createClient()
+
+  // Validate budget_line_id belongs to this project
+  if (parsed.data.budget_line_id) {
+    const { data: bl } = await supabase.from('budget_lines').select('project_id').eq('id', parsed.data.budget_line_id).single()
+    if (!bl || bl.project_id !== parsed.data.project_id) {
+      return { error: 'La ligne budgétaire est invalide ou appartient à un autre projet.' }
+    }
+  }
+
+  // Validate wbs_task_id belongs to this project
+  if (parsed.data.wbs_task_id) {
+    const { data: wbs } = await supabase.from('wbs_tasks').select('project_id').eq('id', parsed.data.wbs_task_id).single()
+    if (!wbs || wbs.project_id !== parsed.data.project_id) {
+      return { error: 'La tâche WBS est invalide ou appartient à un autre projet.' }
+    }
+  }
 
   const { data: result, error } = await supabase
     .from('operations_journal')
@@ -207,7 +240,8 @@ export async function updateOperation(data: z.infer<typeof updateOperationJourna
       status: parsed.data.status,
       planned_cost: parsed.data.planned_cost,
       actual_cost: parsed.data.actual_cost,
-      funding_source_id: parsed.data.funding_source_id
+      funding_source_id: parsed.data.funding_source_id,
+      operation_date: parsed.data.operation_date
     })
     .eq('id', parsed.data.id)
     .eq('project_id', parsed.data.project_id)
@@ -227,7 +261,7 @@ export async function batchUpdateOperationsFromBank(projectId: string, updates: 
   
   // Verify access
   try {
-    await requireRole(projectId, ['owner', 'comptable'])
+    await requireProjectPermission(projectId, 'edit_budget')
   } catch (error: any) {
     return { error: error.message }
   }

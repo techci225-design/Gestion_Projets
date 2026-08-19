@@ -36,15 +36,33 @@ Deno.serve(async (req) => {
 
       let projectsHtml = ''
 
+      let evmDataByProject: Record<string, any> = {}
+      try {
+        const appUrl = Deno.env.get('NEXT_PUBLIC_SITE_URL') || 'https://gestion-projets-e3uj.vercel.app'
+        const apiUrl = `${appUrl.replace(/\/$/, '')}/api/internal/evm/projects`
+        
+        const evmRes = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseKey}` // server-to-server auth
+          },
+          body: JSON.stringify({ projectIds: projects.map(p => p.id) })
+        })
+        if (evmRes.ok) {
+          evmDataByProject = await evmRes.json()
+        } else {
+          console.error(`EVM API error for org ${orgId}:`, await evmRes.text())
+        }
+      } catch (e) {
+        console.error(`Fetch error to EVM API for org ${orgId}:`, e)
+      }
+
       for (const p of projects) {
         const pid = p.id
         
-        // Fetch EVM & Budget data
-        const { data: evm } = await supabase
-          .from('v_evm_project_summary')
-          .select('*')
-          .eq('project_id', pid)
-          .single()
+        // Fetch EVM & Budget data from pre-fetched API result
+        const evm = evmDataByProject[pid] || null
         
         const bac = evm?.bac_total || 0
         const ac = evm?.ac_total || 0
