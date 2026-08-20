@@ -77,7 +77,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const pEV = calculateProjectEV(wbsTasks, ptbaActivities)
   const pAC = calculateProjectAC(statusDateStr, wbsTasks, operations)
   const pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
-  const eacGlobal = pInd.cpi && pInd.cpi !== 0 ? pBAC / pInd.cpi : pBAC
 
   const summary = {
     bac: pBAC,
@@ -88,7 +87,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     sv: pInd.sv,
     cpi: pInd.cpi,
     spi: pInd.spi,
-    eac: eacGlobal
+    eac: pInd.eac
   }
 
   const leafTasks = wbsTasks.filter(t => t.task_type !== 'SUMMARY')
@@ -99,10 +98,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const ac = calculateTaskAC(statusDateStr, task, operations)
     return {
       ...task,
-      bac,
-      pv: pvRes.pv,
-      ev,
-      ac,
       ...calculateIndicators(bac, pvRes.pv, ev, ac),
       warnings: pvRes.warnings
     }

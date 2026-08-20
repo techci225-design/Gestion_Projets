@@ -89,7 +89,6 @@ export async function GET(request: Request) {
     const pEV = calculateProjectEV(pWbsTasks, pPtba)
     const pAC = calculateProjectAC(statusDateStr, pWbsTasks, pOps)
     const pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
-    const eacGlobal = pInd.cpi !== null && pInd.cpi > 0 ? pBAC / pInd.cpi : pBAC
 
     return {
       project,
@@ -99,7 +98,7 @@ export async function GET(request: Request) {
       ac: pAC,
       cpi: pInd.cpi,
       spi: pInd.spi,
-      eac: eacGlobal
+      eac: pInd.eac
     }
   })
 
@@ -114,13 +113,7 @@ export async function GET(request: Request) {
     const sumEv = projs.reduce((sum, p) => sum + p.ev, 0)
     const sumAc = projs.reduce((sum, p) => sum + p.ac, 0)
     
-    const cv = sumEv - sumAc
-    const sv = sumEv - sumPv
-    
-    const cpi = sumAc === 0 ? null : sumEv / sumAc
-    const spi = sumPv === 0 ? null : sumEv / sumPv
-    
-    const eac = (cpi !== null && cpi > 0) ? sumBac / cpi : sumBac
+    const portInd = calculateIndicators(sumBac, sumPv, sumEv, sumAc)
 
     return {
       currency,
@@ -129,11 +122,11 @@ export async function GET(request: Request) {
       pv: sumPv,
       ev: sumEv,
       ac: sumAc,
-      cv,
-      sv,
-      cpi,
-      spi,
-      eac
+      cv: portInd.cv,
+      sv: portInd.sv,
+      cpi: portInd.cpi,
+      spi: portInd.spi,
+      eac: portInd.eac
     }
   })
 

@@ -91,7 +91,7 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
   const pEV = calculateProjectEV(wbsTasks, ptbaActivities)
   const pAC = calculateProjectAC(statusDateStr, wbsTasks, operations)
   const pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
-  const eacGlobal = pInd.cpi && pInd.cpi !== 0 ? pBAC / pInd.cpi : pBAC
+  const eacGlobal = pInd.eac
 
   const hasEVMData = true // Always true now since it's computed dynamically
   const cpi = pInd.cpi
@@ -127,10 +127,10 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
     .slice(0, 5)
     .map(i => ({
       id: i.id,
-      code: i.code,
-      description: i.description,
+      code: i.code || '',
+      description: i.description || '',
       cv: i.cv,
-      cpi: i.cpi
+      cpi: i.cpi || 0
     }))
 
   // 6. Dates

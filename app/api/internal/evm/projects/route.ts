@@ -92,11 +92,12 @@ export async function POST(request: Request) {
         pv_total: pPV,
         ev_total: pEV,
         ac_total: pAC,
-        cv_global: pEV - pAC,
-        sv_global: pEV - pPV,
+        cv_global: pInd.cv,
+        sv_global: pInd.sv,
         cpi_global: pInd.cpi,
         spi_global: pInd.spi,
-        vac_global: pInd.cpi !== null && pInd.cpi > 0 ? pBAC - (pBAC / pInd.cpi) : 0
+        vac_global: pInd.vac,
+        eac_global: pInd.eac
       }
     }
 

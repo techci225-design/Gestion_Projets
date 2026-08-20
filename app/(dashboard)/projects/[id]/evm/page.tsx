@@ -87,7 +87,7 @@ export default async function EvmPage({ params }: { params: Promise<{ id: string
   const pAC = calculateProjectAC(statusDateStr, wbsTasks, operations)
   const pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
   
-  const eacGlobal = pInd.cpi && pInd.cpi !== 0 ? pBAC / pInd.cpi : pBAC
+  const eacGlobal = pInd.eac
 
   const summaryData = {
     bac_total: pBAC,

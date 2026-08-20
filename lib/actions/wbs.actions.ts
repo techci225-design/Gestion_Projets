@@ -317,6 +317,18 @@ export async function deleteWbsTask(id: string, projectId: string) {
       return { error: "Cette activité contient des sous-activités. Déplacez ou supprimez-les avant de supprimer cette activité." }
     }
 
+    // Check for decaisse expenses (EVM integrity protection)
+    const { data: operations, error: opError } = await supabase
+      .from('operations_journal')
+      .select('id')
+      .eq('wbs_task_id', id)
+      .eq('status', 'decaisse')
+      .limit(1)
+
+    if (operations && operations.length > 0) {
+      return { error: "Cette tâche ne peut pas être supprimée car elle possède des dépenses décaissées dans le Journal. Réaffectez ou archivez la tâche avant suppression." }
+    }
+
     const { error } = await supabase
       .from('wbs_tasks')
       .delete()

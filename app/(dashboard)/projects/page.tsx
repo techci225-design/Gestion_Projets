@@ -108,7 +108,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
     const allPtba = (ptbaActivitiesData || []) as PtbaActivity[]
     const allOps = (journalData || []) as OperationJournal[]
 
-    evmSummaries = projects.map(project => {
+    evmSummaries = (projects || []).map(project => {
       const pWbsTasks = allWbsTasks.filter(t => t.project_id === project.id)
       const pWbsTaskIds = pWbsTasks.map(t => t.id)
       const pPtba = allPtba.filter(p => pWbsTaskIds.includes(p.wbs_task_id))
@@ -127,11 +127,12 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
         pv_total: pPV,
         ev_total: pEV,
         ac_total: pAC,
-        cv_global: pEV - pAC,
-        sv_global: pEV - pPV,
+        cv_global: pInd.cv,
+        sv_global: pInd.sv,
         cpi_global: pInd.cpi,
         spi_global: pInd.spi,
-        vac_global: pInd.cpi !== null && pInd.cpi > 0 ? pBAC - (pBAC / pInd.cpi) : 0
+        vac_global: pInd.vac,
+        eac_global: pInd.eac
       }
     })
 

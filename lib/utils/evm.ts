@@ -9,6 +9,9 @@ export interface WbsTask {
   date_start: string | null
   date_end: string | null
   percent_complete?: number | null
+  code?: string | null
+  description?: string | null
+  responsible?: string | null
 }
 
 export interface PtbaActivity {
@@ -159,6 +162,8 @@ export interface EvmIndicators {
   sv: number
   cpi: number | null
   spi: number | null
+  eac: number
+  vac: number
 }
 
 export function calculateIndicators(bac: number, pv: number, ev: number, ac: number): EvmIndicators {
@@ -166,6 +171,9 @@ export function calculateIndicators(bac: number, pv: number, ev: number, ac: num
   const sv = ev - pv
   const cpi = ac === 0 ? null : ev / ac
   const spi = pv === 0 ? null : ev / pv
+  
+  const eac = (cpi !== null && cpi > 0) ? bac / cpi : bac
+  const vac = bac - eac
   
   return {
     bac,
@@ -175,7 +183,9 @@ export function calculateIndicators(bac: number, pv: number, ev: number, ac: num
     cv,
     sv,
     cpi,
-    spi
+    spi,
+    eac,
+    vac
   }
 }
 

@@ -53,7 +53,6 @@ export async function createEvmSnapshot(projectId: string, payload: { control_da
   const pEV = calculateProjectEV(wbsTasks, ptbaActivities)
   const pAC = calculateProjectAC(statusDateStr, wbsTasks, operations)
   const pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
-  const eacGlobal = pInd.cpi && pInd.cpi !== 0 ? pBAC / pInd.cpi : pBAC
 
   const adminClient = createAdminClient()
   
@@ -66,7 +65,7 @@ export async function createEvmSnapshot(projectId: string, payload: { control_da
     ac_total: pAC,
     cpi_global: pInd.cpi,
     spi_global: pInd.spi,
-    eac_global: eacGlobal,
+    eac_global: pInd.eac,
     created_by: user.id
   }
 

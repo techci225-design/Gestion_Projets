@@ -73,7 +73,7 @@ export const RapportDocument = ({ data }: { data: any }) => {
 
   const bac = evmSummary?.bac_total || 0;
   const eac = evmSummary?.eac_global || 0;
-  const vac = bac - eac;
+  const vac = evmSummary?.vac_global || 0;
   const cpi = evmSummary?.cpi_global || 1;
   const spi = evmSummary?.spi_global || 1;
 

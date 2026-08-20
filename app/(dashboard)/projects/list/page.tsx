@@ -97,7 +97,7 @@ export default async function ProjectsListPage() {
     const allPtba = (ptbaActivitiesData || []) as PtbaActivity[]
     const allOps = (journalData || []) as OperationJournal[]
 
-    evmSummaries = projects.map(project => {
+    evmSummaries = (projects || []).map(project => {
       const pWbsTasks = allWbsTasks.filter(t => t.project_id === project.id)
       const pWbsTaskIds = pWbsTasks.map(t => t.id)
       const pPtba = allPtba.filter(p => pWbsTaskIds.includes(p.wbs_task_id))

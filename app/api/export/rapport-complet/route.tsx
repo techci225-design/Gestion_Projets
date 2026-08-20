@@ -70,7 +70,6 @@ export async function GET(request: Request) {
   const pEV = calculateProjectEV(wbsTasks, ptbaActivities)
   const pAC = calculateProjectAC(statusDateStr, wbsTasks, operations)
   const pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
-  const eacGlobal = pInd.cpi && pInd.cpi !== 0 ? pBAC / pInd.cpi : pBAC
 
   const evmSummary = {
     bac_total: pBAC,
@@ -79,7 +78,8 @@ export async function GET(request: Request) {
     ac_total: pAC,
     cpi_global: pInd.cpi,
     spi_global: pInd.spi,
-    eac_global: eacGlobal
+    eac_global: pInd.eac,
+    vac_global: pInd.vac
   }
 
   const evmIndicators = wbsTasks.map(task => {
@@ -89,10 +89,6 @@ export async function GET(request: Request) {
     const ac = calculateTaskAC(statusDateStr, task, operations)
     return {
       ...task,
-      bac,
-      pv: pvRes.pv,
-      ev,
-      ac,
       ...calculateIndicators(bac, pvRes.pv, ev, ac)
     }
   })
