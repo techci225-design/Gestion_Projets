@@ -2,11 +2,33 @@
 
 -- 1. Rename existing enum values (Supported in PostgreSQL 10+)
 -- This automatically migrates all existing rows without needing UPDATE statements!
-ALTER TYPE project_role RENAME VALUE 'owner' TO 'OWNER';
-ALTER TYPE project_role RENAME VALUE 'chef_projet' TO 'PROJECT_MANAGER';
-ALTER TYPE project_role RENAME VALUE 'comptable' TO 'ACCOUNTANT';
-ALTER TYPE project_role RENAME VALUE 'consultant' TO 'CONSULTANT';
-ALTER TYPE project_role RENAME VALUE 'bailleur_lecture' TO 'FUNDER_READONLY';
+DO $$ 
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'owner' AND enumtypid = 'project_role'::regtype) AND
+       NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'OWNER' AND enumtypid = 'project_role'::regtype) THEN
+        ALTER TYPE project_role RENAME VALUE 'owner' TO 'OWNER';
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'chef_projet' AND enumtypid = 'project_role'::regtype) AND
+       NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'PROJECT_MANAGER' AND enumtypid = 'project_role'::regtype) THEN
+        ALTER TYPE project_role RENAME VALUE 'chef_projet' TO 'PROJECT_MANAGER';
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'comptable' AND enumtypid = 'project_role'::regtype) AND
+       NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'ACCOUNTANT' AND enumtypid = 'project_role'::regtype) THEN
+        ALTER TYPE project_role RENAME VALUE 'comptable' TO 'ACCOUNTANT';
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'consultant' AND enumtypid = 'project_role'::regtype) AND
+       NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'CONSULTANT' AND enumtypid = 'project_role'::regtype) THEN
+        ALTER TYPE project_role RENAME VALUE 'consultant' TO 'CONSULTANT';
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'bailleur_lecture' AND enumtypid = 'project_role'::regtype) AND
+       NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'FUNDER_READONLY' AND enumtypid = 'project_role'::regtype) THEN
+        ALTER TYPE project_role RENAME VALUE 'bailleur_lecture' TO 'FUNDER_READONLY';
+    END IF;
+END $$;
 
 -- 3. Update RLS policies to use new values
 DROP POLICY IF EXISTS "write_logframe_all" ON logframe_items;

@@ -26,7 +26,7 @@ BEGIN
         ADD CONSTRAINT fk_ptba_project_wbs 
         FOREIGN KEY (project_id, wbs_task_id) 
         REFERENCES wbs_tasks(project_id, id) 
-        ON DELETE CASCADE;
+        ON DELETE RESTRICT;
     END IF;
 
     -- Suppression de la contrainte FK sur budget_line_id
@@ -40,7 +40,7 @@ BEGIN
         ADD CONSTRAINT fk_ptba_project_budget 
         FOREIGN KEY (project_id, budget_line_id) 
         REFERENCES budget_lines(project_id, id) 
-        ON DELETE SET NULL;
+        ON DELETE RESTRICT;
     END IF;
 END $$;
 
@@ -58,6 +58,6 @@ BEGIN
         ADD CONSTRAINT fk_journal_project_wbs 
         FOREIGN KEY (project_id, wbs_task_id) 
         REFERENCES wbs_tasks(project_id, id) 
-        ON DELETE SET NULL;
+        ON DELETE RESTRICT;
     END IF;
 END $$;

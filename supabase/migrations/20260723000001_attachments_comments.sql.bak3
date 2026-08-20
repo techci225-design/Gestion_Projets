@@ -26,7 +26,7 @@ DROP POLICY IF EXISTS "att_delete" ON attachments;
 CREATE POLICY "att_delete" ON attachments FOR DELETE
   USING (
     uploaded_by = auth.uid()
-    OR fn_user_role(project_id) IN ('owner')
+    OR fn_user_role(project_id) IN ('OWNER')
   );
 
 -- 2. COMMENTS TABLE

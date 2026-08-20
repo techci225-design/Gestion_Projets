@@ -1,0 +1,789 @@
+set local check_function_bodies = off;
+
+alter default privileges for role "postgres" in schema "public" revoke all on sequences from "anon";
+
+alter default privileges for role "postgres" in schema "public" revoke all on sequences from "authenticated";
+
+alter default privileges for role "postgres" in schema "public" revoke all on sequences from "service_role";
+
+alter default privileges for role "postgres" in schema "public" revoke all on tables from "anon";
+
+alter default privileges for role "postgres" in schema "public" revoke all on tables from "authenticated";
+
+alter default privileges for role "postgres" in schema "public" revoke all on tables from "service_role";
+
+drop policy "att_delete" on "public"."attachments";
+
+drop policy "att_insert" on "public"."attachments";
+
+drop policy "att_select" on "public"."attachments";
+
+drop policy "inv_select_invited" on "public"."invitations";
+
+drop policy "org_member_select" on "public"."organization_members";
+
+drop policy "org_member_self_insert" on "public"."organization_members";
+
+drop policy "org_creation_libre" on "public"."organizations";
+
+drop policy "org_lecture_membres" on "public"."organizations";
+
+drop index "public"."project_single_owner_idx";
+
+drop view "public"."v_funding_tracking";
+
+alter table "public"."audit_log"
+  drop constraint "audit_log_project_id_fkey";
+
+alter table "public"."comments"
+  drop constraint "comments_author_id_fkey";
+
+alter table "public"."comments"
+  drop constraint "comments_organization_id_fkey";
+
+alter table "public"."comments"
+  drop constraint "comments_project_id_fkey";
+
+alter table "public"."operations_journal"
+  drop constraint "fk_journal_project_wbs";
+
+alter table "public"."ptba_activities"
+  drop constraint "fk_ptba_project_budget";
+
+alter table "public"."budget_lines"
+  drop constraint "budget_lines_project_id_id_key";
+
+alter table "public"."ptba_activities"
+  drop constraint "fk_ptba_project_wbs";
+
+alter table "public"."push_tokens"
+  drop constraint "push_tokens_user_id_fkey";
+
+alter table "public"."wbs_tasks"
+  drop constraint "wbs_tasks_project_id_id_key";
+
+drop function "public"."search_global"(text, uuid);
+
+drop table "public"."comments";
+
+drop table "public"."push_tokens";
+
+alter table "public"."projects"
+  add column "budget" numeric;
+
+alter table "public"."projects"
+  add column "funder" text;
+
+alter table "public"."projects"
+  add column "implementing_agency" text;
+
+create or replace function public.create_project_with_budget (
+  payload jsonb
+)
+  returns uuid
+  language plpgsql
+  security definer
+  AS $function$
+DECLARE
+  v_project_id UUID;
+  v_fs_map JSONB := '{}'::jsonb;
+  v_fs_elem JSONB;
+  v_bl_elem JSONB;
+  v_new_fs_id UUID;
+  v_user_id UUID;
+  v_org_id UUID;
+  v_currency TEXT;
+BEGIN
+  v_user_id := (payload->>'user_id')::uuid;
+  v_org_id := (payload->>'organization_id')::uuid;
+  v_currency := COALESCE(payload->>'currency', 'XOF');
+
+  -- 1. Insérer le projet
+  INSERT INTO projects (name, code, start_date, end_date, description, created_by, organization_id, currency)
+  VALUES (
+    payload->>'name',
+    payload->>'code',
+    (payload->>'start_date')::date,
+    (payload->>'end_date')::date,
+    payload->>'description',
+    v_user_id,
+    v_org_id,
+    v_currency
+  ) RETURNING id INTO v_project_id;
+
+  -- 2. Insérer le propriétaire dans project_members
+  -- Changed from 'owner' to 'OWNER'
+  INSERT INTO project_members (project_id, user_id, role)
+  VALUES (v_project_id, v_user_id, 'OWNER');
+
+  -- 3. Insérer les bailleurs de fonds (Funding Sources)
+  FOR v_fs_elem IN SELECT * FROM jsonb_array_elements(payload->'funding_sources')
+  LOOP
+    INSERT INTO funding_sources (project_id, name, type, amount_committed)
+    VALUES (
+      v_project_id,
+      v_fs_elem->>'name',
+      COALESCE(v_fs_elem->>'type', 'bailleur'),
+      (v_fs_elem->>'amount')::numeric
+    ) RETURNING id INTO v_new_fs_id;
+
+    -- Map old ID to new UUID
+    v_fs_map := jsonb_set(v_fs_map, array[v_fs_elem->>'id'], to_jsonb(v_new_fs_id::text));
+  END LOOP;
+
+  -- 4. Insérer les lignes budgétaires
+  FOR v_bl_elem IN SELECT * FROM jsonb_array_elements(payload->'budget_lines')
+  LOOP
+    INSERT INTO budget_lines (project_id, code, label, initial_allocated_amount, funding_source_id)
+    VALUES (
+      v_project_id,
+      v_bl_elem->>'code',
+      v_bl_elem->>'label',
+      (v_bl_elem->>'amount')::numeric,
+      (v_fs_map->>(v_bl_elem->>'funding_source_id'))::uuid
+    );
+  END LOOP;
+
+  RETURN v_project_id;
+END;
+$function$;
+
+create or replace function public.fn_user_role (
+  p_project_id uuid
+)
+  returns public.project_role
+  language plpgsql
+  stable
+  security definer
+  set search_path to 'public'
+  AS $function$
+declare
+  v_role project_role;
+  v_org_role text;
+begin
+  -- Check if user is an organization owner/admin for this project's organization
+  SELECT om.org_role INTO v_org_role
+  FROM projects p
+  JOIN organization_members om ON p.organization_id = om.organization_id
+  WHERE p.id = p_project_id AND om.user_id = auth.uid()
+  LIMIT 1;
+
+  IF v_org_role IN ('owner', 'admin') THEN
+    -- Changed from 'owner' to 'OWNER' to match the new enum value
+    RETURN 'OWNER'::project_role;
+  END IF;
+
+  -- Otherwise, check project_members
+  select role into v_role from project_members 
+  where project_id = p_project_id and user_id = auth.uid()
+  limit 1;
+  
+  return v_role;
+end;
+$function$;
+
+create or replace function public.get_user_organizations()
+  returns SETOF uuid
+  language sql
+  security definer
+  set search_path to 'public'
+  AS $function$
+  SELECT organization_id FROM organization_members WHERE user_id = auth.uid();
+$function$;
+
+create or replace function public.handle_new_organization()
+  returns trigger
+  language plpgsql
+  security definer
+  AS $function$
+DECLARE
+  -- URL de votre Edge Function (à adapter plus tard avec l'ID de votre projet Supabase)
+  webhook_url text := 'https://VOTRE_PROJECT_REF.supabase.co/functions/v1/welcome-email';
+  payload json;
+BEGIN
+  payload := json_build_object(
+    'type', 'INSERT',
+    'table', 'organizations',
+    'record', row_to_json(NEW)
+  );
+
+  -- Requête POST asynchrone pour ne pas ralentir la création du compte
+  PERFORM net.http_post(
+    url := webhook_url,
+    body := payload::jsonb,
+    headers := '{"Content-Type": "application/json", "Authorization": "Bearer VOTRE_ANON_KEY"}'::jsonb
+  );
+
+  RETURN NEW;
+END;
+$function$;
+
+create or replace function public.transfer_project_ownership (
+  p_project_id   uuid,
+  p_new_owner_id uuid
+)
+  returns void
+  language plpgsql
+  security definer
+  AS $function$
+DECLARE
+    v_current_user_id uuid;
+    v_current_user_role project_role;
+    v_new_owner_role project_role;
+BEGIN
+    v_current_user_id := auth.uid();
+    
+    -- Check current user is OWNER
+    SELECT role INTO v_current_user_role FROM project_members 
+    WHERE project_id = p_project_id AND user_id = v_current_user_id;
+    
+    IF v_current_user_role IS NULL OR v_current_user_role != 'OWNER' THEN
+        RAISE EXCEPTION 'Not authorized. Must be OWNER.';
+    END IF;
+
+    -- Check new owner exists in project and is not already OWNER
+    SELECT role INTO v_new_owner_role FROM project_members 
+    WHERE project_id = p_project_id AND user_id = p_new_owner_id;
+
+    IF v_new_owner_role IS NULL THEN
+        RAISE EXCEPTION 'Target user is not a member of this project.';
+    END IF;
+
+    IF v_new_owner_role = 'OWNER' THEN
+        RAISE EXCEPTION 'Target user is already an OWNER.';
+    END IF;
+
+    -- Atomic swap
+    -- 1. Demote all existing owners to PROJECT_MANAGER
+    UPDATE project_members 
+    SET role = 'PROJECT_MANAGER' 
+    WHERE project_id = p_project_id AND role = 'OWNER';
+
+    -- 2. Promote new owner
+    UPDATE project_members 
+    SET role = 'OWNER' 
+    WHERE project_id = p_project_id AND user_id = p_new_owner_id;
+
+END;
+$function$;
+
+alter table "public"."operations_journal"
+  add constraint "operations_journal_wbs_task_id_fkey" foreign key (wbs_task_id) references public.wbs_tasks(id) on delete set null;
+
+alter table "public"."ptba_activities"
+  add constraint "ptba_activities_budget_line_id_fkey" foreign key (budget_line_id) references public.budget_lines(id) on delete set null;
+
+alter table "public"."ptba_activities"
+  add constraint "ptba_activities_wbs_task_id_fkey" foreign key (wbs_task_id) references public.wbs_tasks(id) on delete cascade;
+
+create view "public"."v_evm_tasks" AS  SELECT t.id,
+    t.project_id,
+    t.code,
+    t.description,
+    t.responsible,
+    t.date_start,
+    t.date_end,
+    t.budget_allocated,
+    t.percent_complete,
+    t.actual_cost,
+    t.created_at,
+    t.updated_at,
+    p.evm_control_date,
+        CASE
+            WHEN (p.evm_control_date < t.date_start) THEN (0)::numeric
+            WHEN (p.evm_control_date >= t.date_end) THEN t.budget_allocated
+            ELSE (t.budget_allocated * (((p.evm_control_date - t.date_start))::numeric / ((t.date_end - t.date_start))::numeric))
+        END AS pv,
+    (t.budget_allocated * (t.percent_complete / 100.0)) AS ev
+   FROM (public.wbs_tasks t
+     JOIN public.projects p ON ((p.id = t.project_id)));
+
+create view "public"."v_evm_indicators" AS  SELECT id,
+    project_id,
+    code,
+    description,
+    responsible,
+    date_start,
+    date_end,
+    budget_allocated,
+    percent_complete,
+    actual_cost,
+    created_at,
+    updated_at,
+    evm_control_date,
+    pv,
+    ev,
+    (ev - actual_cost) AS cv,
+    (ev - pv) AS sv,
+        CASE
+            WHEN (actual_cost = (0)::numeric) THEN 1.0
+            ELSE round((ev / NULLIF(actual_cost, (0)::numeric)), 4)
+        END AS cpi,
+        CASE
+            WHEN (pv = (0)::numeric) THEN 1.0
+            ELSE round((ev / NULLIF(pv, (0)::numeric)), 4)
+        END AS spi,
+        CASE
+            WHEN (actual_cost = (0)::numeric) THEN budget_allocated
+            ELSE round((budget_allocated / NULLIF((ev / NULLIF(actual_cost, (0)::numeric)), (0)::numeric)), 2)
+        END AS eac
+   FROM public.v_evm_tasks;
+
+create view "public"."v_evm_project_summary" AS  SELECT project_id,
+    sum(budget_allocated) AS bac_total,
+    sum(pv) AS pv_total,
+    sum(ev) AS ev_total,
+    sum(actual_cost) AS ac_total,
+        CASE
+            WHEN (sum(actual_cost) = (0)::numeric) THEN 1.0
+            ELSE round((sum(ev) / NULLIF(sum(actual_cost), (0)::numeric)), 4)
+        END AS cpi_global,
+        CASE
+            WHEN (sum(pv) = (0)::numeric) THEN 1.0
+            ELSE round((sum(ev) / NULLIF(sum(pv), (0)::numeric)), 4)
+        END AS spi_global,
+        CASE
+            WHEN (sum(actual_cost) = (0)::numeric) THEN sum(budget_allocated)
+            ELSE round((sum(budget_allocated) / NULLIF((sum(ev) / NULLIF(sum(actual_cost), (0)::numeric)), (0)::numeric)), 2)
+        END AS eac_global
+   FROM public.v_evm_tasks
+  GROUP BY project_id;
+
+create view "public"."v_funding_tracking" AS  SELECT fs.id AS funding_source_id,
+    fs.project_id,
+    fs.name AS bailleur_name,
+    fs.type,
+    fs.amount_committed,
+    COALESCE(sum(oj.montant_engage), (0)::numeric) AS total_engage,
+    COALESCE(sum(oj.montant_decaisse), (0)::numeric) AS total_decaisse,
+    ((fs.amount_committed - COALESCE(sum(oj.montant_engage), (0)::numeric)) - COALESCE(sum(oj.montant_decaisse), (0)::numeric)) AS solde_restant,
+        CASE
+            WHEN (fs.amount_committed = (0)::numeric) THEN (0)::numeric
+            ELSE ((COALESCE(sum(oj.montant_engage), (0)::numeric) + COALESCE(sum(oj.montant_decaisse), (0)::numeric)) / fs.amount_committed)
+        END AS taux_utilisation
+   FROM (public.funding_sources fs
+     LEFT JOIN public.operations_journal oj ON (((oj.budget_line_id IN ( SELECT budget_lines.id
+           FROM public.budget_lines
+          WHERE (budget_lines.funding_source_id = fs.id))) OR (oj.funding_source_id = fs.id))))
+  GROUP BY fs.id, fs.project_id, fs.name, fs.type, fs.amount_committed;
+
+create policy "ecriture_autorises" on "public"."evm_snapshots"
+  for insert
+  to PUBLIC
+  with check ((public.fn_user_role(project_id) = ANY (ARRAY['OWNER'::public.project_role, 'PROJECT_MANAGER'::public.project_role])));
+
+create policy "lecture_membres" on "public"."evm_snapshots"
+  for select
+  to PUBLIC
+  using ((exists ( select 1
+   from public.project_members
+  where ((project_members.project_id = evm_snapshots.project_id) AND (project_members.user_id = auth.uid())))));
+
+create policy "modification_autorises" on "public"."evm_snapshots"
+  for update
+  to PUBLIC
+  using ((public.fn_user_role(project_id) = ANY (ARRAY['OWNER'::public.project_role, 'PROJECT_MANAGER'::public.project_role])));
+
+create policy "suppression_autorises" on "public"."evm_snapshots"
+  for delete
+  to PUBLIC
+  using ((public.fn_user_role(project_id) = ANY (ARRAY['OWNER'::public.project_role, 'PROJECT_MANAGER'::public.project_role])));
+
+revoke all on function "public"."create_project_with_budget"(jsonb) from "anon";
+
+grant execute on function "public"."create_project_with_budget"(jsonb) to "anon";
+
+revoke all on function "public"."create_project_with_budget"(jsonb) from "authenticated";
+
+grant execute on function "public"."create_project_with_budget"(jsonb) to "authenticated";
+
+revoke all on function "public"."create_project_with_budget"(jsonb) from "service_role";
+
+grant execute on function "public"."create_project_with_budget"(jsonb) to "service_role";
+
+revoke all on function "public"."fn_get_my_org_ids"() from "anon";
+
+grant execute on function "public"."fn_get_my_org_ids"() to "anon";
+
+revoke all on function "public"."fn_get_my_org_ids"() from "authenticated";
+
+grant execute on function "public"."fn_get_my_org_ids"() to "authenticated";
+
+revoke all on function "public"."fn_get_my_org_ids"() from "service_role";
+
+grant execute on function "public"."fn_get_my_org_ids"() to "service_role";
+
+revoke all on function "public"."fn_get_my_org_role"(uuid) from "anon";
+
+grant execute on function "public"."fn_get_my_org_role"(uuid) to "anon";
+
+revoke all on function "public"."fn_get_my_org_role"(uuid) from "authenticated";
+
+grant execute on function "public"."fn_get_my_org_role"(uuid) to "authenticated";
+
+revoke all on function "public"."fn_get_my_org_role"(uuid) from "service_role";
+
+grant execute on function "public"."fn_get_my_org_role"(uuid) to "service_role";
+
+revoke all on function "public"."fn_user_role"(uuid) from "anon";
+
+grant execute on function "public"."fn_user_role"(uuid) to "anon";
+
+revoke all on function "public"."fn_user_role"(uuid) from "authenticated";
+
+grant execute on function "public"."fn_user_role"(uuid) to "authenticated";
+
+revoke all on function "public"."fn_user_role"(uuid) from "service_role";
+
+grant execute on function "public"."fn_user_role"(uuid) to "service_role";
+
+revoke all on function "public"."get_my_project_ids"() from "anon";
+
+grant execute on function "public"."get_my_project_ids"() to "anon";
+
+revoke all on function "public"."get_my_project_ids"() from "authenticated";
+
+grant execute on function "public"."get_my_project_ids"() to "authenticated";
+
+revoke all on function "public"."get_my_project_ids"() from "service_role";
+
+grant execute on function "public"."get_my_project_ids"() to "service_role";
+
+revoke all on function "public"."get_user_organizations"() from "anon";
+
+grant execute on function "public"."get_user_organizations"() to "anon";
+
+revoke all on function "public"."get_user_organizations"() from "authenticated";
+
+grant execute on function "public"."get_user_organizations"() to "authenticated";
+
+revoke all on function "public"."get_user_organizations"() from "service_role";
+
+grant execute on function "public"."get_user_organizations"() to "service_role";
+
+revoke all on function "public"."handle_new_organization"() from "anon";
+
+grant execute on function "public"."handle_new_organization"() to "anon";
+
+revoke all on function "public"."handle_new_organization"() from "authenticated";
+
+grant execute on function "public"."handle_new_organization"() to "authenticated";
+
+revoke all on function "public"."handle_new_organization"() from "service_role";
+
+grant execute on function "public"."handle_new_organization"() to "service_role";
+
+revoke all on function "public"."transfer_project_ownership"(uuid, uuid) from "anon";
+
+grant execute on function "public"."transfer_project_ownership"(uuid, uuid) to "anon";
+
+revoke all on function "public"."transfer_project_ownership"(uuid, uuid) from "authenticated";
+
+grant execute on function "public"."transfer_project_ownership"(uuid, uuid) to "authenticated";
+
+revoke all on function "public"."transfer_project_ownership"(uuid, uuid) from "service_role";
+
+grant execute on function "public"."transfer_project_ownership"(uuid, uuid) to "service_role";
+
+revoke all on function "public"."trg_audit_log"() from "anon";
+
+grant execute on function "public"."trg_audit_log"() to "anon";
+
+revoke all on function "public"."trg_audit_log"() from "authenticated";
+
+grant execute on function "public"."trg_audit_log"() to "authenticated";
+
+revoke all on function "public"."trg_audit_log"() from "service_role";
+
+grant execute on function "public"."trg_audit_log"() to "service_role";
+
+revoke all on table "public"."ai_analyses" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."ai_analyses" to "anon";
+
+revoke all on table "public"."ai_analyses" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."ai_analyses" to "authenticated";
+
+revoke all on table "public"."ai_analyses" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."ai_analyses" to "service_role";
+
+revoke all on table "public"."attachments" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."attachments" to "anon";
+
+revoke all on table "public"."attachments" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."attachments" to "authenticated";
+
+revoke all on table "public"."attachments" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."attachments" to "service_role";
+
+revoke all on table "public"."audit_log" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."audit_log" to "anon";
+
+revoke all on table "public"."audit_log" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."audit_log" to "authenticated";
+
+revoke all on table "public"."audit_log" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."audit_log" to "service_role";
+
+revoke all on table "public"."budget_lines" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."budget_lines" to "anon";
+
+revoke all on table "public"."budget_lines" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."budget_lines" to "authenticated";
+
+revoke all on table "public"."budget_lines" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."budget_lines" to "service_role";
+
+revoke all on table "public"."evm_snapshots" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."evm_snapshots" to "anon";
+
+revoke all on table "public"."evm_snapshots" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."evm_snapshots" to "authenticated";
+
+revoke all on table "public"."evm_snapshots" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."evm_snapshots" to "service_role";
+
+revoke all on table "public"."funding_sources" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."funding_sources" to "anon";
+
+revoke all on table "public"."funding_sources" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."funding_sources" to "authenticated";
+
+revoke all on table "public"."funding_sources" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."funding_sources" to "service_role";
+
+revoke all on table "public"."invitations" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."invitations" to "anon";
+
+revoke all on table "public"."invitations" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."invitations" to "authenticated";
+
+revoke all on table "public"."invitations" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."invitations" to "service_role";
+
+revoke all on table "public"."logframe_items" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."logframe_items" to "anon";
+
+revoke all on table "public"."logframe_items" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."logframe_items" to "authenticated";
+
+revoke all on table "public"."logframe_items" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."logframe_items" to "service_role";
+
+revoke all on table "public"."notifications" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."notifications" to "anon";
+
+revoke all on table "public"."notifications" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."notifications" to "authenticated";
+
+revoke all on table "public"."notifications" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."notifications" to "service_role";
+
+revoke all on table "public"."operations_journal" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."operations_journal" to "anon";
+
+revoke all on table "public"."operations_journal" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."operations_journal" to "authenticated";
+
+revoke all on table "public"."operations_journal" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."operations_journal" to "service_role";
+
+revoke all on table "public"."organization_members" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."organization_members" to "anon";
+
+revoke all on table "public"."organization_members" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."organization_members" to "authenticated";
+
+revoke all on table "public"."organization_members" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."organization_members" to "service_role";
+
+revoke all on table "public"."organizations" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."organizations" to "anon";
+
+revoke all on table "public"."organizations" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."organizations" to "authenticated";
+
+revoke all on table "public"."organizations" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."organizations" to "service_role";
+
+revoke all on table "public"."platform_settings" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."platform_settings" to "anon";
+
+revoke all on table "public"."platform_settings" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."platform_settings" to "authenticated";
+
+revoke all on table "public"."platform_settings" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."platform_settings" to "service_role";
+
+revoke all on table "public"."procurement_plan" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."procurement_plan" to "anon";
+
+revoke all on table "public"."procurement_plan" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."procurement_plan" to "authenticated";
+
+revoke all on table "public"."procurement_plan" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."procurement_plan" to "service_role";
+
+revoke all on table "public"."profiles" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."profiles" to "anon";
+
+revoke all on table "public"."profiles" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."profiles" to "authenticated";
+
+revoke all on table "public"."profiles" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."profiles" to "service_role";
+
+revoke all on table "public"."project_members" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."project_members" to "anon";
+
+revoke all on table "public"."project_members" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."project_members" to "authenticated";
+
+revoke all on table "public"."project_members" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."project_members" to "service_role";
+
+revoke all on table "public"."projects" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."projects" to "anon";
+
+revoke all on table "public"."projects" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."projects" to "authenticated";
+
+revoke all on table "public"."projects" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."projects" to "service_role";
+
+revoke all on table "public"."ptba_activities" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."ptba_activities" to "anon";
+
+revoke all on table "public"."ptba_activities" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."ptba_activities" to "authenticated";
+
+revoke all on table "public"."ptba_activities" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."ptba_activities" to "service_role";
+
+revoke all on table "public"."risks" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."risks" to "anon";
+
+revoke all on table "public"."risks" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."risks" to "authenticated";
+
+revoke all on table "public"."risks" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."risks" to "service_role";
+
+revoke all on table "public"."user_sessions" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."user_sessions" to "anon";
+
+revoke all on table "public"."user_sessions" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."user_sessions" to "authenticated";
+
+revoke all on table "public"."user_sessions" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."user_sessions" to "service_role";
+
+revoke all on table "public"."wbs_tasks" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."wbs_tasks" to "anon";
+
+revoke all on table "public"."wbs_tasks" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."wbs_tasks" to "authenticated";
+
+revoke all on table "public"."wbs_tasks" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."wbs_tasks" to "service_role";
+
+revoke all on table "public"."v_budget_consumption" from "anon";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."v_budget_consumption" to "anon";
+
+revoke all on table "public"."v_budget_consumption" from "authenticated";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."v_budget_consumption" to "authenticated";
+
+revoke all on table "public"."v_budget_consumption" from "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."v_budget_consumption" to "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."v_evm_indicators" to "anon", "authenticated", "postgres", "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."v_evm_project_summary" to "anon", "authenticated", "postgres", "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."v_evm_tasks" to "anon", "authenticated", "postgres", "service_role";
+
+grant delete, insert, maintain, references, select, trigger, truncate, update on table "public"."v_funding_tracking" to "anon", "authenticated", "postgres", "service_role";
+
+alter default privileges for role "postgres" in schema "public" grant select, update, usage on sequences to "anon";
+
+alter default privileges for role "postgres" in schema "public" grant select, update, usage on sequences to "authenticated";
+
+alter default privileges for role "postgres" in schema "public" grant select, update, usage on sequences to "service_role";
+
+alter default privileges for role "postgres" in schema "public" grant execute on FUNCTIONS to "anon";
+
+alter default privileges for role "postgres" in schema "public" grant execute on FUNCTIONS to "authenticated";
+
+alter default privileges for role "postgres" in schema "public" grant execute on FUNCTIONS to "service_role";
+
+alter default privileges for role "postgres" in schema "public" grant delete, insert, maintain, references, select, trigger, truncate, update on tables to "anon";
+
+alter default privileges for role "postgres" in schema "public" grant delete, insert, maintain, references, select, trigger, truncate, update on tables to "authenticated";
+
+alter default privileges for role "postgres" in schema "public" grant delete, insert, maintain, references, select, trigger, truncate, update on tables to "service_role";
+

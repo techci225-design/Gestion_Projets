@@ -1,33 +1,14 @@
 ALTER TABLE attachments ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "att_select" ON attachments;
 CREATE POLICY "att_select" ON attachments FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1
-      FROM project_members pm
-      WHERE pm.project_id = attachments.project_id
-        AND pm.user_id = auth.uid()
-    )
-  );
+  USING (organization_id IN (SELECT fn_get_my_org_ids()));
 
-DROP POLICY IF EXISTS "att_insert" ON attachments;
 CREATE POLICY "att_insert" ON attachments FOR INSERT
-  WITH CHECK (
-    EXISTS (
-      SELECT 1
-      FROM project_members pm
-      WHERE pm.project_id = attachments.project_id
-        AND pm.user_id = auth.uid()
-    )
-  );
+  WITH CHECK (organization_id IN (SELECT fn_get_my_org_ids()));
 
-DROP POLICY IF EXISTS "att_delete" ON attachments;
 CREATE POLICY "att_delete" ON attachments FOR DELETE
-  USING (
-    uploaded_by = auth.uid()
-    OR fn_user_role(project_id) IN ('owner')
-  );
+  USING (uploaded_by = auth.uid()
+    OR fn_get_my_org_role(organization_id) IN ('owner','admin'));
 
 -- 2. COMMENTS TABLE
 CREATE TABLE comments (

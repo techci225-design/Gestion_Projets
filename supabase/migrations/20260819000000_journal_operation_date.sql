@@ -1,7 +1,7 @@
 -- Add operation_date to operations_journal
 
 ALTER TABLE public.operations_journal 
-ADD COLUMN operation_date DATE;
+ADD COLUMN IF NOT EXISTS operation_date DATE;
 
 -- Fallback for existing records: use DATE(created_at)
 UPDATE public.operations_journal 

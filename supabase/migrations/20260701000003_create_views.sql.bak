@@ -1,7 +1,4 @@
 -- Matrice de consommation par ligne budgétaire (équivalent SOMME.SI.ENS)
-ALTER TABLE budget_lines
-ADD COLUMN IF NOT EXISTS responsible text;
-
 create or replace view v_budget_consumption as
 select
   bl.id as budget_line_id,
