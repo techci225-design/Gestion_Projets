@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { LogframeClient } from './logframe-client'
 import { getLogframe } from '@/lib/actions/logframe.actions'
+import { getUserRole } from '@/lib/actions/auth.actions'
+import { hasProjectPermission } from '@/lib/permissions/project-permissions'
 
 export const metadata = {
   title: 'Cadre Logique | Gestion de Projets',
@@ -29,7 +31,11 @@ export default async function LogframePage({ params }: { params: Promise<{ id: s
     redirect('/projects')
   }
 
-  // 2. Fetch Logframe Items
+  // 2. Compute permissions
+  const role = await getUserRole(id)
+  const canManage = hasProjectPermission(role, 'manage_logframe')
+
+  // 3. Fetch Logframe Items (already secured by getLogframe with requireProjectPermission('view_project'))
   const logframeItems = await getLogframe(id)
 
   return (
@@ -40,7 +46,7 @@ export default async function LogframePage({ params }: { params: Promise<{ id: s
           <p className="text-text-secondary mt-1">Structurez l'intervention de votre projet du niveau stratégique (Impact) au niveau opérationnel (Activités).</p>
         </div>
 
-        <LogframeClient projectId={id} initialData={logframeItems} />
+        <LogframeClient projectId={id} initialData={logframeItems} canManage={canManage} />
       </div>
     </div>
   )

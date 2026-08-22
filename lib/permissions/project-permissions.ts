@@ -21,7 +21,8 @@ export type ProjectAction =
   | 'generate_reports'
   | 'edit_settings'
   | 'delete_project'
-  | 'transfer_ownership';
+  | 'transfer_ownership'
+  | 'manage_logframe';
 
 // Base sur la matrice de permissions demandée :
 // ⚪ = accès limité (handled case by case in code, but here we can define them as true or false based on primary access)
@@ -32,12 +33,12 @@ export const PROJECT_PERMISSIONS: Record<ProjectRole, ProjectAction[]> = {
   OWNER: [
     'view_project', 'edit_project', 'view_tasks', 'create_tasks', 'edit_tasks', 'delete_tasks',
     'manage_team', 'manage_roles', 'invite_members', 'view_budget', 'edit_budget', 
-    'view_reports', 'generate_reports', 'edit_settings', 'delete_project', 'transfer_ownership'
+    'view_reports', 'generate_reports', 'edit_settings', 'delete_project', 'transfer_ownership', 'manage_logframe'
   ],
   PROJECT_MANAGER: [
     'view_project', 'edit_project', 'view_tasks', 'create_tasks', 'edit_tasks', 'delete_tasks',
     'manage_team', 'manage_roles', 'invite_members', 'view_budget', 'edit_budget', // Limited budget edit will be handled in specific features
-    'view_reports', 'generate_reports', 'edit_settings'
+    'view_reports', 'generate_reports', 'edit_settings', 'manage_logframe'
   ],
   ACCOUNTANT: [
     'view_project', 'view_tasks', /* edit_tasks: ⚪ limited, maybe false here and handled strictly */

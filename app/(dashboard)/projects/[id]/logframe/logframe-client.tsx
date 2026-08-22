@@ -8,6 +8,7 @@ import { format } from 'date-fns'
 interface LogframeClientProps {
   projectId: string
   initialData: LogframeItem[]
+  canManage: boolean
 }
 
 const levelLabels: Record<LogframeLevel, string> = {
@@ -67,7 +68,7 @@ const nextLevel: Record<LogframeLevel, LogframeLevel | null> = {
   activite: null
 }
 
-export function LogframeClient({ projectId, initialData }: LogframeClientProps) {
+export function LogframeClient({ projectId, initialData, canManage }: LogframeClientProps) {
   const [activeTab, setActiveTab] = useState<'planification' | 'suivi'>('planification')
   const [data, setData] = useState<LogframeItem[]>(initialData)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
@@ -233,21 +234,25 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                 {/* Reveal actions on hover, actually let's just show them always for mobile friendliness or use a dropdown */}
               </div>
               <div className="flex flex-col items-end gap-2">
-                <div className="flex items-center gap-1">
-                  <button onClick={() => openEditModal(item)} className="p-1.5 text-text-secondary hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="Modifier">
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => handleDelete(item.id)} className="p-1.5 text-text-secondary hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Supprimer">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-                {nextLevel[item.level] && (
-                  <button 
-                    onClick={() => openAddModal(item.id, nextLevel[item.level] as LogframeLevel)}
-                    className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                  >
-                    <Plus className="w-3 h-3" /> Ajouter {levelLabels[nextLevel[item.level] as LogframeLevel]}
-                  </button>
+                {canManage && (
+                  <>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => openEditModal(item)} className="p-1.5 text-text-secondary hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="Modifier">
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => handleDelete(item.id)} className="p-1.5 text-text-secondary hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Supprimer">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    {nextLevel[item.level] && (
+                      <button 
+                        onClick={() => openAddModal(item.id, nextLevel[item.level] as LogframeLevel)}
+                        className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                      >
+                        <Plus className="w-3 h-3" /> Ajouter {levelLabels[nextLevel[item.level] as LogframeLevel]}
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </td>
@@ -292,7 +297,7 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
             )}
           </button>
         </div>
-        {activeTab === 'planification' && (
+        {activeTab === 'planification' && canManage && (
           <button
             onClick={() => openAddModal(null, 'objectif_global')}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
@@ -400,9 +405,11 @@ export function LogframeClient({ projectId, initialData }: LogframeClientProps) 
                                   <div className="font-medium text-text-primary">{ind.intervention_label}</div>
                                 </div>
                                 <div className="flex flex-col items-end ml-2">
-                                  <button onClick={() => openEditModal(ind)} className="p-1.5 text-blue-600 hover:bg-blue-50 bg-white/50 rounded" title="Saisir les données de suivi">
-                                    <Edit2 className="w-4 h-4" />
-                                  </button>
+                                  {canManage && (
+                                    <button onClick={() => openEditModal(ind)} className="p-1.5 text-blue-600 hover:bg-blue-50 bg-white/50 rounded" title="Saisir les données de suivi">
+                                      <Edit2 className="w-4 h-4" />
+                                    </button>
+                                  )}
                                 </div>
                               </div>
                             </td>

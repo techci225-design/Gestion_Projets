@@ -206,7 +206,7 @@ export default async function ProjectsListPage() {
                   <div className="mt-auto space-y-4">
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-sm">
-                        <span className="text-text-secondary">Consommation ({(project.pTauxConso * 100).toFixed(0)}%)</span>
+                        <span className="text-text-secondary">Consommation ({(project.pTauxConso * 100).toFixed(1)}%)</span>
                         <span className="font-semibold">{formatCurrency(project.pTotalConsumed, project.currency, true)}</span>
                       </div>
                       <div className="w-full bg-surface-dim rounded-full h-2 overflow-hidden">

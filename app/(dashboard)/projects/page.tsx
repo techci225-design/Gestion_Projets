@@ -318,7 +318,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
         
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-text-primary">Vue consolidée de tous vos projets bailleurs</h2>
+            <h2 className="text-2xl font-bold tracking-tight text-text-primary">Vue consolidée du portefeuille</h2>
           </div>
           {canCreateProject && <AddProjectModal />}
         </div>
@@ -333,8 +333,8 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
             <h2 className="text-2xl font-bold text-text-primary mb-2">Bienvenue sur ProjetPilote !</h2>
             <p className="text-text-secondary mb-8">
               {canCreateProject 
-                ? "Commencez par créer votre premier projet bailleur ou importez vos données existantes."
-                : "Demandez à un administrateur de créer votre premier projet bailleur."}
+                ? "Commencez par créer votre premier projet ou importez vos données existantes."
+                : "Demandez à un administrateur de créer votre premier projet."}
             </p>
             <div className="flex flex-col gap-4 max-w-xs mx-auto">
               {canCreateProject && (
@@ -518,7 +518,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                             <div className="flex flex-col gap-1">
                               <div className="flex justify-between text-xs">
                                 <span>{formatCurrency(p.pTotalConsumed, p.currency, true)}</span>
-                                <span className="font-medium">{(p.pTauxConso * 100).toFixed(0)}%</span>
+                                <span className="font-medium">{(p.pTauxConso * 100).toFixed(1)}%</span>
                               </div>
                               <div className="w-full bg-surface-dim rounded-full h-1.5 overflow-hidden">
                                 <div 

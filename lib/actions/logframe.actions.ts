@@ -2,6 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireProjectPermission } from './auth.actions'
+import { z } from 'zod'
 
 export type LogframeLevel = 'objectif_global' | 'objectif_specifique' | 'resultat' | 'activite'
 
@@ -22,7 +24,25 @@ export interface LogframeItem {
   created_at: string
 }
 
+const logframeItemSchema = z.object({
+  parent_id: z.string().uuid().nullable().optional(),
+  level: z.enum(['objectif_global', 'objectif_specifique', 'resultat', 'activite']),
+  intervention_label: z.string().min(1, "La description est requise"),
+  indicator: z.string().nullable().optional(),
+  baseline: z.string().nullable().optional(),
+  target: z.string().nullable().optional(),
+  s1_value: z.string().nullable().optional(),
+  s2_value: z.string().nullable().optional(),
+  s3_value: z.string().nullable().optional(),
+  verification_source: z.string().nullable().optional(),
+  risks_assumptions: z.string().nullable().optional(),
+})
+
+const updateLogframeItemSchema = logframeItemSchema.partial()
+
 export async function getLogframe(projectId: string) {
+  await requireProjectPermission(projectId, 'view_project')
+
   const supabase = await createClient()
 
   const { data, error } = await supabase
@@ -43,6 +63,10 @@ export async function addLogframeItem(
   projectId: string,
   data: Omit<LogframeItem, 'id' | 'project_id' | 'created_at'>
 ) {
+  await requireProjectPermission(projectId, 'manage_logframe')
+  
+  const validated = logframeItemSchema.parse(data)
+
   const supabase = await createClient()
 
   const { data: item, error } = await supabase
@@ -50,7 +74,7 @@ export async function addLogframeItem(
     .insert([
       {
         project_id: projectId,
-        ...data
+        ...validated
       }
     ])
     .select()
@@ -70,11 +94,15 @@ export async function updateLogframeItem(
   id: string,
   data: Partial<Omit<LogframeItem, 'id' | 'project_id' | 'created_at'>>
 ) {
+  await requireProjectPermission(projectId, 'manage_logframe')
+  
+  const validated = updateLogframeItemSchema.parse(data)
+
   const supabase = await createClient()
 
   const { data: item, error } = await supabase
     .from('logframe_items')
-    .update(data)
+    .update(validated)
     .eq('id', id)
     .eq('project_id', projectId)
     .select()
@@ -90,6 +118,8 @@ export async function updateLogframeItem(
 }
 
 export async function deleteLogframeItem(projectId: string, id: string) {
+  await requireProjectPermission(projectId, 'manage_logframe')
+
   const supabase = await createClient()
 
   // The database has ON DELETE CASCADE for parent_id, so deleting a parent will delete all its children
