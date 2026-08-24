@@ -209,7 +209,7 @@ export async function importProjectFromExcel(data: {
         responsible: row["Responsable"] ? String(row["Responsable"]).trim() : null,
         date_start: parseDate(row["Date Début (JJ/MM/AAAA)"]),
         date_end: parseDate(row["Date Fin (JJ/MM/AAAA)"]),
-        budget_allocated: Number(row["Budget Alloué (FCFA)"]) || 0
+        budget_allocated: Number(row["Budget Alloué"] ?? row["Budget Alloué (FCFA)"]) || 0
       };
     });
 
@@ -267,7 +267,7 @@ export async function importTasksToExistingProject(projectId: string, tasksData:
         responsible: row["Responsable"] ? String(row["Responsable"]).trim() : null,
         date_start: parseDate(row["Date Début (JJ/MM/AAAA)"]),
         date_end: parseDate(row["Date Fin (JJ/MM/AAAA)"]),
-        budget_allocated: Number(row["Budget Alloué (FCFA)"]) || 0
+        budget_allocated: Number(row["Budget Alloué"] ?? row["Budget Alloué (FCFA)"]) || 0
       };
     });
 

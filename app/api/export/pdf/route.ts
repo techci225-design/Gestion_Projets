@@ -30,30 +30,39 @@ export async function GET(request: Request) {
   const currency = projectData?.currency || 'XOF'
   const statusDateStr = projectData?.evm_control_date || new Date().toISOString().split('T')[0]
 
-  // EVM Engine
-  const { data: wbsTasksData } = await supabase
-    .from('wbs_tasks')
-    .select('id, parent_id, task_type, code, description, responsible, date_start, date_end, percent_complete')
-    .eq('project_id', projectId)
-
-  const { data: ptbaActivitiesData } = await supabase
-    .from('ptba_activities')
-    .select('wbs_task_id, fiscal_year, budget_planned')
-    .in('wbs_task_id', (wbsTasksData || []).map((t: any) => t.id))
-
-  const { data: journalData } = await supabase
-    .from('operations_journal')
-    .select('wbs_task_id, status, actual_cost, operation_date')
-    .in('wbs_task_id', (wbsTasksData || []).map((t: any) => t.id))
+  const [
+    { data: wbsTasksData },
+    { data: ptbaActivitiesData },
+    { data: journalData },
+    { data: disbursementsData }
+  ] = await Promise.all([
+    supabase
+      .from('wbs_tasks')
+      .select('id, parent_id, task_type, code, description, responsible, date_start, date_end, percent_complete')
+      .eq('project_id', projectId),
+    supabase
+      .from('ptba_activities')
+      .select('wbs_task_id, fiscal_year, budget_planned')
+      .eq('project_id', projectId),
+    supabase
+      .from('operations_journal')
+      .select('id, wbs_task_id, status, actual_cost, operation_date')
+      .eq('project_id', projectId),
+    supabase
+      .from('operation_disbursements')
+      .select('id, operation_id, project_id, disbursement_date, amount')
+      .eq('project_id', projectId)
+  ])
 
   const wbsTasks = (wbsTasksData || []) as WbsTask[]
   const ptbaActivities = (ptbaActivitiesData || []) as PtbaActivity[]
   const operations = (journalData || []) as OperationJournal[]
+  const disbursements = (disbursementsData || []) as any[]
 
   const pBAC = calculateProjectBAC(wbsTasks, ptbaActivities)
   const pPV = calculateProjectPV(statusDateStr, wbsTasks, ptbaActivities).pv
   const pEV = calculateProjectEV(wbsTasks, ptbaActivities)
-  const pAC = calculateProjectAC(statusDateStr, wbsTasks, operations)
+  const pAC = calculateProjectAC(statusDateStr, wbsTasks, operations, disbursements)
   const pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
 
   // In a real application, you would use @react-pdf/renderer or puppeteer here.

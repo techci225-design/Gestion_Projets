@@ -22,9 +22,10 @@ interface SCurveData {
 
 interface SCurveChartProps {
   data: SCurveData[]
+  currency?: string
 }
 
-export function SCurveChart({ data }: SCurveChartProps) {
+export function SCurveChart({ data, currency }: SCurveChartProps) {
   return (
     <div className="w-full h-80 bg-surface p-4 rounded-lg shadow-sm border border-border">
       <h3 className="text-sm font-semibold text-text-primary mb-4">
@@ -54,7 +55,7 @@ export function SCurveChart({ data }: SCurveChartProps) {
             tickLine={false}
           />
           <Tooltip 
-            formatter={(value: any) => formatCurrency(Number(value))}
+            formatter={(value: any) => formatCurrency(Number(value), currency)}
             contentStyle={{ borderRadius: '8px', border: '1px solid #E5EEFF', boxShadow: '0px 4px 6px rgba(0,0,0,0.05)' }}
             labelStyle={{ color: '#0B1C30', fontWeight: '600', marginBottom: '4px' }}
           />

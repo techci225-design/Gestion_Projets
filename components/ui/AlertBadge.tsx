@@ -1,14 +1,21 @@
 import React from 'react'
-import { formatCurrency } from '@/lib/utils/format-currency'
 
 type AlertType = 'taux' | 'cpi' | 'spi'
 
 interface AlertBadgeProps {
-  value: number
+  value: number | null | undefined
   type: AlertType
 }
 
 export function AlertBadge({ value, type }: AlertBadgeProps) {
+  if (value === null || value === undefined || isNaN(value)) {
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-surface-dim text-text-secondary border border-border">
+        N/A
+      </span>
+    )
+  }
+
   let colorClass = ''
   let formattedValue = ''
 

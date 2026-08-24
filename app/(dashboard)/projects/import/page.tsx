@@ -261,7 +261,7 @@ export default function ImportExcelWizard() {
                         <td className="px-4 py-3 text-text-secondary whitespace-nowrap">{row["Date Début (JJ/MM/AAAA)"]}</td>
                         <td className="px-4 py-3 text-text-secondary whitespace-nowrap">{row["Date Fin (JJ/MM/AAAA)"]}</td>
                         <td className="px-4 py-3 text-right font-medium text-text-primary">
-                          {Number(row["Budget Alloué (FCFA)"]).toLocaleString('fr-FR')} FCFA
+                          {Number(row["Budget Alloué"] ?? row["Budget Alloué (FCFA)"] ?? 0).toLocaleString('fr-FR')}
                         </td>
                       </tr>
                     ))}

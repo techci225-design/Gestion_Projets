@@ -80,87 +80,49 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
 
   const projectIds = projects?.map(p => p.id) || []
 
-  let evmSummaries: any[] | null = []
-  let budgetLines: any[] | null = []
-  let budgetConsumption: any[] | null = []
-  let fundingSources: any[] | null = []
-  let risks: any[] | null = []
+  let budgetLines: any[] = []
+  let disbursementsData: any[] = []
+  let allSnapshots: any[] = []
+  let risks: any[] = []
 
   if (projectIds.length > 0) {
-    const { data: wbsTasksData } = await supabase
-      .from('wbs_tasks')
-      .select('id, project_id, parent_id, task_type, code, description, responsible, date_start, date_end, percent_complete')
-      .in('project_id', projectIds)
+    const [
+      { data: bl },
+      { data: disbs },
+      { data: snaps },
+      { data: r }
+    ] = await Promise.all([
+      supabase
+        .from('budget_lines')
+        .select('project_id, initial_allocated_amount')
+        .in('project_id', projectIds),
+      supabase
+        .from('operation_disbursements')
+        .select('project_id, amount, disbursement_date')
+        .in('project_id', projectIds),
+      supabase
+        .from('evm_snapshots')
+        .select(`
+          id, project_id, control_date, bac_total, pv_total, ev_total, ac_total, cpi_global, spi_global, eac_global, created_at,
+          baseline:baseline_id (
+            version_number,
+            name
+          )
+        `)
+        .in('project_id', projectIds)
+        .order('control_date', { ascending: false }),
+      supabase
+        .from('risks')
+        .select('project_id')
+        .eq('status', 'ouvert')
+        .eq('criticality', 9)
+        .in('project_id', projectIds)
+    ])
 
-    const wbsTaskIds = (wbsTasksData || []).map((t: any) => t.id)
-
-    const { data: ptbaActivitiesData } = await supabase
-      .from('ptba_activities')
-      .select('wbs_task_id, fiscal_year, budget_planned')
-      .in('wbs_task_id', wbsTaskIds)
-
-    const { data: journalData } = await supabase
-      .from('operations_journal')
-      .select('wbs_task_id, status, actual_cost, operation_date')
-      .in('wbs_task_id', wbsTaskIds)
-
-    const allWbsTasks = (wbsTasksData || []) as (WbsTask & { project_id: string })[]
-    const allPtba = (ptbaActivitiesData || []) as PtbaActivity[]
-    const allOps = (journalData || []) as OperationJournal[]
-
-    evmSummaries = (projects || []).map(project => {
-      const pWbsTasks = allWbsTasks.filter(t => t.project_id === project.id)
-      const pWbsTaskIds = pWbsTasks.map(t => t.id)
-      const pPtba = allPtba.filter(p => pWbsTaskIds.includes(p.wbs_task_id))
-      const pOps = allOps.filter(o => pWbsTaskIds.includes(o.wbs_task_id))
-      
-      const statusDateStr = project.evm_control_date || new Date().toISOString().split('T')[0]
-      const pBAC = calculateProjectBAC(pWbsTasks, pPtba)
-      const pPV = calculateProjectPV(statusDateStr, pWbsTasks, pPtba).pv
-      const pEV = calculateProjectEV(pWbsTasks, pPtba)
-      const pAC = calculateProjectAC(statusDateStr, pWbsTasks, pOps)
-      const pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
-
-      return {
-        project_id: project.id,
-        bac_total: pBAC,
-        pv_total: pPV,
-        ev_total: pEV,
-        ac_total: pAC,
-        cv_global: pInd.cv,
-        sv_global: pInd.sv,
-        cpi_global: pInd.cpi,
-        spi_global: pInd.spi,
-        vac_global: pInd.vac,
-        eac_global: pInd.eac
-      }
-    })
-
-    const { data: bl } = await supabase
-      .from('budget_lines')
-      .select('project_id, initial_allocated_amount')
-      .in('project_id', projectIds)
-    budgetLines = bl
-
-    const { data: bc } = await supabase
-      .from('v_budget_consumption')
-      .select('project_id, total_engage, total_decaisse, initial_allocated_amount')
-      .in('project_id', projectIds)
-    budgetConsumption = bc
-
-    const { data: r } = await supabase
-      .from('risks')
-      .select('project_id')
-      .eq('status', 'ouvert')
-      .eq('criticality', 9)
-      .in('project_id', projectIds)
-    risks = r
-
-    const { data: fs } = await supabase
-      .from('funding_sources')
-      .select('project_id, amount_committed')
-      .in('project_id', projectIds)
-    fundingSources = fs
+    budgetLines = bl || []
+    disbursementsData = disbs || []
+    allSnapshots = (snaps || []) as any[]
+    risks = r || []
   }
 
   // Checklist Data Fetching
@@ -186,97 +148,101 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
   const checklistState = showGuide ? {
     hasOrganization: true,
     hasProject: projects.some(p => p.code !== 'DEMO-2026'),
-    hasBudget: (budgetLines || []).length > 0,
+    hasBudget: budgetLines.length > 0,
     hasOperations,
     hasTasks,
     hasTeamMembers,
-    hasPdfReport: evmSummaries?.some(s => s.ac_total > 0) || false,
+    hasPdfReport: (disbursementsData || []).length > 0,
     firstProjectId: projects.length > 0 ? projects[0].id : undefined
   } : null
 
-  // 1. BLOC KPIs GLOBAUX (Calculs)
-  const activeProjects = projects?.filter(p => p.status === 'actif') || []
-  const activeProjectIds = activeProjects.map(p => p.id)
+  // 1. CONSOLIDATION PAR PROJET
+  const projectsData = (projects || []).map(p => {
+    const currency = p.currency || 'XOF'
+    
+    // Budget alloué = SUM(budget_lines.initial_allocated_amount)
+    const pBudgetLines = budgetLines.filter(bl => bl.project_id === p.id)
+    const budgetAllocated = pBudgetLines.reduce((sum, bl) => sum + (Number(bl.initial_allocated_amount) || 0), 0)
 
-  let sumBacCpi = 0
-  let sumBacSpi = 0
-  let totalBacForAvg = 0
+    // Décaissé = SUM(operation_disbursements.amount)
+    const pDisbs = disbursementsData.filter(d => d.project_id === p.id)
+    const totalDecaisse = pDisbs.reduce((sum, d) => sum + (Number(d.amount) || 0), 0)
 
-  evmSummaries?.forEach(summary => {
-    if (activeProjectIds.includes(summary.project_id) && summary.bac_total > 0) {
-      sumBacCpi += summary.cpi_global * summary.bac_total
-      sumBacSpi += summary.spi_global * summary.bac_total
-      totalBacForAvg += summary.bac_total
+    // Consommation = Décaissé / Budget alloué * 100
+    const consoRate = budgetAllocated > 0 ? (totalDecaisse / budgetAllocated) * 100 : 0
+
+    // Dernier arrêté officiel EVM
+    const latestSnapshot = allSnapshots.find(s => s.project_id === p.id) || null
+
+    let cpi: number | null = null
+    let spi: number | null = null
+    let vac: number | null = null
+    let referentiel = 'Aucun arrêté'
+    let snapshotDate: string | null = null
+
+    if (latestSnapshot) {
+      cpi = latestSnapshot.cpi_global !== null ? Number(latestSnapshot.cpi_global) : null
+      spi = latestSnapshot.spi_global !== null ? Number(latestSnapshot.spi_global) : null
+      if (latestSnapshot.bac_total !== null && latestSnapshot.eac_global !== null) {
+        vac = Number(latestSnapshot.bac_total) - Number(latestSnapshot.eac_global)
+      }
+      referentiel = latestSnapshot.baseline ? `Baseline V${latestSnapshot.baseline.version_number}` : 'Legacy'
+      snapshotDate = latestSnapshot.control_date
     }
-  })
 
-  const avgCpi = totalBacForAvg > 0 ? sumBacCpi / totalBacForAvg : 1
-  const avgSpi = totalBacForAvg > 0 ? sumBacSpi / totalBacForAvg : 1
+    const pRisks = risks.filter(r => r.project_id === p.id)
 
-  // 2. PROJETS EN ALERTE
-  const projectsData = projects?.map(p => {
-    const summary = evmSummaries?.find(s => s.project_id === p.id)
-    const pBudgetConsumption = budgetConsumption?.filter(bc => bc.project_id === p.id) || []
-    const pFundingSources = fundingSources?.filter(fs => fs.project_id === p.id) || []
-    
-    const pTotalBudgetFromLines = pBudgetConsumption.reduce((sum, bc) => sum + Number(bc.initial_allocated_amount), 0)
-    const pTotalFunding = pFundingSources.reduce((sum, fs) => sum + Number(fs.amount_committed), 0)
-    
-    // NOUVELLE LOGIQUE: Bailleurs en priorité, puis Lignes, puis budget projet
-    const pTotalBudget = pTotalFunding > 0 ? pTotalFunding : (pTotalBudgetFromLines > 0 ? pTotalBudgetFromLines : (p.budget || 0))
-    
-    const pTotalConsumed = pBudgetConsumption.reduce((sum, bc) => sum + Number(bc.total_engage) + Number(bc.total_decaisse), 0)
-    const pTauxConso = pTotalBudget > 0 ? pTotalConsumed / pTotalBudget : 0
-    
-    const pRisks = risks?.filter(r => r.project_id === p.id) || []
-    
-    const bac = summary?.bac_total || 0
-    const ac = summary?.ac_total || 0
-    const cpi = summary?.cpi_global ?? 1
-    const spi = summary?.spi_global ?? 1
-    const vac = summary?.vac_global ?? 0
-
-    const alertReasons = []
-    if (cpi < 0.9) alertReasons.push(`CPI = ${cpi.toFixed(2)} (Dépassement budgétaire)`)
-    if (spi < 0.9) alertReasons.push(`SPI = ${spi.toFixed(2)} (Retard planning)`)
-    if (pTauxConso > 1.0) alertReasons.push(`Taux conso = ${(pTauxConso * 100).toFixed(0)}% (> Budget initial)`)
+    const alertReasons: string[] = []
+    if (cpi !== null && cpi < 0.9) alertReasons.push(`CPI = ${cpi.toFixed(2)} (Dépassement budgétaire)`)
+    if (spi !== null && spi < 0.9) alertReasons.push(`SPI = ${spi.toFixed(2)} (Retard planning)`)
+    if (budgetAllocated > 0 && consoRate > 100) alertReasons.push(`Consommation = ${consoRate.toFixed(0)}% (> Budget alloué)`)
     if (pRisks.length > 0) alertReasons.push(`${pRisks.length} Risque(s) critique(s)`)
 
     return {
       ...p,
-      bac,
-      ac,
+      currency,
+      budgetAllocated,
+      totalDecaisse,
+      consoRate,
       cpi,
       spi,
       vac,
-      pTotalBudget,
-      pTotalConsumed,
-      pTauxConso,
+      referentiel,
+      snapshotDate,
+      hasSnapshot: latestSnapshot !== null,
       isAlert: alertReasons.length > 0,
-      alertReasons,
-      progress: bac > 0 ? (ac / bac) * 100 : 0
+      alertReasons
     }
-  }) || []
+  })
+
+  // 2. BLOC KPIS GLOBAUX DU PORTFOLIO
+  const activeProjects = projectsData.filter(p => p.status === 'actif')
+  
+  // CPI / SPI Moyens arithmétiques sur projets mesurables
+  const validCpis = activeProjects.map(p => p.cpi).filter((v): v is number => v !== null && !isNaN(v))
+  const validSpis = activeProjects.map(p => p.spi).filter((v): v is number => v !== null && !isNaN(v))
+
+  const avgCpi = validCpis.length > 0 ? validCpis.reduce((a, b) => a + b, 0) / validCpis.length : null
+  const avgSpi = validSpis.length > 0 ? validSpis.reduce((a, b) => a + b, 0) / validSpis.length : null
+
+  // Agrégations par devise (Sans conversion inter-devises)
+  const activeCurrencies = Array.from(new Set(activeProjects.map(p => p.currency)))
+  
+  const aggregatesByCurrency = activeCurrencies.map(curr => {
+    const currProjects = activeProjects.filter(p => p.currency === curr)
+    const totalBudgetAlloue = currProjects.reduce((sum, p) => sum + p.budgetAllocated, 0)
+    const totalDecaisse = currProjects.reduce((sum, p) => sum + p.totalDecaisse, 0)
+    return {
+      currency: curr,
+      totalBudgetAlloue,
+      totalDecaisse,
+      projectCount: currProjects.length
+    }
+  })
 
   const alertProjects = projectsData.filter(p => p.isAlert)
 
-  // Agrégations par devise pour le portefeuille
-  const activeCurrencies = Array.from(new Set(projectsData.filter(p => p.status === 'actif').map(p => p.currency || 'XOF')))
-  
-  const aggregatesByCurrency = activeCurrencies.map(currency => {
-    const currencyProjects = projectsData.filter(p => p.status === 'actif' && (p.currency || 'XOF') === currency)
-    const cProjectIds = currencyProjects.map(p => p.id)
-    
-    const totalBudget = currencyProjects.reduce((sum, p) => sum + p.pTotalBudget, 0)
-    
-    const totalDecaisse = budgetConsumption
-      ?.filter(bc => cProjectIds.includes(bc.project_id))
-      .reduce((sum, bc) => sum + Number(bc.total_decaisse), 0) || 0
-      
-    return { currency, totalBudget, totalDecaisse }
-  })
-
-  // Tri du tableau comparatif
+  // Tri du tableau
   const sortedProjects = [...projectsData].sort((a, b) => {
     let valA: any = a[sort as keyof typeof a]
     let valB: any = b[sort as keyof typeof b]
@@ -285,18 +251,26 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
       valA = a.isAlert ? 1 : 0
       valB = b.isAlert ? 1 : 0
       if (valA === valB) {
-        // Fallback to creation date if same alert status
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       }
     } else if (sort === 'name') {
-      valA = a.name.toLowerCase()
-      valB = b.name.toLowerCase()
+      valA = (a.name || '').toLowerCase()
+      valB = (b.name || '').toLowerCase()
     } else if (sort === 'budget') {
-      valA = a.pTotalBudget
-      valB = b.pTotalBudget
+      valA = a.budgetAllocated
+      valB = b.budgetAllocated
     } else if (sort === 'conso') {
-      valA = a.pTauxConso
-      valB = b.pTauxConso
+      valA = a.consoRate
+      valB = b.consoRate
+    } else if (sort === 'cpi') {
+      valA = a.cpi ?? -999
+      valB = b.cpi ?? -999
+    } else if (sort === 'spi') {
+      valA = a.spi ?? -999
+      valB = b.spi ?? -999
+    } else if (sort === 'vac') {
+      valA = a.vac ?? -999999999
+      valB = b.vac ?? -999999999
     }
 
     if (valA < valB) return order === 'asc' ? -1 : 1
@@ -368,23 +342,23 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                 <div className="text-2xl font-bold text-text-primary">{activeProjects.length}</div>
               </div>
               
-              {aggregatesByCurrency.map((agg, idx) => (
+              {aggregatesByCurrency.map(agg => (
                 <div key={`budget-${agg.currency}`} className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between min-w-0">
                   <div className="flex justify-between items-start mb-2">
                     <span className="text-sm font-medium text-text-secondary">
-                      Budget total {activeCurrencies.length > 1 ? `(${agg.currency})` : ''}
+                      Budget alloué {activeCurrencies.length > 1 ? `(${agg.currency})` : ''}
                     </span>
                     <div className="p-2 bg-primary/10 rounded-lg text-primary shrink-0 ml-2">
                       <Target className="w-4 h-4" />
                     </div>
                   </div>
-                  <div className="text-base sm:text-lg font-bold text-text-primary whitespace-nowrap" title={formatCurrency(agg.totalBudget, agg.currency, true)}>
-                    {formatCurrency(agg.totalBudget, agg.currency, true)}
+                  <div className="text-base sm:text-lg font-bold text-text-primary whitespace-nowrap" title={formatCurrency(agg.totalBudgetAlloue, agg.currency, true)}>
+                    {formatCurrency(agg.totalBudgetAlloue, agg.currency, true)}
                   </div>
                 </div>
               ))}
 
-              {aggregatesByCurrency.map((agg, idx) => (
+              {aggregatesByCurrency.map(agg => (
                 <div key={`decaisse-${agg.currency}`} className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between min-w-0">
                   <div className="flex justify-between items-start mb-2">
                     <span className="text-sm font-medium text-text-secondary">
@@ -409,6 +383,9 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                 </div>
                 <div>
                   <AlertBadge value={avgCpi} type="cpi" />
+                  <span className="text-[11px] text-text-secondary mt-1 block">
+                    sur {validCpis.length} projet(s) mesurable(s)
+                  </span>
                 </div>
               </div>
 
@@ -421,6 +398,9 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                 </div>
                 <div>
                   <AlertBadge value={avgSpi} type="spi" />
+                  <span className="text-[11px] text-text-secondary mt-1 block">
+                    sur {validSpis.length} projet(s) mesurable(s)
+                  </span>
                 </div>
               </div>
             </div>
@@ -467,14 +447,15 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                           </Link>
                         </th>
                         <th className="px-4 py-3">Statut</th>
+                        <th className="px-4 py-3">Devise</th>
                         <th className="px-4 py-3 whitespace-nowrap text-right">
                           <Link href={getSortLink('budget')} className="flex justify-end items-center gap-1 hover:text-primary transition-colors">
-                            Budget Initial {sort === 'budget' && <ArrowUpDown className="w-3 h-3" />}
+                            Budget Alloué {sort === 'budget' && <ArrowUpDown className="w-3 h-3" />}
                           </Link>
                         </th>
                         <th className="px-4 py-3 whitespace-nowrap">
                           <Link href={getSortLink('conso')} className="flex items-center gap-1 hover:text-primary transition-colors">
-                            Consommé {sort === 'conso' && <ArrowUpDown className="w-3 h-3" />}
+                            Décaissé / Conso {sort === 'conso' && <ArrowUpDown className="w-3 h-3" />}
                           </Link>
                         </th>
                         <th className="px-4 py-3 text-center">
@@ -487,6 +468,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                             SPI {sort === 'spi' && <ArrowUpDown className="w-3 h-3" />}
                           </Link>
                         </th>
+                        <th className="px-4 py-3 text-center">Référentiel</th>
                         <th className="px-4 py-3 whitespace-nowrap text-right">
                           <Link href={getSortLink('vac')} className="flex justify-end items-center gap-1 hover:text-primary transition-colors">
                             Variance (VAC) {sort === 'vac' && <ArrowUpDown className="w-3 h-3" />}
@@ -511,19 +493,26 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                               {p.status}
                             </span>
                           </td>
+                          <td className="px-4 py-3">
+                            <span className="font-mono text-xs font-bold text-text-secondary px-2 py-0.5 bg-surface-dim rounded border border-border">
+                              {p.currency}
+                            </span>
+                          </td>
                           <td className="px-4 py-3 text-right font-medium">
-                            {formatCurrency(p.pTotalBudget, p.currency, true)}
+                            {formatCurrency(p.budgetAllocated, p.currency, true)}
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex flex-col gap-1">
                               <div className="flex justify-between text-xs">
-                                <span>{formatCurrency(p.pTotalConsumed, p.currency, true)}</span>
-                                <span className="font-medium">{(p.pTauxConso * 100).toFixed(1)}%</span>
+                                <span>{formatCurrency(p.totalDecaisse, p.currency, true)}</span>
+                                <span className="font-medium">
+                                  {p.budgetAllocated > 0 ? `${p.consoRate.toFixed(1)}%` : 'N/A'}
+                                </span>
                               </div>
                               <div className="w-full bg-surface-dim rounded-full h-1.5 overflow-hidden">
                                 <div 
-                                  className={`h-full rounded-full ${p.pTauxConso >= 1 ? 'bg-danger' : p.pTauxConso >= 0.8 ? 'bg-warning' : 'bg-primary'}`} 
-                                  style={{ width: `${Math.min(p.pTauxConso * 100, 100)}%` }}
+                                  className={`h-full rounded-full ${p.consoRate >= 100 ? 'bg-danger' : p.consoRate >= 80 ? 'bg-warning' : 'bg-primary'}`} 
+                                  style={{ width: `${Math.min(p.consoRate, 100)}%` }}
                                 />
                               </div>
                             </div>
@@ -534,8 +523,36 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                           <td className="px-4 py-3 text-center">
                             <AlertBadge value={p.spi} type="spi" />
                           </td>
-                          <td className={`px-4 py-3 text-right font-medium ${p.vac < 0 ? 'text-danger' : 'text-success'}`}>
-                            {p.vac < 0 ? '' : '+'}{formatCurrency(p.vac, p.currency, true)}
+                          <td className="px-4 py-3 text-center">
+                            {p.hasSnapshot ? (
+                              <div className="flex flex-col items-center">
+                                <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                                  p.referentiel.startsWith('Baseline')
+                                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300'
+                                    : 'bg-surface-dim text-text-secondary border border-border'
+                                }`}>
+                                  {p.referentiel}
+                                </span>
+                                {p.snapshotDate && (
+                                  <span className="text-[10px] text-text-tertiary mt-0.5">
+                                    au {new Date(p.snapshotDate).toLocaleDateString('fr-FR')}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300">
+                                Aucun arrêté
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-right font-medium">
+                            {p.vac !== null ? (
+                              <span className={p.vac < 0 ? 'text-danger font-semibold' : 'text-success font-semibold'}>
+                                {p.vac > 0 ? '+' : ''}{formatCurrency(p.vac, p.currency, true)}
+                              </span>
+                            ) : (
+                              <span className="text-text-secondary">N/A</span>
+                            )}
                           </td>
                           <td className="px-4 py-3 text-right">
                             <Link href={`/projects/${p.id}`} className="text-primary hover:text-primary/80 font-medium text-sm">
@@ -546,7 +563,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                       ))}
                       {sortedProjects.length === 0 && (
                         <tr>
-                          <td colSpan={8} className="px-4 py-8 text-center text-text-secondary">Aucun projet trouvé.</td>
+                          <td colSpan={10} className="px-4 py-8 text-center text-text-secondary">Aucun projet trouvé.</td>
                         </tr>
                       )}
                     </tbody>

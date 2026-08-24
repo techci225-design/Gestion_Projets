@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { LogframeItem } from '@/lib/actions/logframe.actions'
 import { PtbaActivity, addPtbaActivity, updatePtbaActivity, deletePtbaActivity } from '@/lib/actions/ptba.actions'
-import { Plus, Edit2, Trash2, Check, ChevronDown } from 'lucide-react'
+import { Plus, Edit2, Trash2, Check, ChevronDown, AlertTriangle } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import { ImportTasksButton } from '@/components/dashboard/ImportTasksButton'
 import { getDisplayCurrency } from '@/lib/utils/currency'
@@ -49,6 +49,32 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
     q4: false,
     budget_planned: 0
   })
+
+  const selectedBudgetLine = useMemo(() => {
+    if (!formData.budget_line_id) return null
+    return budgetLines.find(bl => bl.id === formData.budget_line_id) || null
+  }, [formData.budget_line_id, budgetLines])
+
+  const budgetLineCapacity = useMemo(() => {
+    if (!selectedBudgetLine) return null
+    const initialAllocated = Number(selectedBudgetLine.initial_allocated_amount) || 0
+    const totalProgrammed = Number(selectedBudgetLine.total_programmed) || 0
+    
+    // Si modification d'une activité déjà rattachée à cette ligne, exclure son budget_planned actuel
+    const editingAdjustment = (editingItem && editingItem.budget_line_id === selectedBudgetLine.id)
+      ? (Number(editingItem.budget_planned) || 0)
+      : 0
+
+    const otherProgrammed = Math.max(0, totalProgrammed - editingAdjustment)
+    const available = Math.max(0, initialAllocated - otherProgrammed)
+
+    return {
+      initialAllocated,
+      totalProgrammed,
+      otherProgrammed,
+      available
+    }
+  }, [selectedBudgetLine, editingItem])
   
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -92,6 +118,7 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
     try {
       await deletePtbaActivity(projectId, id)
       setData(prev => prev.filter(item => item.id !== id))
+      router.refresh()
     } catch (error) {
       alert('Erreur lors de la suppression')
     }
@@ -142,6 +169,7 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
         }])
       }
       setIsDrawerOpen(false)
+      router.refresh()
     } catch (error: any) {
       alert(error.message || 'Erreur lors de l\'enregistrement')
     } finally {
@@ -321,10 +349,29 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
                     <option value="">-- Non rattaché --</option>
                     {budgetLines.map(bl => (
                       <option key={bl.id} value={bl.id}>
-                        {bl.code} - {bl.label} (Alloué: {formatCurrency(bl.initial_allocated_amount, currency)})
+                        {bl.code} - {bl.label} (Alloué : {formatCurrency(bl.initial_allocated_amount, currency)} | Dispo : {formatCurrency(bl.available_to_program !== undefined ? bl.available_to_program : bl.initial_allocated_amount, currency)})
                       </option>
                     ))}
                   </select>
+
+                  {budgetLineCapacity && selectedBudgetLine && (
+                    <div className="mt-2.5 p-3 bg-surface-dim rounded-lg border border-border text-xs space-y-1.5 animate-in fade-in duration-200">
+                      <div className="flex justify-between items-center text-text-secondary">
+                        <span>Budget de la ligne :</span>
+                        <span className="font-semibold text-text-primary">{formatCurrency(budgetLineCapacity.initialAllocated, currency)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-text-secondary">
+                        <span>Déjà programmé (toutes activités) :</span>
+                        <span className="font-semibold text-text-primary">{formatCurrency(budgetLineCapacity.otherProgrammed, currency)}</span>
+                      </div>
+                      <div className="flex justify-between items-center pt-1.5 border-t border-border">
+                        <span className="font-medium text-text-primary">Disponible pour cette programmation :</span>
+                        <span className={`font-bold text-sm ${formData.budget_planned > budgetLineCapacity.available ? 'text-red-500' : 'text-emerald-600'}`}>
+                          {formatCurrency(budgetLineCapacity.available, currency)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* 3. Optionnel: Cadre Logique */}
@@ -358,12 +405,22 @@ export function PtbaClient({ projectId, currentYear, initialData, logframeActivi
                     step="1"
                     value={formData.budget_planned || ''}
                     onChange={e => setFormData({ ...formData, budget_planned: Number(e.target.value) })}
-                    className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
+                    className={`w-full bg-background border rounded-lg px-4 py-2 text-text-primary focus:outline-none ${
+                      budgetLineCapacity && formData.budget_planned > budgetLineCapacity.available
+                        ? 'border-red-500 focus:border-red-500'
+                        : 'border-border focus:border-blue-500'
+                    }`}
                     placeholder="0"
                   />
+                  {budgetLineCapacity && formData.budget_planned > budgetLineCapacity.available && (
+                    <p className="text-xs text-red-500 font-medium mt-1.5 flex items-center gap-1">
+                      <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                      Cette programmation dépasse l'enveloppe disponible ({formatCurrency(budgetLineCapacity.available, currency)}).
+                    </p>
+                  )}
                   {formData.wbs_task_id && (
                     <p className="text-xs text-text-secondary mt-1">
-                      Rappel: Le budget total de l'activité WBS est de {formatCurrency(wbsTasks.find(w => w.id === formData.wbs_task_id)?.budget_allocated || 0, currency)}
+                      Rappel : Le budget indicatif de l'activité WBS est de {formatCurrency(wbsTasks.find(w => w.id === formData.wbs_task_id)?.budget_allocated || 0, currency)}
                     </p>
                   )}
                 </div>

@@ -55,13 +55,12 @@ const getLevelLabel = (level: string) => {
   }
 };
 
-const formatCurrency = (amount: number) => {
-  if (amount === undefined || amount === null) return '0 FCFA';
-  return Math.round(amount).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' FCFA';
-};
+import { formatCurrency as sharedFormatCurrency } from '@/lib/utils/format-currency';
 
 export const RapportDocument = ({ data }: { data: any }) => {
   const { project, logframeItems, budgetConsumption, evmSummary, evmIndicators, procurementPlan, risks, dateString } = data;
+  const currency = project?.currency || 'XOF';
+  const formatCurrency = (amount: number) => sharedFormatCurrency(amount, currency);
   
   const budgetByCategory = budgetConsumption.reduce((acc: any, curr: any) => {
     const codeParts = curr.code.split('.');

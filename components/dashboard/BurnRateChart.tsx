@@ -16,9 +16,10 @@ import { Flame } from 'lucide-react'
 
 interface BurnRateChartProps {
   operations: any[]
+  currency?: string
 }
 
-export function BurnRateChart({ operations }: BurnRateChartProps) {
+export function BurnRateChart({ operations, currency }: BurnRateChartProps) {
   // Grouper les décaissements par mois (YYYY-MM)
   const groupedData = operations.reduce((acc: any, op) => {
     if (op.status === 'decaisse') {
@@ -84,7 +85,7 @@ export function BurnRateChart({ operations }: BurnRateChartProps) {
               tick={{ fontSize: 12, fill: '#64748B' }}
             />
             <Tooltip 
-              formatter={(value: any, name: any) => [formatCurrency(Number(value) || 0), name === 'cumul' ? 'Cumul Décaissements' : 'Décaissement du mois']}
+              formatter={(value: any, name: any) => [formatCurrency(Number(value) || 0, currency), name === 'cumul' ? 'Cumul Décaissements' : 'Décaissement du mois']}
               contentStyle={{ borderRadius: '8px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
             />
             <Legend verticalAlign="top" height={36} />

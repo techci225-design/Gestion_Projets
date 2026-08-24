@@ -115,6 +115,120 @@ export async function getPtbaActivities(projectId: string, year: number) {
   }
 }
 
+import { formatCurrency } from '@/lib/utils/format-currency'
+
+/**
+ * Helper: Vérifie que la programmation PTBA ne dépasse pas l'enveloppe allouée de la ligne budgétaire.
+ * Règle métier : SUM(ptba_activities.budget_planned) <= budget_lines.initial_allocated_amount (tous exercices confondus).
+ */
+async function validatePtbaBudgetEnvelope(
+  supabase: any,
+  projectId: string,
+  budgetLineId: string | null | undefined,
+  budgetPlanned: number,
+  excludePtbaActivityId?: string
+) {
+  if (!budgetLineId) return // Aucune ligne budgétaire rattachée, pas de plafond de ligne à contrôler
+
+  // 1. Récupérer la ligne budgétaire
+  const { data: bLine, error: bErr } = await supabase
+    .from('budget_lines')
+    .select('id, code, label, initial_allocated_amount')
+    .eq('id', budgetLineId)
+    .eq('project_id', projectId)
+    .single()
+
+  if (bErr || !bLine) {
+    throw new Error("Ligne budgétaire introuvable dans ce projet")
+  }
+
+  // 2. Récupérer la somme des programmations PTBA existantes pour cette ligne (toutes années confondues)
+  let query = supabase
+    .from('ptba_activities')
+    .select('budget_planned')
+    .eq('project_id', projectId)
+    .eq('budget_line_id', budgetLineId)
+
+  if (excludePtbaActivityId) {
+    query = query.neq('id', excludePtbaActivityId)
+  }
+
+  const { data: otherPtba, error: ptbaErr } = await query
+  if (ptbaErr) {
+    throw new Error("Erreur lors de la vérification de l'enveloppe budgétaire")
+  }
+
+  const alreadyPlanned = (otherPtba || []).reduce(
+    (sum: number, item: any) => sum + (Number(item.budget_planned) || 0),
+    0
+  )
+  const lineBudget = Number(bLine.initial_allocated_amount) || 0
+  const available = Math.max(0, lineBudget - alreadyPlanned)
+  const requested = Number(budgetPlanned) || 0
+
+  if (requested > available) {
+    // Récupérer la devise du projet pour formater le message d'erreur utilisateur
+    const { data: project } = await supabase
+      .from('projects')
+      .select('currency')
+      .eq('id', projectId)
+      .single()
+
+    const currency = project?.currency || 'XOF'
+    const availableFormatted = formatCurrency(available, currency)
+    const requestedFormatted = formatCurrency(requested, currency)
+    const lineLabel = bLine.code ? `${bLine.code} - ${bLine.label}` : bLine.label
+
+    throw new Error(
+      `Cette programmation dépasse l'enveloppe disponible de la ligne budgétaire (${lineLabel}). Disponible : ${availableFormatted}. Montant demandé : ${requestedFormatted}.`
+    )
+  }
+}
+
+export async function getBudgetLinesWithPtbaSummary(projectId: string) {
+  try {
+    await requirePermission(projectId, 'view')
+    const supabase = await createClient()
+
+    const [budgetLinesRes, ptbaRes] = await Promise.all([
+      supabase
+        .from('budget_lines')
+        .select('id, code, label, initial_allocated_amount')
+        .eq('project_id', projectId)
+        .order('code', { ascending: true }),
+      supabase
+        .from('ptba_activities')
+        .select('id, budget_line_id, budget_planned')
+        .eq('project_id', projectId)
+        .not('budget_line_id', 'is', null)
+    ])
+
+    if (budgetLinesRes.error) throw budgetLinesRes.error
+
+    const ptbaByLine = (ptbaRes.data || []).reduce((acc: Record<string, number>, item: any) => {
+      if (item.budget_line_id) {
+        acc[item.budget_line_id] = (acc[item.budget_line_id] || 0) + (Number(item.budget_planned) || 0)
+      }
+      return acc
+    }, {})
+
+    return (budgetLinesRes.data || []).map((bl: any) => {
+      const initialAllocated = Number(bl.initial_allocated_amount) || 0
+      const totalProgrammed = ptbaByLine[bl.id] || 0
+      const availableToProgram = Math.max(0, initialAllocated - totalProgrammed)
+      return {
+        ...bl,
+        initial_allocated_amount: initialAllocated,
+        total_programmed: totalProgrammed,
+        available_to_program: availableToProgram
+      }
+    })
+  } catch (err: any) {
+    console.error('Error fetching budget lines summary:', err)
+    return []
+  }
+}
+
 export async function addPtbaActivity(projectId: string, data: any) {
   try {
     await requirePermission(projectId, 'edit')
@@ -135,19 +249,15 @@ export async function addPtbaActivity(projectId: string, data: any) {
 
     if (taskErr || !task) throw new Error("Tâche WBS introuvable dans ce projet")
 
-    // Verify Budget Line exists and belongs to project if provided
-    if (validatedData.budget_line_id) {
-      const { data: bLine, error: bErr } = await supabase
-        .from('budget_lines')
-        .select('id')
-        .eq('id', validatedData.budget_line_id)
-        .eq('project_id', projectId)
-        .single()
+    // 2. Validate Budget Line envelope if provided
+    await validatePtbaBudgetEnvelope(
+      supabase,
+      projectId,
+      validatedData.budget_line_id,
+      validatedData.budget_planned
+    )
 
-      if (bErr || !bLine) throw new Error("Ligne budgétaire introuvable dans ce projet")
-    }
-
-    // 2. Insert into PTBA
+    // 3. Insert into PTBA
     const { data: item, error } = await supabase
       .from('ptba_activities')
       .insert([{ 
@@ -188,17 +298,35 @@ export async function updatePtbaActivity(projectId: string, id: string, data: an
     const validatedData = PtbaActivitySchema.partial().parse(data)
     const supabase = await createClient()
 
-    // Verify Budget Line exists and belongs to project if provided
-    if (validatedData.budget_line_id !== undefined && validatedData.budget_line_id !== null) {
-      const { data: bLine, error: bErr } = await supabase
-        .from('budget_lines')
-        .select('id')
-        .eq('id', validatedData.budget_line_id)
-        .eq('project_id', projectId)
-        .single()
+    // 1. Fetch current activity to get current values for partial updates
+    const { data: currentActivity, error: fetchErr } = await supabase
+      .from('ptba_activities')
+      .select('id, budget_line_id, budget_planned')
+      .eq('id', id)
+      .eq('project_id', projectId)
+      .single()
 
-      if (bErr || !bLine) throw new Error("Ligne budgétaire introuvable dans ce projet")
+    if (fetchErr || !currentActivity) {
+      throw new Error("Activité PTBA introuvable dans ce projet")
     }
+
+    // 2. Determine target budget_line_id and target budget_planned
+    const targetBudgetLineId = validatedData.budget_line_id !== undefined 
+      ? validatedData.budget_line_id 
+      : currentActivity.budget_line_id
+
+    const targetBudgetPlanned = validatedData.budget_planned !== undefined 
+      ? Number(validatedData.budget_planned) 
+      : Number(currentActivity.budget_planned)
+
+    // 3. Validate Budget Line envelope if target budget_line_id is set
+    await validatePtbaBudgetEnvelope(
+      supabase,
+      projectId,
+      targetBudgetLineId,
+      targetBudgetPlanned,
+      id // exclude current activity from sum
+    )
 
     const { data: item, error } = await supabase
       .from('ptba_activities')

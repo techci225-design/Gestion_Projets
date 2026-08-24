@@ -158,6 +158,13 @@ export async function createOperation(data: z.infer<typeof operationJournalSchem
     return { error: 'Invalid data', details: parsed.error.issues }
   }
 
+  // Invariant Décaissé
+  if (parsed.data.status === 'decaisse') {
+    if (!parsed.data.actual_cost || parsed.data.actual_cost <= 0 || !parsed.data.operation_date) {
+      return { error: "Pour une opération décaissée, le coût réel (> 0) et la date d'opération sont obligatoires." }
+    }
+  }
+
   try {
     await requireProjectPermission(parsed.data.project_id, 'edit_budget')
   } catch (error: any) {
@@ -204,6 +211,13 @@ export async function updateOperation(data: z.infer<typeof updateOperationJourna
   const parsed = updateOperationJournalSchema.safeParse(data)
   if (!parsed.success) {
     return { error: 'Invalid data', details: parsed.error.issues }
+  }
+
+  // Invariant Décaissé
+  if (parsed.data.status === 'decaisse') {
+    if (!parsed.data.actual_cost || parsed.data.actual_cost <= 0 || !parsed.data.operation_date) {
+      return { error: "Pour une opération décaissée, le coût réel (> 0) et la date d'opération sont obligatoires." }
+    }
   }
 
   try {
@@ -256,7 +270,10 @@ export async function updateOperation(data: z.infer<typeof updateOperationJourna
   return { data: result }
 }
 
-export async function batchUpdateOperationsFromBank(projectId: string, updates: { operationId: string, actualCost: number, newStatus: string }[]) {
+export async function batchUpdateOperationsFromBank(
+  projectId: string, 
+  updates: { operationId: string, actualCost: number, newStatus: string, operationDate?: string }[]
+) {
   const supabase = await createClient()
   
   // Verify access
@@ -266,19 +283,43 @@ export async function batchUpdateOperationsFromBank(projectId: string, updates: 
     return { error: error.message }
   }
 
+  // Validate updates before executing
+  for (const update of updates) {
+    if (update.newStatus === 'decaisse') {
+      if (!update.actualCost || update.actualCost <= 0) {
+        return { error: `Montant débité invalide pour l'opération ${update.operationId}` }
+      }
+      if (!update.operationDate || isNaN(new Date(update.operationDate).getTime())) {
+        return { error: `Date d'opération bancaire invalide pour l'opération ${update.operationId}` }
+      }
+    }
+  }
+
   // Update operations in batch
   const errors = []
   for (const update of updates) {
-    const { error } = await supabase
-      .from('operations_journal')
-      .update({
-        actual_cost: update.actualCost,
-        status: update.newStatus as any
+    if (update.newStatus === 'decaisse') {
+      const { error } = await supabase.rpc('fn_add_operation_disbursement', {
+        p_project_id: projectId,
+        p_operation_id: update.operationId,
+        p_disbursement_date: update.operationDate,
+        p_amount: update.actualCost,
+        p_reference_piece: 'Rapprochement bancaire'
       })
-      .eq('id', update.operationId)
+      if (error) {
+        errors.push({ id: update.operationId, error: error.message })
+      }
+    } else {
+      const { error } = await supabase
+        .from('operations_journal')
+        .update({
+          status: update.newStatus as any
+        })
+        .eq('id', update.operationId)
 
-    if (error) {
-      errors.push({ id: update.operationId, error: error.message })
+      if (error) {
+        errors.push({ id: update.operationId, error: error.message })
+      }
     }
   }
 
@@ -289,6 +330,7 @@ export async function batchUpdateOperationsFromBank(projectId: string, updates: 
   revalidatePath(`/projects/${projectId}/budget`)
   revalidatePath(`/projects/${projectId}/budget/journal`)
   revalidatePath(`/projects/${projectId}/budget/bailleurs`)
+  revalidatePath(`/projects/${projectId}/evm`)
   
   return { success: true }
 }

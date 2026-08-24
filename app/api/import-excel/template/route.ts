@@ -10,7 +10,7 @@ export async function GET() {
       "Responsable",
       "Date Début (JJ/MM/AAAA)",
       "Date Fin (JJ/MM/AAAA)",
-      "Budget Alloué (FCFA)"
+      "Budget Alloué"
     ];
 
     // 2. Définir quelques lignes d'exemple

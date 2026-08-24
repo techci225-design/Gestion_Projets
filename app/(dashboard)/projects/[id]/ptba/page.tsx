@@ -1,10 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { PtbaClient } from './ptba-client'
-import { getPtbaActivities } from '@/lib/actions/ptba.actions'
+import { getPtbaActivities, getBudgetLinesWithPtbaSummary } from '@/lib/actions/ptba.actions'
 import { getLogframe } from '@/lib/actions/logframe.actions'
 import { getWbsTasks } from '@/lib/actions/wbs.actions'
-import { getBudgetLines } from '@/lib/actions/budget.actions'
 
 export const metadata = {
   title: 'PTBA | Gestion de Projets',
@@ -35,12 +34,12 @@ export default async function PtbaPage({ params, searchParams }: { params: Promi
     redirect('/projects')
   }
 
-  // 2. Fetch PTBA, Logframe, WBS and Budget
+  // 2. Fetch PTBA, Logframe, WBS and Budget with PTBA Summary
   const [ptbaActivities, logframeItems, wbsTasksRes, budgetLinesRes] = await Promise.all([
     getPtbaActivities(id, currentYear),
     getLogframe(id),
     getWbsTasks(id),
-    getBudgetLines(id)
+    getBudgetLinesWithPtbaSummary(id)
   ])
 
   // Filter logframe to only pass "activities" (or everything, but let's pass all to allow selection)

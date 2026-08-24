@@ -9,7 +9,7 @@ export default async function BailleursPage({ params }: { params: Promise<{ id: 
   // Verify access
   const { data: project } = await supabase
     .from('projects')
-    .select('id')
+    .select('id, currency')
     .eq('id', id)
     .single()
 
@@ -25,5 +25,5 @@ export default async function BailleursPage({ params }: { params: Promise<{ id: 
     return <div className="p-6 text-danger">Erreur de chargement: {error.message}</div>
   }
 
-  return <BailleursClient projectId={id} bailleurs={bailleurs || []} />
+  return <BailleursClient projectId={id} bailleurs={bailleurs || []} currency={project?.currency || 'XOF'} />
 }

@@ -65,10 +65,49 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
     )
   }
 
-  const items = (operationsData as any[]).map(op => ({
-    ...op,
-    attachments_count: attachmentCounts[op.id] || 0
-  })) as OperationJournal[]
+  const { data: disbursementsData } = await supabase
+    .from('operation_disbursements')
+    .select('id, operation_id, project_id, disbursement_date, amount, entry_type, reversal_of_id, reversal_reason, bank_transaction_id, reference_piece, external_reference, notes, created_at, funding_source_id')
+    .eq('project_id', id)
+    .order('disbursement_date', { ascending: true })
+
+  const disbursementsByOp: Record<string, any[]> = {}
+  disbursementsData?.forEach(d => {
+    if (!disbursementsByOp[d.operation_id]) disbursementsByOp[d.operation_id] = []
+    disbursementsByOp[d.operation_id].push(d)
+  })
+
+  const wbsMap = new Map((wbsTasksRes || []).map(t => [t.id, t]))
+
+  const items = (operationsData as any[]).map(op => {
+    const opDisbs = disbursementsByOp[op.id] || []
+    const totalPaid = opDisbs.reduce((sum, d) => {
+      const amt = Number(d.amount) || 0
+      return d.entry_type === 'REVERSAL' ? sum - amt : sum + amt
+    }, 0)
+    const plannedCost = Number(op.planned_cost) || 0
+    const remainingCommitted = op.status === 'annule' ? 0 : Math.max(0, plannedCost - totalPaid)
+    
+    let paymentState: 'UNPAID' | 'PARTIALLY_PAID' | 'PAID' = 'UNPAID'
+    if (totalPaid >= plannedCost && plannedCost > 0) {
+      paymentState = 'PAID'
+    } else if (totalPaid > 0) {
+      paymentState = 'PARTIALLY_PAID'
+    }
+
+    const currentWbsTask = op.wbs_task_id ? wbsMap.get(op.wbs_task_id) : null
+
+    return {
+      ...op,
+      attachments_count: attachmentCounts[op.id] || 0,
+      disbursements: opDisbs,
+      total_paid: totalPaid,
+      remaining_committed: remainingCommitted,
+      payment_state: paymentState,
+      current_wbs_code: currentWbsTask?.code || null,
+      current_wbs_name: currentWbsTask?.name || null
+    }
+  }) as OperationJournal[]
 
   const { data: project } = await supabase
     .from('projects')

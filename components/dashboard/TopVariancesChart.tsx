@@ -21,7 +21,7 @@ interface TopVariance {
   cpi: number
 }
 
-export function TopVariancesChart({ data }: { data: TopVariance[] }) {
+export function TopVariancesChart({ data, currency }: { data: TopVariance[]; currency?: string }) {
   if (!data || data.length === 0) {
     return (
       <div className="bg-surface rounded-lg shadow-sm border border-border overflow-hidden">
@@ -52,7 +52,7 @@ export function TopVariancesChart({ data }: { data: TopVariance[] }) {
         <div className="bg-surface border border-border p-3 shadow-lg rounded-lg text-sm">
           <p className="font-bold text-text-primary">{data.name}</p>
           <p className="text-text-secondary mb-2 max-w-[250px] truncate">{data.description}</p>
-          <p className="font-semibold text-danger">CV: {formatCurrency(data.originalCV)}</p>
+          <p className="font-semibold text-danger">CV: {formatCurrency(data.originalCV, currency)}</p>
           <p className="text-text-secondary">CPI: {data.cpi.toFixed(2)}</p>
         </div>
       )
@@ -123,7 +123,7 @@ export function TopVariancesChart({ data }: { data: TopVariance[] }) {
                 <td className="px-6 py-3 font-medium text-text-primary">{v.code}</td>
                 <td className="px-6 py-3 text-text-secondary truncate max-w-[200px]">{v.description}</td>
                 <td className="px-6 py-3 text-right font-medium text-danger">
-                  {formatCurrency(v.cv)}
+                  {formatCurrency(v.cv, currency)}
                 </td>
                 <td className="px-6 py-3 text-right">
                   <span className="bg-danger/10 text-danger px-2 py-0.5 rounded-full text-xs font-semibold">

@@ -112,6 +112,7 @@ export function EvmHistory({ projectId, snapshots, currentSummary, currency }: E
             <thead>
               <tr className="bg-surface-dim border-b border-border">
                 <th className="p-4 text-xs font-medium text-text-secondary w-32">Date d'arrêté</th>
+                <th className="p-4 text-xs font-medium text-text-secondary w-28">Référentiel</th>
                 <th className="p-4 text-xs font-medium text-text-secondary w-32 text-right">BAC ({displayCurrency})</th>
                 <th className="p-4 text-xs font-medium text-text-secondary w-32 text-right">EAC ({displayCurrency})</th>
                 <th className="p-4 text-xs font-medium text-text-secondary w-32 text-right">VAC ({displayCurrency})</th>
@@ -127,6 +128,17 @@ export function EvmHistory({ projectId, snapshots, currentSummary, currency }: E
                 return (
                   <tr key={item.id} className={`border-b border-border hover:bg-surface-bright transition-colors h-12 ${index % 2 !== 0 ? 'bg-surface-dim/30' : ''}`}>
                     <td className="p-4 font-medium">{new Date(item.control_date).toLocaleDateString('fr-FR')}</td>
+                    <td className="p-4 font-semibold text-xs">
+                      {item.baseline ? (
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300 border border-emerald-300">
+                          V{item.baseline.version_number}
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full bg-surface-dim text-text-secondary border border-border">
+                          Legacy
+                        </span>
+                      )}
+                    </td>
                     <td className="p-4 text-right">{formatCurrency(item.bac_total, currency)}</td>
                     <td className="p-4 text-right">{formatCurrency(item.eac_global, currency)}</td>
                     <td className={`p-4 text-right font-semibold ${vac < 0 ? 'text-danger' : 'text-success'}`}>
@@ -156,7 +168,7 @@ export function EvmHistory({ projectId, snapshots, currentSummary, currency }: E
               })}
               {sortedSnapshots.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-text-secondary">Aucun arrêté sauvegardé.</td>
+                  <td colSpan={9} className="p-8 text-center text-text-secondary">Aucun arrêté sauvegardé.</td>
                 </tr>
               )}
             </tbody>

@@ -9,30 +9,70 @@ export default async function ImportRelevePage({ params }: { params: Promise<{ i
   // Verify access
   const { data: project } = await supabase
     .from('projects')
-    .select('id')
+    .select('id, currency')
     .eq('id', id)
     .single()
 
   if (!project) redirect('/projects')
 
-  // Load operations that are NOT yet 'decaisse' (e.g., planifie or engage)
-  const { data: operations, error } = await supabase
-    .from('operations_journal')
-    .select(`
-      id, 
-      task_code, 
-      status, 
-      planned_cost, 
-      actual_cost, 
-      budget_line_id
-    `)
-    .eq('project_id', id)
-    .neq('status', 'annule')
-    .order('created_at', { ascending: false })
+  // Load operations with budget lines
+  const [
+    { data: operationsData, error },
+    { data: disbursementsData },
+    { data: pendingTxData }
+  ] = await Promise.all([
+    supabase
+      .from('operations_journal')
+      .select(`
+        id, 
+        task_code, 
+        status, 
+        planned_cost, 
+        budget_line_id,
+        budget_lines (
+          code,
+          label
+        )
+      `)
+      .eq('project_id', id)
+      .neq('status', 'annule')
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('operation_disbursements')
+      .select('operation_id, amount')
+      .eq('project_id', id),
+    supabase
+      .from('v_bank_transactions')
+      .select('*')
+      .eq('project_id', id)
+      .order('transaction_date', { ascending: false })
+  ])
 
   if (error) {
     return <div className="p-6 text-danger">Erreur de chargement: {error.message}</div>
   }
 
-  return <ImportReleveClient projectId={id} operations={operations || []} />
+  const disbsByOp: Record<string, number> = {}
+  disbursementsData?.forEach(d => {
+    disbsByOp[d.operation_id] = (disbsByOp[d.operation_id] || 0) + (Number(d.amount) || 0)
+  })
+
+  const operations = (operationsData || []).map(op => {
+    const totalPaid = disbsByOp[op.id] || 0
+    const remainingCommitted = Math.max(0, (Number(op.planned_cost) || 0) - totalPaid)
+    return {
+      ...op,
+      total_paid: totalPaid,
+      remaining_committed: remainingCommitted
+    }
+  }).filter(op => op.remaining_committed > 0)
+
+  return (
+    <ImportReleveClient 
+      projectId={id} 
+      operations={operations} 
+      pendingTransactions={pendingTxData || []} 
+      currency={project?.currency || 'XOF'} 
+    />
+  )
 }

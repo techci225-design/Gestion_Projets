@@ -10,6 +10,8 @@ import { EditEvmTaskModal } from './edit-evm-task-modal'
 import { EvmHistory } from './evm-history'
 import { ImportTasksButton } from '@/components/dashboard/ImportTasksButton'
 import { EvmAiAnalysis } from '@/components/dashboard/evm-ai-analysis'
+import { EvmBaselineManager } from '@/components/dashboard/evm-baseline-manager'
+import { EvmBaseline } from '@/lib/actions/baseline.actions'
 
 function AlertBadge({ value }: { value: number | null }) {
   if (value === null || value === undefined) {
@@ -45,13 +47,17 @@ export function EvmClient({
   project, 
   summary, 
   indicators,
-  snapshots
+  snapshots,
+  baselines = [],
+  budgetLines = []
 }: { 
   projectId: string, 
   project: any, 
   summary: any, 
   indicators: any[],
-  snapshots: any[]
+  snapshots: any[],
+  baselines?: EvmBaseline[],
+  budgetLines?: any[]
 }) {
   const [isPending, startTransition] = useTransition()
   const [controlDate, setControlDate] = useState(project.evm_control_date || new Date().toISOString().split('T')[0])
@@ -82,22 +88,16 @@ export function EvmClient({
 
   const [isSaving, setIsSaving] = useState(false)
   
-  const handleSaveSnapshot = async (overwrite = false) => {
+  const handleSaveSnapshot = async () => {
     if (!summary) return
     setIsSaving(true)
     try {
       const data = {
         control_date: controlDate,
       }
-      const res = await createEvmSnapshot(projectId, data, overwrite)
+      const res = await createEvmSnapshot(projectId, data)
       if (res.error) {
-        if (res.code === 'CONFLICT') {
-          if (window.confirm('Un arrêté existe déjà pour cette date. Écraser ?')) {
-            await handleSaveSnapshot(true)
-          }
-        } else {
-          alert(res.error)
-        }
+        alert(res.error)
       }
     } finally {
       setIsSaving(false)
@@ -106,6 +106,14 @@ export function EvmClient({
 
   const cpiGlobal = summary?.cpi_global ?? null
   const spiGlobal = summary?.spi_global ?? null
+
+  const todayStr = new Date().toISOString().split('T')[0]
+  const isPast = controlDate < todayStr
+  const isFuture = controlDate > todayStr
+  const existingSnapshot = snapshots.find(s => s.control_date === controlDate)
+  const hasExistingSnapshot = Boolean(existingSnapshot)
+  const isUncertifiedRetroactive = isPast && !hasExistingSnapshot
+  const isSaveDisabled = isSaving || !summary || isUncertifiedRetroactive || isFuture || hasExistingSnapshot
 
   const responsables = Array.from(new Set(indicators.map(i => i.responsible).filter(Boolean))) as string[]
   const filteredIndicators = selectedResponsable === 'Tous les responsables'
@@ -131,9 +139,21 @@ export function EvmClient({
     <div className="flex flex-col space-y-6 pb-12">
       {/* Page Header & EVM Summary */}
       <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-4">
-        <div className="flex-shrink-0">
-          <h1 className="text-2xl font-semibold text-primary mb-1">Suivi de la Valeur Acquise (EVM)</h1>
-          <p className="text-sm text-text-secondary">Analyse des performances de coût et de délai</p>
+        <div className="flex-shrink-0 space-y-1">
+          <h1 className="text-2xl font-semibold text-primary">Suivi de la Valeur Acquise (EVM)</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            {summary?.mode === 'BASELINE' ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Mode Baseline : V{summary.baseline.version_number} ({summary.baseline.name}) — BAC : {formatCurrency(summary.bac_total, project?.currency, true)}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                Mode EVM historique — aucune baseline applicable au {new Date(controlDate).toLocaleDateString('fr-FR')}
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-4">
           <ImportTasksButton projectId={projectId} />
@@ -157,10 +177,22 @@ export function EvmClient({
                   className="text-sm bg-surface border border-border rounded-md px-3 py-1.5 text-text-primary focus:border-primary focus:ring-1 focus:ring-primary outline-none cursor-pointer disabled:opacity-50"
                 />
                 <button
-                  onClick={() => handleSaveSnapshot(false)}
-                  disabled={isSaving || !summary}
-                  className="p-1.5 bg-surface-dim hover:bg-border text-primary border border-border rounded-md transition-colors flex items-center gap-1 text-sm font-medium pr-3 disabled:opacity-50"
-                  title="Sauvegarder cet arrêté"
+                  onClick={handleSaveSnapshot}
+                  disabled={isSaveDisabled}
+                  className={`p-1.5 border rounded-md transition-colors flex items-center gap-1 text-sm font-medium pr-3 ${
+                    isSaveDisabled 
+                      ? 'bg-surface-dim text-text-tertiary border-border cursor-not-allowed opacity-50'
+                      : 'bg-surface-dim hover:bg-border text-primary border-border cursor-pointer'
+                  }`}
+                  title={
+                    hasExistingSnapshot
+                      ? "Un arrêté officiel est déjà enregistré et certifié pour cette date."
+                      : isUncertifiedRetroactive 
+                        ? "La sauvegarde officielle est verrouillée pour les calculs rétroactifs non certifiés."
+                        : isFuture 
+                          ? "Impossible d'enregistrer un arrêté officiel pour une date future."
+                          : "Sauvegarder l'arrêté officiel du jour"
+                  }
                 >
                   <Save className="w-4 h-4" />
                   <span className="hidden md:inline">Sauvegarder</span>
@@ -211,7 +243,69 @@ export function EvmClient({
         </div>
       </div>
 
-      <EvmAiAnalysis projectId={projectId} />
+      <EvmAiAnalysis projectId={projectId} currency={project?.currency} />
+
+      {/* Section 2: Référentiel Contractuel & Baseline EVM */}
+      <EvmBaselineManager 
+        projectId={projectId}
+        currency={project?.currency}
+        initialBaselines={baselines}
+        budgetLines={budgetLines}
+      />
+
+      {/* Diagnostics Temporels & Hors Baseline */}
+      <div className="space-y-3">
+        {summary?.ac_out_of_baseline > 0 && (
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-start gap-3 text-sm">
+            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="font-bold text-amber-900 dark:text-amber-300">
+                Dépenses hors périmètre de baseline : {formatCurrency(summary.ac_out_of_baseline, project?.currency, true)}
+              </p>
+              <p className="text-xs text-text-secondary">
+                Des décaissements sont rattachés à des tâches créées hors de la baseline approuvée (AC Baseline : {formatCurrency(summary.ac_baseline, project?.currency, true)} | AC Total : {formatCurrency(summary.ac_total, project?.currency, true)}). Ces coûts sont inclus dans l'AC global pour garantir la sincérité du CPI.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {isUncertifiedRetroactive && (
+          <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 flex items-start gap-3 text-sm">
+            <AlertTriangle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="font-bold text-blue-900 dark:text-blue-300">
+                Simulation historique non certifiée
+              </p>
+              <p className="text-xs text-text-secondary">
+                Ce calcul rétroactif est une simulation basée sur l'avancement physique actuel des tâches (% achevé). L'avancement passé n'étant pas disponible de manière certifiable à cette date, les valeurs d'EV, CPI et SPI sont indicatives et l'enregistrement comme arrêté officiel est désactivé.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {isFuture && (
+          <div className="bg-purple-500/10 border border-purple-500/30 rounded-xl p-4 flex items-start gap-3 text-sm">
+            <AlertTriangle className="w-5 h-5 text-purple-600 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="font-bold text-purple-900 dark:text-purple-300">
+                Simulation prévisionnelle future
+              </p>
+              <p className="text-xs text-text-secondary">
+                La date de contrôle sélectionnée est dans le futur. L'enregistrement d'un arrêté officiel n'est pas autorisé pour les dates futures.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {hasExistingSnapshot && (
+          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 flex items-center justify-between text-xs text-emerald-900 dark:text-emerald-300 font-medium">
+            <span className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              Un arrêté officiel a été enregistré et certifié pour la date du {new Date(controlDate).toLocaleDateString('fr-FR')}.
+            </span>
+          </div>
+        )}
+      </div>
 
       {/* Data Table */}
       <div className="bg-white/90 backdrop-blur-sm border border-white/20 shadow-sm rounded-xl flex flex-col">

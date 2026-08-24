@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Sparkles, AlertTriangle, Info, AlertCircle, RefreshCw, ChevronDown } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils/format-currency'
 
 type AiResult = {
   sante_globale: 'critique' | 'vigilance' | 'satisfaisante' | 'optimale'
@@ -15,7 +16,7 @@ type AiResult = {
   recommandations: string[]
 }
 
-export function EvmAiAnalysis({ projectId }: { projectId: string }) {
+export function EvmAiAnalysis({ projectId, currency }: { projectId: string, currency?: string }) {
   const [data, setData] = useState<AiResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -114,10 +115,10 @@ export function EvmAiAnalysis({ projectId }: { projectId: string }) {
             <div className="bg-surface-dim p-4 rounded-xl">
               <h3 className="text-sm font-bold text-text-primary mb-2">Projection</h3>
               <p className="text-sm text-text-secondary mb-1">
-                <span className="font-medium text-text-primary">Coût estimé (EAC) :</span> {data.projection.cout_final_estime.toLocaleString()} FCFA
+                <span className="font-medium text-text-primary">Coût estimé (EAC) :</span> {formatCurrency(data.projection.cout_final_estime, currency)}
               </p>
               <p className="text-sm text-text-secondary mb-1">
-                <span className="font-medium text-text-primary">Écart (VAC) :</span> {data.projection.ecart_previsionnel.toLocaleString()} FCFA
+                <span className="font-medium text-text-primary">Écart (VAC) :</span> {formatCurrency(data.projection.ecart_previsionnel, currency)}
               </p>
               {data.projection.date_epuisement_budget && (
                 <p className="text-sm text-red-600 font-medium mt-2 bg-red-50 dark:bg-red-900/10 p-2 rounded">

@@ -49,26 +49,36 @@ export async function GET(request: Request) {
     supabase.from('wbs_tasks').select('id, parent_id, task_type, code, description, responsible, date_start, date_end, percent_complete').eq('project_id', projectId)
   ])
 
-  const { data: ptbaActivitiesData } = await supabase
-    .from('ptba_activities')
-    .select('wbs_task_id, fiscal_year, budget_planned')
-    .in('wbs_task_id', (wbsTasksData || []).map((t: any) => t.id))
-
-  const { data: journalData } = await supabase
-    .from('operations_journal')
-    .select('wbs_task_id, status, actual_cost, operation_date')
-    .in('wbs_task_id', (wbsTasksData || []).map((t: any) => t.id))
+  const [
+    { data: ptbaActivitiesData },
+    { data: journalData },
+    { data: disbursementsData }
+  ] = await Promise.all([
+    supabase
+      .from('ptba_activities')
+      .select('wbs_task_id, fiscal_year, budget_planned')
+      .in('wbs_task_id', (wbsTasksData || []).map((t: any) => t.id)),
+    supabase
+      .from('operations_journal')
+      .select('id, wbs_task_id, status, actual_cost, operation_date')
+      .in('wbs_task_id', (wbsTasksData || []).map((t: any) => t.id)),
+    supabase
+      .from('operation_disbursements')
+      .select('id, operation_id, project_id, disbursement_date, amount')
+      .eq('project_id', projectId)
+  ])
 
   const wbsTasks = (wbsTasksData || []) as WbsTask[]
   const ptbaActivities = (ptbaActivitiesData || []) as PtbaActivity[]
   const operations = (journalData || []) as OperationJournal[]
+  const disbursements = (disbursementsData || []) as any[]
   
   const statusDateStr = project.evm_control_date || new Date().toISOString().split('T')[0]
 
   const pBAC = calculateProjectBAC(wbsTasks, ptbaActivities)
   const pPV = calculateProjectPV(statusDateStr, wbsTasks, ptbaActivities).pv
   const pEV = calculateProjectEV(wbsTasks, ptbaActivities)
-  const pAC = calculateProjectAC(statusDateStr, wbsTasks, operations)
+  const pAC = calculateProjectAC(statusDateStr, wbsTasks, operations, disbursements)
   const pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
 
   const evmSummary = {
@@ -86,7 +96,7 @@ export async function GET(request: Request) {
     const bac = calculateTaskBAC(task, ptbaActivities)
     const pvRes = calculateTaskPV(statusDateStr, task, ptbaActivities)
     const ev = calculateTaskEV(task, ptbaActivities)
-    const ac = calculateTaskAC(statusDateStr, task, operations)
+    const ac = calculateTaskAC(statusDateStr, task, operations, disbursements)
     return {
       ...task,
       ...calculateIndicators(bac, pvRes.pv, ev, ac)
