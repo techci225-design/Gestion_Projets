@@ -59,7 +59,7 @@ import { formatCurrency as sharedFormatCurrency } from '@/lib/utils/format-curre
 
 export const RapportDocument = ({ data }: { data: any }) => {
   const { project, logframeItems, budgetConsumption, evmSummary, evmIndicators, procurementPlan, risks, dateString } = data;
-  const currency = project?.currency || 'XOF';
+  const currency = project.currency;
   const formatCurrency = (amount: number) => sharedFormatCurrency(amount, currency);
   
   const budgetByCategory = budgetConsumption.reduce((acc: any, curr: any) => {
@@ -123,10 +123,10 @@ export const RapportDocument = ({ data }: { data: any }) => {
                     <Text>{getLevelLabel(item.level)}</Text>
                   </View>
                 </View>
-                <View style={[styles.tableCol, { width: '35%' }]}><Text style={styles.tableCell}>{item.description}</Text></View>
-                <View style={[styles.tableCol, { width: '20%' }]}><Text style={styles.tableCell}>{item.indicators}</Text></View>
-                <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCell}>{item.target_value}</Text></View>
-                <View style={[styles.tableCol, { width: '15%', borderRightWidth: 0 }]}><Text style={styles.tableCell}>{item.assumptions}</Text></View>
+                <View style={[styles.tableCol, { width: '35%' }]}><Text style={styles.tableCell}>{item.intervention_label}</Text></View>
+                <View style={[styles.tableCol, { width: '20%' }]}><Text style={styles.tableCell}>{item.indicator}</Text></View>
+                <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCell}>{item.target}</Text></View>
+                <View style={[styles.tableCol, { width: '15%', borderRightWidth: 0 }]}><Text style={styles.tableCell}>{item.risks_assumptions}</Text></View>
               </View>
             ))}
           </View>
@@ -244,14 +244,14 @@ export const RapportDocument = ({ data }: { data: any }) => {
               <View style={[styles.tableCol, { width: '15%', borderRightWidth: 0 }]}><Text style={styles.tableCellHeader}>Montant</Text></View>
             </View>
             {procurementPlan.map((proc: any, i: number) => {
-              const isLate = proc.planned_notice_date && new Date(proc.planned_notice_date) < new Date() && proc.status !== 'attribue';
+              const isLate = proc.planned_notice_date && new Date(proc.planned_notice_date) < new Date() && proc.status !== 'Attribué';
               return (
                 <View key={proc.id} style={[styles.tableRow, i % 2 !== 0 ? styles.tableRowAlt : {}]}>
                   <View style={[styles.tableCol, { width: '30%' }]}><Text style={[styles.tableCell, isLate ? { color: '#DC2626' } : {}]}>{proc.description}</Text></View>
-                  <View style={[styles.tableCol, { width: '10%' }]}><Text style={styles.tableCell}>{proc.procurement_type}</Text></View>
-                  <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCell}>{proc.procurement_method}</Text></View>
+                  <View style={[styles.tableCol, { width: '10%' }]}><Text style={styles.tableCell}>{proc.market_type}</Text></View>
+                  <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCell}>{proc.method}</Text></View>
                   <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCell}>{proc.planned_notice_date}</Text></View>
-                  <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCell}>{proc.planned_contract_date}</Text></View>
+                  <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCell}>{proc.contract_signature_date}</Text></View>
                   <View style={[styles.tableCol, { width: '15%', borderRightWidth: 0 }]}><Text style={styles.tableCell}>{formatCurrency(proc.estimated_amount)}</Text></View>
                 </View>
               )

@@ -95,6 +95,10 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
     }
   }
 
+  const handleExport = () => {
+    window.location.assign(`/api/export/excel?projectId=${encodeURIComponent(projectId)}`)
+  }
+
   return (
     <div className="flex flex-col space-y-6">
       {showBanner && (
@@ -120,7 +124,7 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
               <option key={r} value={r}>{r}</option>
             ))}
           </select>
-          <button className="px-4 py-2 bg-surface-dim border border-border rounded-lg text-sm font-medium text-primary flex items-center gap-2 hover:bg-border transition-colors">
+          <button onClick={handleExport} className="px-4 py-2 bg-surface-dim border border-border rounded-lg text-sm font-medium text-primary flex items-center gap-2 hover:bg-border transition-colors">
             <Download className="w-4 h-4" />
             Exporter
           </button>
