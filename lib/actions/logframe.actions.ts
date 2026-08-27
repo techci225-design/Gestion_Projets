@@ -40,6 +40,47 @@ const logframeItemSchema = z.object({
 
 const updateLogframeItemSchema = logframeItemSchema.partial()
 
+const expectedParentLevel: Record<LogframeLevel, LogframeLevel | null> = {
+  objectif_global: null,
+  objectif_specifique: 'objectif_global',
+  resultat: 'objectif_specifique',
+  activite: 'resultat',
+}
+
+async function validateLogframeHierarchy(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  projectId: string,
+  level: LogframeLevel,
+  parentId: string | null | undefined,
+) {
+  const expectedLevel = expectedParentLevel[level]
+
+  if (!expectedLevel) {
+    if (parentId) {
+      throw new Error("Un objectif global ne peut pas avoir de parent")
+    }
+    return
+  }
+
+  if (!parentId) {
+    throw new Error(`Un élément de niveau ${level} doit avoir un parent`)
+  }
+
+  const { data: parent, error } = await supabase
+    .from('logframe_items')
+    .select('id, project_id, level')
+    .eq('id', parentId)
+    .single()
+
+  if (error || !parent || parent.project_id !== projectId) {
+    throw new Error("Le parent du Cadre Logique est introuvable dans ce projet")
+  }
+
+  if (parent.level !== expectedLevel) {
+    throw new Error(`Le parent sélectionné doit être de niveau ${expectedLevel}`)
+  }
+}
+
 export async function getLogframe(projectId: string) {
   await requireProjectPermission(projectId, 'view_project')
 
@@ -68,6 +109,13 @@ export async function addLogframeItem(
   const validated = logframeItemSchema.parse(data)
 
   const supabase = await createClient()
+
+  await validateLogframeHierarchy(
+    supabase,
+    projectId,
+    validated.level,
+    validated.parent_id,
+  )
 
   const { data: item, error } = await supabase
     .from('logframe_items')
@@ -99,6 +147,26 @@ export async function updateLogframeItem(
   const validated = updateLogframeItemSchema.parse(data)
 
   const supabase = await createClient()
+
+  if (validated.level !== undefined || validated.parent_id !== undefined) {
+    const { data: currentItem, error: currentItemError } = await supabase
+      .from('logframe_items')
+      .select('level, parent_id')
+      .eq('id', id)
+      .eq('project_id', projectId)
+      .single()
+
+    if (currentItemError || !currentItem) {
+      throw new Error("Élément du Cadre Logique introuvable dans ce projet")
+    }
+
+    await validateLogframeHierarchy(
+      supabase,
+      projectId,
+      (validated.level ?? currentItem.level) as LogframeLevel,
+      validated.parent_id !== undefined ? validated.parent_id : currentItem.parent_id,
+    )
+  }
 
   const { data: item, error } = await supabase
     .from('logframe_items')

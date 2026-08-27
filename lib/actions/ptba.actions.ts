@@ -39,6 +39,7 @@ export interface PtbaActivity {
 const PtbaActivitySchema = z.object({
   wbs_task_id: z.string().uuid(),
   budget_line_id: z.string().uuid().nullable().optional(),
+  logframe_item_id: z.string().uuid().nullable().optional(),
   fiscal_year: z.number().int().min(2000).max(2100),
   q1: z.boolean(),
   q2: z.boolean(),
@@ -185,6 +186,31 @@ async function validatePtbaBudgetEnvelope(
   }
 }
 
+/**
+ * Une activité PTBA ne peut être rattachée qu'à une activité du Cadre Logique
+ * du même projet. La clé étrangère seule ne protège pas cette cohérence
+ * inter-projets.
+ */
+async function validateLogframeActivity(
+  supabase: any,
+  projectId: string,
+  logframeItemId: string | null | undefined
+) {
+  if (!logframeItemId) return
+
+  const { data: logframeItem, error } = await supabase
+    .from('logframe_items')
+    .select('id')
+    .eq('id', logframeItemId)
+    .eq('project_id', projectId)
+    .eq('level', 'activite')
+    .single()
+
+  if (error || !logframeItem) {
+    throw new Error("Activité du Cadre Logique introuvable dans ce projet")
+  }
+}
+
 export async function getBudgetLinesWithPtbaSummary(projectId: string) {
   try {
     await requirePermission(projectId, 'view')
@@ -235,6 +261,7 @@ export async function addPtbaActivity(projectId: string, data: any) {
     
     // Ensure empty string is null for UUIDs
     if (data.budget_line_id === '') data.budget_line_id = null
+    if (data.logframe_item_id === '') data.logframe_item_id = null
 
     const validatedData = PtbaActivitySchema.parse(data)
     const supabase = await createClient()
@@ -249,7 +276,10 @@ export async function addPtbaActivity(projectId: string, data: any) {
 
     if (taskErr || !task) throw new Error("Tâche WBS introuvable dans ce projet")
 
-    // 2. Validate Budget Line envelope if provided
+    // 2. Validate the optional Logframe link
+    await validateLogframeActivity(supabase, projectId, validatedData.logframe_item_id)
+
+    // 3. Validate Budget Line envelope if provided
     await validatePtbaBudgetEnvelope(
       supabase,
       projectId,
@@ -257,13 +287,14 @@ export async function addPtbaActivity(projectId: string, data: any) {
       validatedData.budget_planned
     )
 
-    // 3. Insert into PTBA
+    // 4. Insert into PTBA
     const { data: item, error } = await supabase
       .from('ptba_activities')
       .insert([{ 
         project_id: projectId, 
         wbs_task_id: validatedData.wbs_task_id,
         budget_line_id: validatedData.budget_line_id,
+        logframe_item_id: validatedData.logframe_item_id,
         fiscal_year: validatedData.fiscal_year,
         q1: validatedData.q1,
         q2: validatedData.q2,
@@ -295,6 +326,7 @@ export async function updatePtbaActivity(projectId: string, id: string, data: an
     await requirePermission(projectId, 'edit')
     
     if (data.budget_line_id === '') data.budget_line_id = null
+    if (data.logframe_item_id === '') data.logframe_item_id = null
     const validatedData = PtbaActivitySchema.partial().parse(data)
     const supabase = await createClient()
 
@@ -319,7 +351,12 @@ export async function updatePtbaActivity(projectId: string, id: string, data: an
       ? Number(validatedData.budget_planned) 
       : Number(currentActivity.budget_planned)
 
-    // 3. Validate Budget Line envelope if target budget_line_id is set
+    // 3. Validate the optional Logframe link when it is changed
+    if (validatedData.logframe_item_id !== undefined) {
+      await validateLogframeActivity(supabase, projectId, validatedData.logframe_item_id)
+    }
+
+    // 4. Validate Budget Line envelope if target budget_line_id is set
     await validatePtbaBudgetEnvelope(
       supabase,
       projectId,
@@ -332,6 +369,7 @@ export async function updatePtbaActivity(projectId: string, id: string, data: an
       .from('ptba_activities')
       .update({
         budget_line_id: validatedData.budget_line_id,
+        logframe_item_id: validatedData.logframe_item_id,
         q1: validatedData.q1,
         q2: validatedData.q2,
         q3: validatedData.q3,
