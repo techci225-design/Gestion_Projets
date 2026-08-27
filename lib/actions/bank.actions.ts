@@ -183,8 +183,7 @@ export async function reconcileBankTransactionAction(data: z.infer<typeof reconc
   const { data: rpcResult, error } = await supabase.rpc('fn_reconcile_bank_transaction', {
     p_project_id: parsed.data.projectId,
     p_bank_transaction_id: parsed.data.bankTransactionId,
-    p_splits: parsed.data.splits,
-    p_user_id: user.id
+    p_splits: parsed.data.splits
   })
 
   if (error) {

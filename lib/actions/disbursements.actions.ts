@@ -46,8 +46,7 @@ export async function addOperationDisbursement(data: z.infer<typeof disbursement
     p_amount: parsed.data.amount,
     p_reference_piece: parsed.data.referencePiece || null,
     p_funding_source_id: parsed.data.fundingSourceId || null,
-    p_notes: parsed.data.notes || null,
-    p_created_by: user.id
+    p_notes: parsed.data.notes || null
   })
 
   if (error) {
@@ -82,8 +81,7 @@ export async function createDisbursementReversalAction(data: z.infer<typeof reve
     p_project_id: parsed.data.projectId,
     p_payment_id: parsed.data.paymentId,
     p_amount: parsed.data.amount,
-    p_reason: parsed.data.reason,
-    p_user_id: user.id
+    p_reason: parsed.data.reason
   })
 
   if (error) {
