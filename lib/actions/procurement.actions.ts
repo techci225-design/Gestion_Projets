@@ -30,9 +30,21 @@ const procurementSchema = z.object({
   // The database historically accepts free-form statuses. Keep that compatibility
   // while rejecting empty or oversized values at the server boundary.
   status: z.string().trim().min(1).max(50),
-})
+}).refine(
+  (data) => !data.planned_notice_date || !data.contract_signature_date || data.planned_notice_date <= data.contract_signature_date,
+  {
+    message: 'La date de signature doit etre posterieure ou egale a la date de publication de l avis.',
+    path: ['contract_signature_date'],
+  }
+)
+
+const projectIdSchema = z.string().uuid()
+const procurementIdSchema = z.string().uuid()
 
 async function requireProcurementPermission(projectId: string, permission: 'view' | 'manage') {
+  const parsedProjectId = projectIdSchema.safeParse(projectId)
+  if (!parsedProjectId.success) throw new Error('Projet invalide')
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -41,7 +53,7 @@ async function requireProcurementPermission(projectId: string, permission: 'view
   const { data: member, error } = await supabase
     .from('project_members')
     .select('role')
-    .eq('project_id', projectId)
+    .eq('project_id', parsedProjectId.data)
     .eq('user_id', user.id)
     .single()
 
@@ -101,6 +113,9 @@ export async function updateProcurement(
   id: string,
   data: Partial<Omit<ProcurementItem, 'id' | 'project_id' | 'created_at'>>
 ) {
+  const parsedId = procurementIdSchema.safeParse(id)
+  if (!parsedId.success) throw new Error('Marche invalide')
+
   const validatedData = procurementSchema.partial().refine(
     (value) => Object.keys(value).length > 0,
     'Au moins un champ doit être modifié.'
@@ -110,7 +125,7 @@ export async function updateProcurement(
   const { data: item, error } = await supabase
     .from('procurement_plan')
     .update(validatedData)
-    .eq('id', id)
+    .eq('id', parsedId.data)
     .eq('project_id', projectId)
     .select()
     .single()
@@ -125,12 +140,15 @@ export async function updateProcurement(
 }
 
 export async function deleteProcurement(projectId: string, id: string) {
+  const parsedId = procurementIdSchema.safeParse(id)
+  if (!parsedId.success) throw new Error('Marche invalide')
+
   const { supabase } = await requireProcurementPermission(projectId, 'manage')
 
   const { error } = await supabase
     .from('procurement_plan')
     .delete()
-    .eq('id', id)
+    .eq('id', parsedId.data)
     .eq('project_id', projectId)
 
   if (error) {
