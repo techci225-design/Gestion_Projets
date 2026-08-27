@@ -124,7 +124,7 @@ export default async function DashboardLayout({
 
   return (
     <OrganizationProvider>
-      <div className="min-h-screen bg-surface-dim md:pl-60 pb-32 md:pb-0">
+      <div className="min-h-screen bg-surface-dim md:pl-64 pb-32 md:pb-0">
         <Sidebar userFullName={userFullName} orgName={orgName} isOrgAdmin={isOrgAdmin} />
         
         {/* We don't render Header here because title varies per page. 

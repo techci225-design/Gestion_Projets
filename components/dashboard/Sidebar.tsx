@@ -175,6 +175,27 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
           >
             <span>💬</span> Support TSBC
           </a>
+          <div className="flex items-center justify-between gap-3 pt-1">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/20 font-bold uppercase text-primary">
+                {userFullName.charAt(0)}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-text-primary">{userFullName}</p>
+                <Link href="/settings" className="block truncate text-xs text-text-secondary transition-colors hover:text-primary">
+                  Mon profil
+                </Link>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="shrink-0 rounded-lg p-2 text-danger transition-colors hover:bg-danger/10"
+              title="Déconnexion"
+              aria-label="Déconnexion"
+            >
+              <LogOut className="h-5 w-5" />
+            </button>
+          </div>
         </div>
       </aside>
 
