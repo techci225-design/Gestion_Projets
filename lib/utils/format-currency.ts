@@ -1,5 +1,6 @@
-export function formatCurrency(amount: number | null | undefined, currency: string = 'USD', compact: boolean = false): string {
+export function formatCurrency(amount: number | null | undefined, currency: string | null | undefined, compact: boolean = false): string {
   if (amount === null || amount === undefined || isNaN(amount)) amount = 0;
+  if (!currency) throw new Error('La devise du projet est requise pour formater un montant.')
   
   const config = {
     'XOF': { suffix: 'FCFA', locale: 'fr-CI', decimals: 0 },
@@ -14,7 +15,8 @@ export function formatCurrency(amount: number | null | undefined, currency: stri
   let curr = currency;
   if (curr === 'FCFA') curr = 'XOF';
   
-  const currConfig = config[curr as keyof typeof config] || config['USD'];
+  const currConfig = config[curr as keyof typeof config];
+  if (!currConfig) throw new Error(`Devise de projet non prise en charge : ${currency}`)
   const { suffix, decimals } = currConfig;
 
   if (compact) {

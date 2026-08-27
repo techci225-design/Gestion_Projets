@@ -1,5 +1,5 @@
 export function getDisplayCurrency(currencyCode: string | null | undefined): string {
-  if (!currencyCode) return '$' // Default to USD instead of FCFA
+  if (!currencyCode) return '—'
   
   switch (currencyCode.toUpperCase()) {
     case 'XOF':
