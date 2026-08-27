@@ -2,6 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
+import { hasProjectPermission, ProjectRole } from '@/lib/permissions/project-permissions'
 
 export interface ProcurementItem {
   id: string
@@ -17,8 +19,46 @@ export interface ProcurementItem {
   created_at: string
 }
 
-export async function getProcurementPlan(projectId: string) {
+const procurementSchema = z.object({
+  description: z.string().trim().min(1, 'La description est requise.').max(500),
+  market_type: z.string().trim().max(100).nullable().optional(),
+  method: z.string().trim().max(250).nullable().optional(),
+  review_type: z.enum(['a_priori', 'a_posteriori']).nullable().optional(),
+  planned_notice_date: z.string().date().nullable().optional(),
+  contract_signature_date: z.string().date().nullable().optional(),
+  estimated_amount: z.number().finite().min(0),
+  // The database historically accepts free-form statuses. Keep that compatibility
+  // while rejecting empty or oversized values at the server boundary.
+  status: z.string().trim().min(1).max(50),
+})
+
+async function requireProcurementPermission(projectId: string, permission: 'view' | 'manage') {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) throw new Error('Non autorisé')
+
+  const { data: member, error } = await supabase
+    .from('project_members')
+    .select('role')
+    .eq('project_id', projectId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (error || !member?.role) throw new Error('Accès refusé')
+
+  const role = member.role as ProjectRole
+  const allowed = permission === 'view'
+    ? hasProjectPermission(role, 'view_project')
+    : role === 'OWNER' || role === 'PROJECT_MANAGER'
+
+  if (!allowed) throw new Error('Permissions insuffisantes')
+
+  return { supabase, role }
+}
+
+export async function getProcurementPlan(projectId: string) {
+  const { supabase } = await requireProcurementPermission(projectId, 'view')
 
   const { data, error } = await supabase
     .from('procurement_plan')
@@ -38,11 +78,12 @@ export async function addProcurement(
   projectId: string,
   data: Omit<ProcurementItem, 'id' | 'project_id' | 'created_at'>
 ) {
-  const supabase = await createClient()
+  const validatedData = procurementSchema.parse(data)
+  const { supabase } = await requireProcurementPermission(projectId, 'manage')
 
   const { data: item, error } = await supabase
     .from('procurement_plan')
-    .insert([{ project_id: projectId, ...data }])
+    .insert([{ project_id: projectId, ...validatedData }])
     .select()
     .single()
 
@@ -60,11 +101,15 @@ export async function updateProcurement(
   id: string,
   data: Partial<Omit<ProcurementItem, 'id' | 'project_id' | 'created_at'>>
 ) {
-  const supabase = await createClient()
+  const validatedData = procurementSchema.partial().refine(
+    (value) => Object.keys(value).length > 0,
+    'Au moins un champ doit être modifié.'
+  ).parse(data)
+  const { supabase } = await requireProcurementPermission(projectId, 'manage')
 
   const { data: item, error } = await supabase
     .from('procurement_plan')
-    .update(data)
+    .update(validatedData)
     .eq('id', id)
     .eq('project_id', projectId)
     .select()
@@ -80,7 +125,7 @@ export async function updateProcurement(
 }
 
 export async function deleteProcurement(projectId: string, id: string) {
-  const supabase = await createClient()
+  const { supabase } = await requireProcurementPermission(projectId, 'manage')
 
   const { error } = await supabase
     .from('procurement_plan')

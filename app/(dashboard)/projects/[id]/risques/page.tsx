@@ -29,6 +29,17 @@ export default async function RisksPage({ params }: { params: Promise<{ id: stri
     redirect('/projects')
   }
 
+  const { data: membership } = await supabase
+    .from('project_members')
+    .select('role')
+    .eq('project_id', id)
+    .eq('user_id', user.id)
+    .single()
+
+  const canManageRisks = membership?.role === 'OWNER'
+    || membership?.role === 'PROJECT_MANAGER'
+    || membership?.role === 'CONSULTANT'
+
   // 2. Fetch Risks
   const risks = await getRisks(id)
 
@@ -43,6 +54,7 @@ export default async function RisksPage({ params }: { params: Promise<{ id: stri
         <RisksClient 
           projectId={id} 
           initialData={risks} 
+          canManage={canManageRisks}
         />
       </div>
     </div>

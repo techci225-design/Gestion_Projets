@@ -29,6 +29,15 @@ export default async function ProcurementPage({ params }: { params: Promise<{ id
     redirect('/projects')
   }
 
+  const { data: membership } = await supabase
+    .from('project_members')
+    .select('role')
+    .eq('project_id', id)
+    .eq('user_id', user.id)
+    .single()
+
+  const canManageProcurement = membership?.role === 'OWNER' || membership?.role === 'PROJECT_MANAGER'
+
   // 2. Fetch Procurement Plan
   const procurementPlan = await getProcurementPlan(id)
 
@@ -44,6 +53,7 @@ export default async function ProcurementPage({ params }: { params: Promise<{ id
           projectId={id} 
           initialData={procurementPlan} 
           currency={project.currency}
+          canManage={canManageProcurement}
         />
       </div>
     </div>

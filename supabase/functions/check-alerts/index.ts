@@ -255,7 +255,7 @@ Deno.serve(async (req) => {
             pid,
             'risque_critique',
             'Risque Critique Détecté',
-            `Le risque "${r.title}" est classé critique (9/9).`,
+            `Le risque "${r.description}" est classé critique (9/9).`,
             `/projects/${pid}/risques`,
             ['OWNER', 'PROJECT_MANAGER'],
             project.name

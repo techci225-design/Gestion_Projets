@@ -7,6 +7,7 @@ import { Plus, Edit2, Trash2 } from 'lucide-react'
 interface RisksClientProps {
   projectId: string
   initialData: RiskItem[]
+  canManage: boolean
 }
 
 const CATEGORIES = ['Fiduciaire', 'Opérationnel', 'Environnemental', 'Social', 'Technique', 'Politique']
@@ -16,7 +17,7 @@ const STATUSES = [
   { value: 'clos', label: 'Clos' }
 ]
 
-export function RisksClient({ projectId, initialData }: RisksClientProps) {
+export function RisksClient({ projectId, initialData, canManage }: RisksClientProps) {
   const [data, setData] = useState<RiskItem[]>(initialData)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<RiskItem | null>(null)
@@ -127,13 +128,15 @@ export function RisksClient({ projectId, initialData }: RisksClientProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-text-primary">Registre des Risques</h2>
-        <button
-          onClick={openAddModal}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          Déclarer un Risque
-        </button>
+        {canManage && (
+          <button
+            onClick={openAddModal}
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            Déclarer un Risque
+          </button>
+        )}
       </div>
 
       <div className="bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
@@ -185,14 +188,16 @@ export function RisksClient({ projectId, initialData }: RisksClientProps) {
                       </span>
                     </td>
                     <td className="p-4 align-top text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => openEditModal(item)} className="p-1.5 text-text-secondary hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="Modifier">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => handleDelete(item.id)} className="p-1.5 text-text-secondary hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Supprimer">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                      {canManage && (
+                        <div className="flex items-center justify-end gap-1">
+                          <button onClick={() => openEditModal(item)} className="p-1.5 text-text-secondary hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="Modifier">
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => handleDelete(item.id)} className="p-1.5 text-text-secondary hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Supprimer">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))

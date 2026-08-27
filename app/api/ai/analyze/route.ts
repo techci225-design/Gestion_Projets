@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       currency: project?.currency,
       evm_recent: evm,
       open_risks_count: risks?.length || 0,
-      open_risks: risks?.map(r => ({ title: r.title, severity: r.severity })),
+      open_risks: risks?.map(r => ({ description: r.description, criticality: r.criticality })),
       tasks_count: tasks?.length || 0
     }
 

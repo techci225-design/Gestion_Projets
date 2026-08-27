@@ -13,6 +13,7 @@ interface ProcurementClientProps {
   projectId: string
   initialData: ProcurementItem[]
   currency?: string
+  canManage: boolean
 }
 
 const MARKET_TYPES = ['Travaux', 'Biens', 'Services de Consultants', 'Services Autres']
@@ -21,7 +22,7 @@ const STATUSES = ['Planifié', 'En cours', 'Attribué', 'Annulé']
 
 import { getDisplayCurrency } from '@/lib/utils/currency'
 
-export function ProcurementClient({ projectId, initialData, currency }: ProcurementClientProps) {
+export function ProcurementClient({ projectId, initialData, currency, canManage }: ProcurementClientProps) {
   const displayCurrency = getDisplayCurrency(currency)
   const [data, setData] = useState<ProcurementItem[]>(initialData)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
@@ -134,13 +135,15 @@ export function ProcurementClient({ projectId, initialData, currency }: Procurem
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-text-primary">Liste des Marchés Planifiés</h2>
-        <button
-          onClick={openAddModal}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          Nouveau Marché
-        </button>
+        {canManage && (
+          <button
+            onClick={openAddModal}
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            Nouveau Marché
+          </button>
+        )}
       </div>
 
       <div className="bg-surface border border-border rounded-xl shadow-sm overflow-hidden">
@@ -196,14 +199,16 @@ export function ProcurementClient({ projectId, initialData, currency }: Procurem
                       {formatCurrency(item.estimated_amount || 0, currency)}
                     </td>
                     <td className="p-4 align-top text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => openEditModal(item)} className="p-1.5 text-text-secondary hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="Modifier">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => handleDelete(item.id)} className="p-1.5 text-text-secondary hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Supprimer">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                      {canManage && (
+                        <div className="flex items-center justify-end gap-1">
+                          <button onClick={() => openEditModal(item)} className="p-1.5 text-text-secondary hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="Modifier">
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => handleDelete(item.id)} className="p-1.5 text-text-secondary hover:text-red-600 hover:bg-red-50 rounded-md transition-colors" title="Supprimer">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))
