@@ -19,6 +19,7 @@ import { GaugeCPISPI } from '@/components/dashboard/GaugeCPISPI'
 import { SCurveChart } from '@/components/dashboard/SCurveChart'
 import { TopVariancesChart } from '@/components/dashboard/TopVariancesChart'
 import { BurnRateChart } from '@/components/dashboard/BurnRateChart'
+import { ExportPdfButton } from '@/components/dashboard/ExportPdfButton'
 
 export default async function ProjectOverviewPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
@@ -163,6 +164,7 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
             </p>
           </div>
           <div className="flex flex-col items-end gap-1">
+            <ExportPdfButton projectId={id} />
             <span className="text-sm font-medium text-text-secondary">Statut du Projet</span>
             <span className={`px-4 py-1.5 rounded-full text-sm font-bold shadow-sm border ${
               project.status === 'active' || project.status === 'actif'
