@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 
 import { 
   calculateProjectBAC, calculateProjectPV, calculateProjectEV, calculateProjectAC, calculateIndicators,
@@ -10,8 +11,29 @@ import {
   WbsTask, PtbaActivity, OperationJournal
 } from '@/lib/utils/evm'
 import { getApplicableBaseline } from './baseline.actions'
+import { requireProjectPermission, requireRole } from './auth.actions'
+
+const evmSnapshotSchema = z.object({
+  projectId: z.string().uuid(),
+  control_date: z.string().date(),
+})
+
+const evmSnapshotNotesSchema = z.object({
+  projectId: z.string().uuid(),
+  snapshotId: z.string().uuid(),
+  notes: z.string().trim().max(2_000),
+})
 
 export async function createEvmSnapshot(projectId: string, payload: { control_date: string }) {
+  const parsed = evmSnapshotSchema.safeParse({ projectId, ...payload })
+  if (!parsed.success) return { error: 'Données d’arrêté EVM invalides.' }
+
+  try {
+    await requireRole(parsed.data.projectId, ['OWNER', 'PROJECT_MANAGER'])
+  } catch (error: any) {
+    return { error: error.message }
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Non authentifié' }
@@ -29,7 +51,7 @@ export async function createEvmSnapshot(projectId: string, payload: { control_da
   }
 
   // 1. RECALCULATE ON THE SERVER & VALIDATE TEMPORAL INTEGRITY
-  const statusDateStr = payload.control_date
+  const statusDateStr = parsed.data.control_date
   const todayStr = new Date().toISOString().split('T')[0]
 
   // Règle Date Future : Refus d'enregistrer un arrêté officiel pour une date future
@@ -155,6 +177,15 @@ export async function createEvmSnapshot(projectId: string, payload: { control_da
 }
 
 export async function getEvmSnapshots(projectId: string) {
+  const parsed = z.string().uuid().safeParse(projectId)
+  if (!parsed.success) return { data: null, error: 'Projet invalide.' }
+
+  try {
+    await requireProjectPermission(parsed.data, 'view_reports')
+  } catch (error: any) {
+    return { data: null, error: error.message }
+  }
+
   const supabase = await createClient()
   
   const { data, error } = await supabase
@@ -166,7 +197,7 @@ export async function getEvmSnapshots(projectId: string) {
         name
       )
     `)
-    .eq('project_id', projectId)
+    .eq('project_id', parsed.data)
     .order('control_date', { ascending: true })
 
   if (error) {
@@ -176,33 +207,37 @@ export async function getEvmSnapshots(projectId: string) {
   return { data, error: null }
 }
 
+/** Official snapshots are immutable records and must never be deleted. */
 export async function deleteEvmSnapshot(projectId: string, snapshotId: string) {
-  const supabase = await createClient()
-  
-  // RLS will check role, but let's be safe
-  const { error } = await supabase
-    .from('evm_snapshots')
-    .delete()
-    .eq('id', snapshotId)
-    .eq('project_id', projectId)
+  const parsed = z.object({
+    projectId: z.string().uuid(),
+    snapshotId: z.string().uuid(),
+  }).safeParse({ projectId, snapshotId })
 
-  if (error) return { error: error.message }
-  
-  revalidatePath(`/projects/${projectId}/evm`)
-  return { success: true }
+  if (!parsed.success) return { error: 'Identifiants d’arrêté EVM invalides.' }
+  return { error: 'Un arrêté officiel EVM ne peut pas être supprimé.' }
 }
 
 export async function updateEvmSnapshotNotes(projectId: string, snapshotId: string, notes: string) {
-  const supabase = await createClient()
+  const parsed = evmSnapshotNotesSchema.safeParse({ projectId, snapshotId, notes })
+  if (!parsed.success) return { error: 'Notes ou identifiants invalides.' }
+
+  try {
+    await requireRole(parsed.data.projectId, ['OWNER', 'PROJECT_MANAGER'])
+  } catch (error: any) {
+    return { error: error.message }
+  }
+
+  const adminClient = createAdminClient()
   
-  const { error } = await supabase
+  const { error } = await adminClient
     .from('evm_snapshots')
-    .update({ notes })
-    .eq('id', snapshotId)
-    .eq('project_id', projectId)
+    .update({ notes: parsed.data.notes })
+    .eq('id', parsed.data.snapshotId)
+    .eq('project_id', parsed.data.projectId)
 
   if (error) return { error: error.message }
   
-  revalidatePath(`/projects/${projectId}/evm`)
+  revalidatePath(`/projects/${parsed.data.projectId}/evm`)
   return { success: true }
 }

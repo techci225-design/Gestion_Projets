@@ -49,7 +49,8 @@ export function EvmClient({
   indicators,
   snapshots,
   baselines = [],
-  budgetLines = []
+  budgetLines = [],
+  canManageSnapshots = false
 }: { 
   projectId: string, 
   project: any, 
@@ -57,7 +58,8 @@ export function EvmClient({
   indicators: any[],
   snapshots: any[],
   baselines?: EvmBaseline[],
-  budgetLines?: any[]
+  budgetLines?: any[],
+  canManageSnapshots?: boolean
 }) {
   const [isPending, startTransition] = useTransition()
   const [controlDate, setControlDate] = useState(project.evm_control_date || new Date().toISOString().split('T')[0])
@@ -420,7 +422,7 @@ export function EvmClient({
         )}
       </div>
 
-      <EvmHistory projectId={projectId} snapshots={snapshots} currentSummary={summary} currency={project?.currency} />
+      <EvmHistory projectId={projectId} snapshots={snapshots} currentSummary={summary} currency={project?.currency} canManageSnapshots={canManageSnapshots} />
 
       <AddEvmTaskModal 
         isOpen={isModalOpen} 

@@ -10,6 +10,7 @@ import {
 } from '@/lib/utils/evm'
 
 import { getProjectBaselines } from '@/lib/actions/baseline.actions'
+import { getUserRole } from '@/lib/actions/auth.actions'
 
 export default async function EvmPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -33,7 +34,8 @@ export default async function EvmPage({ params }: { params: Promise<{ id: string
     { data: disbursementsData },
     { data: snapshots },
     baselinesRes,
-    { data: budgetLinesData }
+    { data: budgetLinesData },
+    currentUserRole
   ] = await Promise.all([
     supabase
       .from('wbs_tasks')
@@ -61,7 +63,8 @@ export default async function EvmPage({ params }: { params: Promise<{ id: string
     supabase
       .from('budget_lines')
       .select('id, code, label, initial_allocated_amount')
-      .eq('project_id', id)
+      .eq('project_id', id),
+    getUserRole(id)
   ])
 
   // 2. Prepare typed data
@@ -236,6 +239,7 @@ export default async function EvmPage({ params }: { params: Promise<{ id: string
       snapshots={snapshots || []}
       baselines={baselinesRes.data || []}
       budgetLines={budgetLinesData || []}
+      canManageSnapshots={currentUserRole === 'OWNER' || currentUserRole === 'PROJECT_MANAGER'}
     />
   )
 }

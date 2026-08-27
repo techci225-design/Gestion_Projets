@@ -127,7 +127,7 @@ export async function createProject(formData: FormData) {
       .insert({
         project_id: project.id,
         user_id: user.id,
-        role: 'owner'
+        role: 'OWNER'
       })
 
     if (memberError) {

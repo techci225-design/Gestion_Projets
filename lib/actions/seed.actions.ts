@@ -3,11 +3,30 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
+
+const seedDemoProjectSchema = z.object({
+  organizationId: z.string().uuid(),
+})
 
 export async function seedDemoProject(organizationId: string) {
+  const parsed = seedDemoProjectSchema.safeParse({ organizationId })
+  if (!parsed.success) return { error: 'Organisation invalide.' }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Non authentifié' }
+
+  const { data: organizationMember } = await supabase
+    .from('organization_members')
+    .select('org_role')
+    .eq('organization_id', parsed.data.organizationId)
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (!organizationMember || !['owner', 'admin'].includes(organizationMember.org_role)) {
+    return { error: 'Vous n’avez pas les droits pour créer un projet de démonstration dans cette organisation.' }
+  }
 
   const adminClient = createAdminClient()
 
@@ -16,7 +35,7 @@ export async function seedDemoProject(organizationId: string) {
   const { data: project, error: projectError } = await adminClient
     .from('projects')
     .insert({
-      organization_id: organizationId,
+      organization_id: parsed.data.organizationId,
       name: "Projet de Réhabilitation des Infrastructures Rurales",
       code: `DEMO-2026-${uniqueSuffix}`,
       description: "Projet pilote financé par la BAD visant à réhabiliter les infrastructures d'eau potable dans 3 régions.",
@@ -39,7 +58,7 @@ export async function seedDemoProject(organizationId: string) {
   const { error: memberError } = await adminClient.from('project_members').insert({
     project_id: projectId,
     user_id: user.id,
-    role: 'owner'
+    role: 'OWNER'
   })
 
   if (memberError) {

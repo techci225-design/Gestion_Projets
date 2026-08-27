@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
-import { Trash2, Save, Edit2, X } from 'lucide-react'
+import { Save, Edit2, X } from 'lucide-react'
 import { getDisplayCurrency } from '@/lib/utils/currency'
 import { deleteEvmSnapshot, updateEvmSnapshotNotes } from '@/lib/actions/evm-snapshots.actions'
 import { formatCurrency } from '@/lib/utils/format-currency'
@@ -36,7 +36,7 @@ function AlertBadge({ value }: { value: number | null }) {
   )
 }
 
-function EditableNotes({ snapshotId, projectId, initialNotes }: { snapshotId: string, projectId: string, initialNotes: string }) {
+function EditableNotes({ snapshotId, projectId, initialNotes, canManage }: { snapshotId: string, projectId: string, initialNotes: string, canManage: boolean }) {
   const [isEditing, setIsEditing] = useState(false)
   const [notes, setNotes] = useState(initialNotes || '')
   const [isSaving, setIsSaving] = useState(false)
@@ -71,9 +71,11 @@ function EditableNotes({ snapshotId, projectId, initialNotes }: { snapshotId: st
   return (
     <div className="flex items-center justify-between group">
       <span className="text-sm truncate max-w-[200px]" title={notes}>{notes || <span className="text-text-secondary italic">Aucune note</span>}</span>
-      <button onClick={() => setIsEditing(true)} className="opacity-0 group-hover:opacity-100 text-text-secondary hover:text-primary transition-opacity">
-        <Edit2 className="w-4 h-4" />
-      </button>
+      {canManage && (
+        <button onClick={() => setIsEditing(true)} className="opacity-0 group-hover:opacity-100 text-text-secondary hover:text-primary transition-opacity">
+          <Edit2 className="w-4 h-4" />
+        </button>
+      )}
     </div>
   )
 }
@@ -83,9 +85,10 @@ interface EvmHistoryProps {
   snapshots: any[]
   currentSummary: any
   currency?: string
+  canManageSnapshots: boolean
 }
 
-export function EvmHistory({ projectId, snapshots, currentSummary, currency }: EvmHistoryProps) {
+export function EvmHistory({ projectId, snapshots, currentSummary, currency, canManageSnapshots }: EvmHistoryProps) {
   const displayCurrency = getDisplayCurrency(currency)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
 
@@ -119,7 +122,6 @@ export function EvmHistory({ projectId, snapshots, currentSummary, currency }: E
                 <th className="p-4 text-xs font-medium text-text-secondary w-20 text-center">CPI</th>
                 <th className="p-4 text-xs font-medium text-text-secondary w-20 text-center">SPI</th>
                 <th className="p-4 text-xs font-medium text-text-secondary">Notes</th>
-                <th className="p-4 text-xs font-medium text-text-secondary w-16 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="text-sm text-text-primary">
@@ -151,17 +153,7 @@ export function EvmHistory({ projectId, snapshots, currentSummary, currency }: E
                       <AlertBadge value={item.spi_global} />
                     </td>
                     <td className="p-4">
-                      <EditableNotes snapshotId={item.id} projectId={projectId} initialNotes={item.notes} />
-                    </td>
-                    <td className="p-4 text-center">
-                      <button 
-                        onClick={() => handleDelete(item.id)}
-                        disabled={isDeleting === item.id}
-                        className="text-text-secondary hover:text-danger disabled:opacity-50 transition-colors p-1"
-                        title="Supprimer"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <EditableNotes snapshotId={item.id} projectId={projectId} initialNotes={item.notes} canManage={canManageSnapshots} />
                     </td>
                   </tr>
                 )
