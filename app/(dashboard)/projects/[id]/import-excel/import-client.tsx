@@ -190,7 +190,8 @@ export function ImportClient({ projectId }: { projectId: string }) {
           </p>
 
           <div className="border border-border rounded-lg overflow-hidden mb-6">
-            <table className="w-full text-left text-sm">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] text-left text-sm">
               <thead className="bg-surface-container text-on-surface-variant">
                 <tr>
                   <th className="p-3 font-semibold w-1/2">Colonne Excel</th>
@@ -228,6 +229,7 @@ export function ImportClient({ projectId }: { projectId: string }) {
                 })}
               </tbody>
             </table>
+            </div>
           </div>
 
           <div className="flex justify-end gap-4">

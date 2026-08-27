@@ -180,7 +180,7 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
             <LayoutDashboard className="w-5 h-5 text-primary" />
             Résumé Exécutif
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
             
             <div className="bg-gradient-to-br from-primary to-blue-700 text-white border border-primary/20 rounded-xl p-4 shadow-sm flex flex-col justify-between">
               <div className="flex justify-between items-start mb-2">
