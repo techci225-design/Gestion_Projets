@@ -158,8 +158,7 @@ export async function deleteAdminUser(userId: string) {
   await adminClient.from('project_members').delete().eq('user_id', userId)
   await adminClient.from('organization_members').delete().eq('user_id', userId)
   
-  // Clean up audit logs and invitations where this user was involved
-  await adminClient.from('audit_log').delete().eq('user_id', userId)
+  // Invitations are not audit records and can be safely removed with the account.
   await adminClient.from('invitations').delete().eq('invited_by', userId)
 
   // Set foreign keys to NULL to avoid constraint errors
@@ -317,5 +316,4 @@ export async function updatePlatformSettings(settings: { pro_price: number, inst
   revalidatePath('/admin/settings')
   return { success: true }
 }
-
 

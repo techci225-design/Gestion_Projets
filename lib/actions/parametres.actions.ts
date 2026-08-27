@@ -19,7 +19,7 @@ export async function addFundingSource(data: z.infer<typeof fundingSourceSchema>
   }
 
   try {
-    await requireRole(parsed.data.project_id, ['owner', 'comptable'])
+    await requireRole(parsed.data.project_id, ['OWNER', 'ACCOUNTANT'])
   } catch (error: any) {
     return { error: error.message }
   }
@@ -43,7 +43,7 @@ export async function addFundingSource(data: z.infer<typeof fundingSourceSchema>
 
 export async function deleteFundingSource(projectId: string, id: string) {
   try {
-    await requireRole(projectId, ['owner', 'comptable'])
+    await requireRole(projectId, ['OWNER', 'ACCOUNTANT'])
   } catch (error: any) {
     return { error: error.message }
   }

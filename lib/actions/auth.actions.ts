@@ -111,9 +111,9 @@ export async function getUserRole(projectId: string): Promise<ProjectRole | null
   return null
 }
 
-export async function requireRole(projectId: string, allowedRoles: string[]) {
+export async function requireRole(projectId: string, allowedRoles: ProjectRole[]) {
   const role = await getUserRole(projectId)
-  if (!role || !allowedRoles.map(r => normalizeRole(r)).includes(role)) {
+  if (!role || !allowedRoles.includes(role)) {
     throw new Error('Non autorisé')
   }
   return role

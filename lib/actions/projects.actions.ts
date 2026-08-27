@@ -323,7 +323,7 @@ export async function updateProject(projectId: string, payload: {
       .from('project_members')
       .select('user_id')
       .eq('project_id', projectId)
-      .eq('role', 'owner')
+      .eq('role', 'OWNER')
       .limit(1)
 
     if (ownerData && ownerData.length > 0) {
@@ -379,7 +379,7 @@ export async function deleteProject(projectId: string) {
   const activeOrgId = cookieStore.get('active_org_id')?.value
   
   let hasRights = false;
-  if (projectMember && ['owner'].includes(projectMember.role)) {
+  if (projectMember?.role === 'OWNER') {
     hasRights = true;
   } else if (activeOrgId) {
     const { data: orgMember } = await supabase
@@ -399,7 +399,7 @@ export async function deleteProject(projectId: string) {
 
   // First, check if there are tasks or budgets
   const { count: tasksCount } = await adminClient
-    .from('tasks')
+    .from('wbs_tasks')
     .select('*', { count: 'exact', head: true })
     .eq('project_id', projectId)
 
@@ -420,7 +420,7 @@ export async function deleteProject(projectId: string) {
     .from('project_members')
     .select('user_id')
     .eq('project_id', projectId)
-    .eq('role', 'owner')
+    .eq('role', 'OWNER')
     .limit(1)
   
   const ownerId = ownerData?.[0]?.user_id
@@ -429,7 +429,6 @@ export async function deleteProject(projectId: string) {
   await adminClient.from('project_members').delete().eq('project_id', projectId)
   await adminClient.from('funding_sources').delete().eq('project_id', projectId)
   await adminClient.from('risks').delete().eq('project_id', projectId)
-  await adminClient.from('audit_log').delete().eq('project_id', projectId)
 
   // Now delete the project itself
   const { error } = await adminClient

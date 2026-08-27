@@ -54,7 +54,7 @@ export async function sendInvitation(payload: {
     return { error: 'Erreur configuration adminClient pour l\'insertion.' };
   }
 
-  // Permission check: To invite a project member, the user must be a chef_projet or owner.
+  // Permission check: only a project owner or manager may invite a member.
   // To invite an organization owner, the user must be an organization owner.
   if (payload.role === 'Propriétaire' || payload.role === 'owner') {
      const { data: orgMember } = await supabase.from('organization_members').select('role').eq('organization_id', payload.organization_id).eq('user_id', user.id).single();

@@ -139,7 +139,7 @@ export default async function LandingPage({ searchParams }: { searchParams: Prom
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
               <Banknote className="w-10 h-10 text-[#16A34A] mb-4" />
               <h3 className="text-xl font-bold text-slate-800 mb-2">Budget & Journal</h3>
-              <p className="text-slate-600">Suivez vos engagements et décaissements en FCFA avec une précision comptable.</p>
+              <p className="text-slate-600">Suivez vos engagements et décaissements dans la devise de votre projet.</p>
             </div>
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
               <Activity className="w-10 h-10 text-indigo-600 mb-4" />

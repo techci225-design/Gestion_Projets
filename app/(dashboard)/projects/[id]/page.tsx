@@ -11,8 +11,10 @@ import { fr } from 'date-fns/locale'
 import { 
   calculateProjectBAC, calculateProjectPV, calculateProjectEV, calculateProjectAC, calculateIndicators,
   calculateTaskBAC, calculateTaskPV, calculateTaskEV, calculateTaskAC,
-  WbsTask, PtbaActivity, OperationJournal
+  calculateBaselineItemEV, calculateBaselineItemPV, calculateBaselineProjectAC, calculateBaselineProjectEV, calculateBaselineProjectPV,
+  EvmBaselineItemInput, WbsTask, PtbaActivity, OperationJournal
 } from '@/lib/utils/evm'
+import { getProjectBaselines } from '@/lib/actions/baseline.actions'
 
 // Composants du Tableau de Bord EVM
 import { GaugeCPISPI } from '@/components/dashboard/GaugeCPISPI'
@@ -82,20 +84,90 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
     .in('wbs_task_id', (wbsTasksData || []).map((t: any) => t.id))
 
   const { data: evmSnapshots } = await supabase.from('evm_snapshots').select('*').eq('project_id', id).order('control_date', { ascending: true })
+  const { data: disbursementsData } = await supabase
+    .from('operation_disbursements')
+    .select('id, operation_id, project_id, disbursement_date, amount, entry_type')
+    .eq('project_id', id)
+  const baselinesRes = await getProjectBaselines(id)
 
   // Prepare typed data
   const wbsTasks = (wbsTasksData || []) as WbsTask[]
   const ptbaActivities = (ptbaActivitiesData || []) as PtbaActivity[]
   const operations = (journalData || []) as OperationJournal[]
+  const disbursements = disbursementsData || []
+  const allBaselines = baselinesRes.data || []
   
   const statusDateStr = project.evm_control_date || new Date().toISOString().split('T')[0]
 
-  // Global EVM Calculations via TS Engine
-  const pBAC = calculateProjectBAC(wbsTasks, ptbaActivities)
-  const pPV = calculateProjectPV(statusDateStr, wbsTasks, ptbaActivities).pv
-  const pEV = calculateProjectEV(wbsTasks, ptbaActivities)
-  const pAC = calculateProjectAC(statusDateStr, wbsTasks, operations)
-  const pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
+  const applicableBaseline = allBaselines
+    .filter(b => (b.status === 'APPROVED' || b.status === 'SUPERSEDED') && b.effective_date && b.effective_date <= statusDateStr)
+    .sort((a, b) => b.effective_date!.localeCompare(a.effective_date!) || b.version_number - a.version_number)[0] || null
+
+  let pBAC = 0
+  let pPV = 0
+  let pEV = 0
+  let pAC = 0
+  let pInd = calculateIndicators(0, 0, 0, 0)
+  let taskIndicators: Array<{ id: string; code: string; description: string; cv: number; cpi: number | null }> = []
+
+  if (applicableBaseline) {
+    const { data: baselineItemsData } = await supabase
+      .from('evm_baseline_items')
+      .select('*')
+      .eq('baseline_id', applicableBaseline.id)
+      .order('wbs_code_snapshot', { ascending: true })
+
+    const baselineItems = (baselineItemsData || []) as EvmBaselineItemInput[]
+    const taskMap = new Map(wbsTasks.map(task => [task.id, task]))
+
+    taskIndicators = baselineItems.map(item => {
+      const task = item.wbs_task_id ? taskMap.get(item.wbs_task_id) : null
+      const bac = Number(item.planned_bac) || 0
+      const pv = calculateBaselineItemPV(statusDateStr, item).pv
+      const ev = calculateBaselineItemEV(item, task).ev
+      const ac = item.wbs_task_id
+        ? calculateTaskAC(statusDateStr, task || { id: item.wbs_task_id, task_type: 'TASK' } as WbsTask, operations, disbursements)
+        : 0
+      const indicators = calculateIndicators(bac, pv, ev, ac)
+
+      return {
+        id: item.id,
+        code: item.wbs_code_snapshot,
+        description: item.wbs_name_snapshot,
+        cv: indicators.cv,
+        cpi: indicators.cpi
+      }
+    })
+
+    pBAC = baselineItems.reduce((total, item) => total + (Number(item.planned_bac) || 0), 0)
+    pPV = calculateBaselineProjectPV(statusDateStr, baselineItems).pv
+    pEV = calculateBaselineProjectEV(baselineItems, wbsTasks).ev
+    pAC = calculateBaselineProjectAC(statusDateStr, baselineItems, operations, disbursements).ac_total
+    pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
+  } else {
+    pBAC = calculateProjectBAC(wbsTasks, ptbaActivities)
+    pPV = calculateProjectPV(statusDateStr, wbsTasks, ptbaActivities).pv
+    pEV = calculateProjectEV(wbsTasks, ptbaActivities)
+    pAC = calculateProjectAC(statusDateStr, wbsTasks, operations, disbursements)
+    pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
+
+    taskIndicators = wbsTasks
+      .filter(task => task.task_type !== 'SUMMARY')
+      .map(task => {
+        const bac = calculateTaskBAC(task, ptbaActivities)
+        const pv = calculateTaskPV(statusDateStr, task, ptbaActivities).pv
+        const ev = calculateTaskEV(task, ptbaActivities)
+        const ac = calculateTaskAC(statusDateStr, task, operations, disbursements)
+        const indicators = calculateIndicators(bac, pv, ev, ac)
+        return {
+          id: task.id,
+          code: task.code || '',
+          description: task.description || '',
+          cv: indicators.cv,
+          cpi: indicators.cpi
+        }
+      })
+  }
   const eacGlobal = pInd.eac
 
   const hasEVMData = true // Always true now since it's computed dynamically
@@ -113,27 +185,14 @@ export default async function ProjectOverviewPage({ params }: { params: Promise<
     ac: Number(s.ac_total) || 0,
   })) || []
 
-  // Top Variances: Compute for leaf nodes, sort by CV, take top 5 worst
-  const leafTasks = wbsTasks.filter(t => t.task_type !== 'SUMMARY')
-  const taskIndicators = leafTasks.map(task => {
-    const bac = calculateTaskBAC(task, ptbaActivities)
-    const pvRes = calculateTaskPV(statusDateStr, task, ptbaActivities)
-    const ev = calculateTaskEV(task, ptbaActivities)
-    const ac = calculateTaskAC(statusDateStr, task, operations)
-    return {
-      ...task,
-      ...calculateIndicators(bac, pvRes.pv, ev, ac)
-    }
-  })
-
   const topVariances = taskIndicators
     .filter(i => i.cv < 0)
     .sort((a, b) => a.cv - b.cv)
     .slice(0, 5)
     .map(i => ({
       id: i.id,
-      code: i.code || '',
-      description: i.description || '',
+      code: i.code,
+      description: i.description,
       cv: i.cv,
       cpi: i.cpi || 0
     }))

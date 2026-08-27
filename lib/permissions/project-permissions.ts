@@ -71,13 +71,17 @@ export function hasProjectPermission(role: ProjectRole | null | undefined, actio
 }
 
 // Utilitaires de conversion pour les anciens rôles si nécessaire (retro-compatibilité ou au cas où)
-export function normalizeRole(oldRole: string): ProjectRole {
-  switch (oldRole.toLowerCase()) {
-    case 'owner': return 'OWNER';
-    case 'chef_projet': return 'PROJECT_MANAGER';
-    case 'comptable': return 'ACCOUNTANT';
-    case 'consultant': return 'CONSULTANT';
-    case 'bailleur_lecture': return 'FUNDER_READONLY';
-    default: return oldRole as ProjectRole;
-  }
+const PROJECT_ROLES: readonly ProjectRole[] = [
+  'OWNER',
+  'PROJECT_MANAGER',
+  'ACCOUNTANT',
+  'CONSULTANT',
+  'FUNDER_READONLY',
+]
+
+/** Returns a canonical project role, rejecting every value outside the approved enum. */
+export function normalizeRole(role: string | null | undefined): ProjectRole | null {
+  return PROJECT_ROLES.includes(role as ProjectRole)
+    ? role as ProjectRole
+    : null
 }

@@ -25,7 +25,7 @@ export default async function SettingsPage() {
     .from('project_members')
     .select('id')
     .eq('user_id', user.id)
-    .eq('role', 'owner')
+    .eq('role', 'OWNER')
     .limit(1)
 
   const isOwner = !!(ownerRole && ownerRole.length > 0)

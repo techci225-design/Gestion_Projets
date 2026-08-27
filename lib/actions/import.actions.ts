@@ -38,7 +38,7 @@ export async function executeImport(projectId: string, formData: FormData, mappi
   if (!file) return { error: 'Aucun fichier fourni' }
 
   try {
-    // Only owners or chef_projet can import (or anyone with write access, but let's enforce owner/chef_projet for import)
+    // Import is restricted to project owners and managers.
     await requireRole(projectId, ['OWNER', 'PROJECT_MANAGER'])
   } catch (err: any) {
     return { error: err.message }
@@ -308,4 +308,3 @@ export async function importTasksToExistingProject(projectId: string, tasksData:
     return { error: error.message || "Une erreur est survenue lors de l'import." };
   }
 }
-

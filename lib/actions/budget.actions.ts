@@ -26,7 +26,7 @@ export async function createBudgetLine(data: z.infer<typeof budgetLineSchema>) {
   }
 
   try {
-    await requireRole(parsed.data.project_id, ['owner', 'comptable'])
+    await requireRole(parsed.data.project_id, ['OWNER', 'ACCOUNTANT'])
   } catch (error: any) {
     return { error: error.message }
   }
@@ -59,7 +59,7 @@ export async function updateBudgetLine(data: z.infer<typeof updateBudgetLineSche
   }
 
   try {
-    await requireRole(parsed.data.project_id, ['owner', 'comptable'])
+    await requireRole(parsed.data.project_id, ['OWNER', 'ACCOUNTANT'])
   } catch (error: any) {
     return { error: error.message }
   }
@@ -92,7 +92,7 @@ export async function updateBudgetLine(data: z.infer<typeof updateBudgetLineSche
 
 export async function getBudgetLines(projectId: string) {
   try {
-    await requireRole(projectId, ['owner', 'comptable', 'chef_projet', 'consultant'])
+    await requireRole(projectId, ['OWNER', 'PROJECT_MANAGER', 'ACCOUNTANT', 'CONSULTANT'])
     const supabase = await createClient()
 
     const { data, error } = await supabase
@@ -111,7 +111,7 @@ export async function getBudgetLines(projectId: string) {
 
 export async function deleteBudgetLine(projectId: string, budgetLineId: string) {
   try {
-    await requireRole(projectId, ['owner', 'comptable'])
+    await requireRole(projectId, ['OWNER', 'ACCOUNTANT'])
   } catch (error: any) {
     return { error: error.message }
   }
