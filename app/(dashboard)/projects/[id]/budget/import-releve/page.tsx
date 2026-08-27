@@ -39,7 +39,7 @@ export default async function ImportRelevePage({ params }: { params: Promise<{ i
       .order('created_at', { ascending: false }),
     supabase
       .from('operation_disbursements')
-      .select('operation_id, amount')
+      .select('operation_id, amount, entry_type')
       .eq('project_id', id),
     supabase
       .from('v_bank_transactions')
@@ -54,7 +54,8 @@ export default async function ImportRelevePage({ params }: { params: Promise<{ i
 
   const disbsByOp: Record<string, number> = {}
   disbursementsData?.forEach(d => {
-    disbsByOp[d.operation_id] = (disbsByOp[d.operation_id] || 0) + (Number(d.amount) || 0)
+    const amount = Number(d.amount) || 0
+    disbsByOp[d.operation_id] = (disbsByOp[d.operation_id] || 0) + (d.entry_type === 'REVERSAL' ? -amount : amount)
   })
 
   const operations = (operationsData || []).map(op => {

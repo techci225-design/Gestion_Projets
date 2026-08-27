@@ -98,7 +98,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
         .in('project_id', projectIds),
       supabase
         .from('operation_disbursements')
-        .select('project_id, amount, disbursement_date')
+        .select('project_id, amount, disbursement_date, entry_type')
         .in('project_id', projectIds),
       supabase
         .from('evm_snapshots')
@@ -166,7 +166,10 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
 
     // Décaissé = SUM(operation_disbursements.amount)
     const pDisbs = disbursementsData.filter(d => d.project_id === p.id)
-    const totalDecaisse = pDisbs.reduce((sum, d) => sum + (Number(d.amount) || 0), 0)
+    const totalDecaisse = pDisbs.reduce((sum, d) => {
+      const amount = Number(d.amount) || 0
+      return d.entry_type === 'REVERSAL' ? sum - amount : sum + amount
+    }, 0)
 
     // Consommation = Décaissé / Budget alloué * 100
     const consoRate = budgetAllocated > 0 ? (totalDecaisse / budgetAllocated) * 100 : 0

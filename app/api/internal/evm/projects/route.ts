@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { 
   calculateProjectBAC, calculateProjectPV, calculateProjectEV, calculateProjectAC, calculateIndicators,
-  WbsTask, PtbaActivity, OperationJournal
+  WbsTask, PtbaActivity, OperationJournal, OperationDisbursement
 } from '@/lib/utils/evm'
 
 export async function POST(request: Request) {
@@ -42,10 +42,16 @@ export async function POST(request: Request) {
       return NextResponse.json({})
     }
 
-    const { data: wbsTasksData } = await supabaseAdmin
-      .from('wbs_tasks')
-      .select('id, project_id, parent_id, task_type, code, description, responsible, date_start, date_end, percent_complete')
-      .in('project_id', validProjectIds)
+    const [{ data: wbsTasksData }, { data: disbursementsData }] = await Promise.all([
+      supabaseAdmin
+        .from('wbs_tasks')
+        .select('id, project_id, parent_id, task_type, code, description, responsible, date_start, date_end, percent_complete')
+        .in('project_id', validProjectIds),
+      supabaseAdmin
+        .from('operation_disbursements')
+        .select('id, operation_id, project_id, disbursement_date, amount, entry_type')
+        .in('project_id', validProjectIds)
+    ])
 
     const wbsTaskIds = (wbsTasksData || []).map((t: any) => t.id)
 
@@ -70,6 +76,7 @@ export async function POST(request: Request) {
     const allWbsTasks = (wbsTasksData || []) as (WbsTask & { project_id: string })[]
     const allPtba = ptbaActivitiesData as PtbaActivity[]
     const allOps = journalData as OperationJournal[]
+    const allDisbursements = (disbursementsData || []) as OperationDisbursement[]
 
     const results: Record<string, any> = {}
 
@@ -78,12 +85,13 @@ export async function POST(request: Request) {
       const pWbsTaskIds = pWbsTasks.map(t => t.id)
       const pPtba = allPtba.filter(p => pWbsTaskIds.includes(p.wbs_task_id))
       const pOps = allOps.filter(o => pWbsTaskIds.includes(o.wbs_task_id))
+      const pDisbursements = allDisbursements.filter(d => d.project_id === project.id)
       
       const statusDateStr = project.evm_control_date || new Date().toISOString().split('T')[0]
       const pBAC = calculateProjectBAC(pWbsTasks, pPtba)
       const pPV = calculateProjectPV(statusDateStr, pWbsTasks, pPtba).pv
       const pEV = calculateProjectEV(pWbsTasks, pPtba)
-      const pAC = calculateProjectAC(statusDateStr, pWbsTasks, pOps)
+      const pAC = calculateProjectAC(statusDateStr, pWbsTasks, pOps, pDisbursements)
       const pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
 
       results[project.id] = {

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { 
   calculateProjectBAC, calculateProjectPV, calculateProjectEV, calculateProjectAC, calculateIndicators,
-  WbsTask, PtbaActivity, OperationJournal
+  WbsTask, PtbaActivity, OperationJournal, OperationDisbursement
 } from '@/lib/utils/evm'
 
 export async function GET(request: Request) {
@@ -59,6 +59,11 @@ export async function GET(request: Request) {
     .select('wbs_task_id, status, actual_cost, operation_date')
     .in('wbs_task_id', wbsTaskIds)
 
+  const { data: disbursementsData } = await supabase
+    .from('operation_disbursements')
+    .select('id, operation_id, project_id, disbursement_date, amount, entry_type')
+    .in('project_id', projectIds)
+
   // Risks for alerts
   const { data: risksData } = await supabase
     .from('risks')
@@ -70,6 +75,7 @@ export async function GET(request: Request) {
   const allWbsTasks = (wbsTasksData || []) as (WbsTask & { project_id: string })[]
   const ptbaActivities = (ptbaActivitiesData || []) as PtbaActivity[]
   const operations = (journalData || []) as OperationJournal[]
+  const disbursements = (disbursementsData || []) as OperationDisbursement[]
 
   // Compute EVM per project
   const projectSummaries = projectList.map(project => {
@@ -82,12 +88,13 @@ export async function GET(request: Request) {
     // Filter PTBA and operations
     const pPtba = ptbaActivities.filter(p => pWbsTaskIds.includes(p.wbs_task_id))
     const pOps = operations.filter(o => pWbsTaskIds.includes(o.wbs_task_id))
+    const pDisbursements = disbursements.filter(d => d.project_id === project.id)
 
     const pBAC = calculateProjectBAC(pWbsTasks, pPtba)
     const pPVRes = calculateProjectPV(statusDateStr, pWbsTasks, pPtba)
     const pPV = pPVRes.pv
     const pEV = calculateProjectEV(pWbsTasks, pPtba)
-    const pAC = calculateProjectAC(statusDateStr, pWbsTasks, pOps)
+    const pAC = calculateProjectAC(statusDateStr, pWbsTasks, pOps, pDisbursements)
     const pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
 
     return {

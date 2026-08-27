@@ -52,7 +52,7 @@ export default async function EvmPage({ params }: { params: Promise<{ id: string
       .eq('project_id', id),
     supabase
       .from('operation_disbursements')
-      .select('id, operation_id, project_id, disbursement_date, amount')
+      .select('id, operation_id, project_id, disbursement_date, amount, entry_type')
       .eq('project_id', id),
     supabase
       .from('evm_snapshots')

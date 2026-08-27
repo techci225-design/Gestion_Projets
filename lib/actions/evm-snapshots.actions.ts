@@ -108,7 +108,7 @@ export async function createEvmSnapshot(projectId: string, payload: { control_da
       .eq('project_id', projectId),
     supabase
       .from('operation_disbursements')
-      .select('id, operation_id, project_id, disbursement_date, amount')
+      .select('id, operation_id, project_id, disbursement_date, amount, entry_type')
       .eq('project_id', projectId),
     getApplicableBaseline(projectId, statusDateStr)
   ])

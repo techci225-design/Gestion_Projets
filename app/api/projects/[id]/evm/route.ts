@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { 
   calculateProjectBAC, calculateProjectPV, calculateProjectEV, calculateProjectAC, calculateIndicators,
   calculateTaskBAC, calculateTaskPV, calculateTaskEV, calculateTaskAC,
-  WbsTask, PtbaActivity, OperationJournal
+  WbsTask, PtbaActivity, OperationJournal, OperationDisbursement
 } from '@/lib/utils/evm'
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -64,9 +64,15 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     .select('wbs_task_id, status, actual_cost, operation_date')
     .in('wbs_task_id', (wbsTasksData || []).map((t: any) => t.id))
 
+  const { data: disbursementsData } = await supabase
+    .from('operation_disbursements')
+    .select('id, operation_id, project_id, disbursement_date, amount, entry_type')
+    .eq('project_id', projectId)
+
   const wbsTasks = (wbsTasksData || []) as WbsTask[]
   const ptbaActivities = (ptbaActivitiesData || []) as PtbaActivity[]
   const operations = (journalData || []) as OperationJournal[]
+  const disbursements = (disbursementsData || []) as OperationDisbursement[]
   
   const statusDateStr = project.evm_control_date || new Date().toISOString().split('T')[0]
 
@@ -75,7 +81,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const pPVRes = calculateProjectPV(statusDateStr, wbsTasks, ptbaActivities)
   const pPV = pPVRes.pv
   const pEV = calculateProjectEV(wbsTasks, ptbaActivities)
-  const pAC = calculateProjectAC(statusDateStr, wbsTasks, operations)
+  const pAC = calculateProjectAC(statusDateStr, wbsTasks, operations, disbursements)
   const pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
 
   const summary = {
@@ -95,7 +101,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const bac = calculateTaskBAC(task, ptbaActivities)
     const pvRes = calculateTaskPV(statusDateStr, task, ptbaActivities)
     const ev = calculateTaskEV(task, ptbaActivities)
-    const ac = calculateTaskAC(statusDateStr, task, operations)
+    const ac = calculateTaskAC(statusDateStr, task, operations, disbursements)
     return {
       ...task,
       ...calculateIndicators(bac, pvRes.pv, ev, ac),

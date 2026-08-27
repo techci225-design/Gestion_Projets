@@ -7,7 +7,7 @@ import { formatCurrency } from '@/lib/utils/format-currency'
 import { AlertBadge } from '@/components/ui/AlertBadge'
 import { 
   calculateProjectBAC, calculateProjectPV, calculateProjectEV, calculateProjectAC, calculateIndicators,
-  WbsTask, PtbaActivity, OperationJournal
+  WbsTask, PtbaActivity, OperationJournal, OperationDisbursement
 } from '@/lib/utils/evm'
 import { Briefcase, Calendar, ChevronRight } from 'lucide-react'
 import { AddProjectModal } from '../add-project-modal'
@@ -93,21 +93,28 @@ export default async function ProjectsListPage() {
       .select('wbs_task_id, status, actual_cost, operation_date')
       .in('wbs_task_id', wbsTaskIds)
 
+    const { data: disbursementsData } = await supabase
+      .from('operation_disbursements')
+      .select('id, operation_id, project_id, disbursement_date, amount, entry_type')
+      .in('project_id', projectIds)
+
     const allWbsTasks = (wbsTasksData || []) as (WbsTask & { project_id: string })[]
     const allPtba = (ptbaActivitiesData || []) as PtbaActivity[]
     const allOps = (journalData || []) as OperationJournal[]
+    const allDisbursements = (disbursementsData || []) as OperationDisbursement[]
 
     evmSummaries = (projects || []).map(project => {
       const pWbsTasks = allWbsTasks.filter(t => t.project_id === project.id)
       const pWbsTaskIds = pWbsTasks.map(t => t.id)
       const pPtba = allPtba.filter(p => pWbsTaskIds.includes(p.wbs_task_id))
       const pOps = allOps.filter(o => pWbsTaskIds.includes(o.wbs_task_id))
+      const pDisbursements = allDisbursements.filter(d => d.project_id === project.id)
       
       const statusDateStr = project.evm_control_date || new Date().toISOString().split('T')[0]
       const pBAC = calculateProjectBAC(pWbsTasks, pPtba)
       const pPV = calculateProjectPV(statusDateStr, pWbsTasks, pPtba).pv
       const pEV = calculateProjectEV(pWbsTasks, pPtba)
-      const pAC = calculateProjectAC(statusDateStr, pWbsTasks, pOps)
+      const pAC = calculateProjectAC(statusDateStr, pWbsTasks, pOps, pDisbursements)
       const pInd = calculateIndicators(pBAC, pPV, pEV, pAC)
 
       return {
