@@ -1,5 +1,7 @@
 # Plan d'Implémentation Complet
 ## SaaS de Gestion de Projets de Développement (Bailleurs de Fonds)
+
+> **Statut de ce document : historique de conception.** L’implémentation actuelle prévaut : elle utilise les rôles `OWNER`, `PROJECT_MANAGER`, `ACCOUNTANT`, `CONSULTANT` et `FUNDER_READONLY`, ainsi que `projects.currency` comme source de vérité multi-devise. Les migrations Supabase et les règles métier du dépôt font autorité lorsque ce document présente un exemple plus ancien.
 **Nom de travail du produit : « ProjetPilote »** *(à renommer librement)*
 
 | | |
@@ -648,13 +650,13 @@ projetpilote/
 
 | Phase | Contenu | Durée indicative |
 |---|---|---|
-| **Phase 0 — Fondations** | Setup repo, projet Supabase, schéma SQL + RLS de base, Auth, design system Tailwind/shadcn | 1–2 semaines |
-| **Phase 1 — MVP cœur métier** | Cadre Logique, PTBA, Budget + Journal des opérations (avec colonnes calculées), rôles owner/chef_projet/comptable/bailleur_lecture | 3–4 semaines |
-| **Phase 2 — Pilotage financier** | Vue consommation budgétaire, alertes seuils, export Excel/PDF basique | 2 semaines |
-| **Phase 3 — Moteur EVM** | `wbs_tasks`, vues EVM, courbe en S, jauges CPI/SPI, EAC | 2–3 semaines |
-| **Phase 4 — Marchés & Risques** | PPM avec alertes d'échéance, matrice des risques + heatmap | 2 semaines |
-| **Phase 5 — Audit, Import Excel & PWA** | `audit_log` immuable, assistant d'import Excel, manifest PWA + cache lecture hors-ligne | 2–3 semaines |
-| **Phase 6 (V2, optionnelle)** | Bascule multi-organisation, app native, notifications push, intégrations mobile money/comptabilité | À planifier selon traction |
+| **Phase 0 — Fondations** | Supabase, RLS, authentification, invitations, RBAC et interface de base | Terminé |
+| **Phase 1 — Cœur métier** | Cadre logique, PTBA, Budget, Journal, WBS/Gantt et devise par projet | Terminé |
+| **Phase 2 — Pilotage financier** | Consommation, traçabilité bancaire, export Excel et rapport PDF | Terminé |
+| **Phase 3 — Moteur EVM** | Baselines, snapshots, CPI/SPI/EAC, courbe en S et protections d’intégrité | Terminé |
+| **Phase 4 — Marchés & Risques** | PPM, échéances, risques et lien PPM → WBS | Terminé |
+| **Phase 5 — Audit, Import Excel & PWA** | Audit, assistant d’import, manifeste, service worker et lecture hors-ligne | Terminé |
+| **Prochaine étape** | Recette E2E métier complète et surveillance de production | À poursuivre |
 
 ---
 

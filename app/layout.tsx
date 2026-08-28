@@ -9,13 +9,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'ProjetPilote — Pilotage de projets bailleurs en Afrique',
-  description: 'Application web de gestion de projets de développement financés par des bailleurs de fonds. Moteur EVM, suivi budgétaire FCFA, rapport institutionnel. Conforme Banque Mondiale et BID.',
-  keywords: 'gestion projet bailleur, EVM, FCFA, Afrique francophone, BAD, USAID, BM, consultant développement',
+  title: 'Smart Project Manager — Pilotage de projets bailleurs',
+  description: 'Application web sécurisée de pilotage de projets de développement : budget multi-devise, EVM, passation des marchés et rapports institutionnels.',
+  keywords: 'gestion de projet bailleur, EVM, budget multi-devise, Afrique francophone, BAD, USAID, Banque mondiale, développement',
   manifest: "/manifest.json",
   openGraph: {
-    title: 'ProjetPilote — Pilotage de projets bailleurs',
-    description: 'Transformez votre matrice Excel en application web sécurisée.',
+    title: 'Smart Project Manager — Pilotage de projets bailleurs',
+    description: 'Transformez vos matrices de projet en application web sécurisée.',
     url: 'https://gestion-projets-e3uj.vercel.app',
     siteName: 'ProjetPilote',
   },

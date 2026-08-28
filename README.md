@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Smart Project Manager
 
-## Getting Started
+Application web de pilotage de projets de développement financés par des bailleurs. Elle centralise la planification, le budget, le suivi EVM, les marchés, les risques, les indicateurs et les rapports.
 
-First, run the development server:
+## Fonctionnalités principales
 
-```bash
+- Cadre logique et suivi périodique des indicateurs.
+- WBS unique pour les tâches et le planning/Gantt, avec PTBA lié.
+- Budget, sources de financement, journal des opérations et traçabilité bancaire.
+- EVM : baselines approuvées, snapshots, CPI, SPI et EAC.
+- Plan de passation des marchés (PPM), relié aux tâches WBS, et matrice des risques.
+- Import Excel, export Excel et rapport PDF.
+- Authentification Supabase, invitations, audit et contrôle des accès par projet.
+- PWA : installation, cache de lecture et indication du mode hors-ligne.
+
+## Règles métier essentielles
+
+- La devise canonique est `projects.currency` : `XOF`, `XAF`, `EUR`, `USD`, `GBP`, `CAD` ou `CHF`. Les formateurs monétaires reçoivent toujours le code ISO, jamais un symbole.
+- `wbs_tasks` est l’unique source de vérité des tâches, du WBS et du Gantt.
+- Les rôles projet autorisés sont `OWNER`, `PROJECT_MANAGER`, `ACCOUNTANT`, `CONSULTANT` et `FUNDER_READONLY`.
+- Les données financières et les baselines EVM ne doivent pas être modifiées par des flux parallèles ou destructifs.
+
+## Développement
+
+Préparer les variables Supabase dans `.env.local`, puis lancer :
+
+```powershell
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Contrôles obligatoires après une modification :
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```powershell
+node_modules\.bin\tsc.cmd --noEmit
+npm run lint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Les tests E2E sont documentés dans [e2e/README.md](e2e/README.md). Ils nécessitent Chromium ; les scénarios avec compte de test exigent des identifiants E2E dédiés, jamais un compte de production.
 
-## Learn More
+## Mise en production
 
-To learn more about Next.js, take a look at the following resources:
+Le déploiement est réalisé par Vercel après le `git push` de la branche de production. Avant chaque livraison, vérifier au minimum : connexion, permissions selon rôle, création/consultation du journal, export Excel/PDF, EVM et navigation mobile.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Documentation de référence
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Le document historique [docs/plan-implementation-saas-projets-bailleurs.md](docs/plan-implementation-saas-projets-bailleurs.md) décrit la vision initiale. Les règles actuelles de l’application et les migrations Supabase priment lorsqu’elles diffèrent de ce document.
