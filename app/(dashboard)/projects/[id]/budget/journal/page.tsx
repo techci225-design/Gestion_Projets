@@ -2,7 +2,6 @@ import React from 'react'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { JournalClient, OperationJournal } from './journal-client'
-import { getDisplayCurrency } from '@/lib/utils/currency'
 
 export default async function JournalPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -114,7 +113,11 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
     .select('currency')
     .eq('id', id)
     .single()
-  const currency = getDisplayCurrency(project?.currency)
+  if (!project?.currency) {
+    throw new Error('Devise du projet introuvable')
+  }
+
+  const currency = project.currency
 
   return (
     <div className="p-6 pb-24 md:pb-6">
