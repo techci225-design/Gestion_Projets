@@ -2,12 +2,14 @@
 
 import React, { useState } from 'react'
 import { LogframeItem, LogframeLevel, addLogframeItem, updateLogframeItem, deleteLogframeItem } from '@/lib/actions/logframe.actions'
+import { LogframeIndicator, addLogframeIndicator, deleteLogframeIndicator, updateLogframeIndicator } from '@/lib/actions/logframe-indicators.actions'
 import { Plus, Edit2, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface LogframeClientProps {
   projectId: string
   initialData: LogframeItem[]
+  initialIndicators: LogframeIndicator[]
   canManage: boolean
 }
 
@@ -68,9 +70,13 @@ const nextLevel: Record<LogframeLevel, LogframeLevel | null> = {
   activite: null
 }
 
-export function LogframeClient({ projectId, initialData, canManage }: LogframeClientProps) {
+export function LogframeClient({ projectId, initialData, initialIndicators, canManage }: LogframeClientProps) {
   const [activeTab, setActiveTab] = useState<'planification' | 'suivi'>('planification')
   const [data, setData] = useState<LogframeItem[]>(initialData)
+  const [indicators, setIndicators] = useState<LogframeIndicator[]>(initialIndicators)
+  const [indicatorItem, setIndicatorItem] = useState<LogframeItem | null>(null)
+  const [editingIndicator, setEditingIndicator] = useState<LogframeIndicator | null>(null)
+  const [indicatorForm, setIndicatorForm] = useState({ name: '', type: 'qualitative' as 'quantitative' | 'qualitative', baseline_text: '', target_text: '', verification_source: '' })
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<LogframeItem | null>(null)
   
@@ -101,6 +107,63 @@ export function LogframeClient({ projectId, initialData, canManage }: LogframeCl
       newExpanded.add(id)
     }
     setExpandedIds(newExpanded)
+  }
+
+  const indicatorsFor = (logframeItemId: string) =>
+    indicators.filter(indicator => indicator.logframe_item_id === logframeItemId)
+
+  const openIndicatorEditor = (item: LogframeItem, indicator?: LogframeIndicator) => {
+    setIndicatorItem(item)
+    setEditingIndicator(indicator ?? null)
+    setIndicatorForm({
+      name: indicator?.name ?? '',
+      type: indicator?.type ?? 'qualitative',
+      baseline_text: indicator?.baseline_text ?? (indicator?.baseline_numeric?.toString() ?? ''),
+      target_text: indicator?.target_text ?? (indicator?.target_numeric?.toString() ?? ''),
+      verification_source: indicator?.verification_source ?? '',
+    })
+  }
+
+  const saveIndicator = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!indicatorItem) return
+    const isQuantitative = indicatorForm.type === 'quantitative'
+    const payload = {
+      name: indicatorForm.name,
+      type: indicatorForm.type,
+      baseline_numeric: isQuantitative ? Number(indicatorForm.baseline_text) : null,
+      baseline_text: isQuantitative ? null : indicatorForm.baseline_text || null,
+      target_numeric: isQuantitative ? Number(indicatorForm.target_text) : null,
+      target_text: isQuantitative ? null : indicatorForm.target_text || null,
+      verification_source: indicatorForm.verification_source || null,
+    }
+    try {
+      if (editingIndicator) {
+        const updated = await updateLogframeIndicator(projectId, editingIndicator.id, payload)
+        setIndicators(current => current.map(indicator => indicator.id === updated.id ? updated : indicator))
+      } else {
+        const created = await addLogframeIndicator(projectId, { ...payload, logframe_item_id: indicatorItem.id })
+        setIndicators(current => [...current, created])
+      }
+      setEditingIndicator(null)
+      setIndicatorForm({ name: '', type: 'qualitative', baseline_text: '', target_text: '', verification_source: '' })
+    } catch {
+      alert("Impossible d’enregistrer l’indicateur")
+    }
+  }
+
+  const displayIndicatorValues = (
+    logframeItemId: string,
+    field: 'name' | 'baseline' | 'target' | 'verification_source',
+  ) => {
+    const values = indicatorsFor(logframeItemId).map(indicator => {
+      if (field === 'name') return indicator.name
+      if (field === 'baseline') return indicator.baseline_numeric ?? indicator.baseline_text
+      if (field === 'target') return indicator.target_numeric ?? indicator.target_text
+      return indicator.verification_source
+    }).filter((value): value is string | number => value !== null && value !== undefined && value !== '')
+
+    return values.length > 0 ? values.join(' · ') : '—'
   }
 
   const openAddModal = (parentId: string | null = null, level: LogframeLevel = 'objectif_global') => {
@@ -224,10 +287,10 @@ export function LogframeClient({ projectId, initialData, canManage }: LogframeCl
                 </div>
               </div>
             </td>
-            <td className="p-4 align-top text-sm text-text-secondary">{item.indicator || '—'}</td>
-            <td className="p-4 align-top text-sm text-text-secondary">{item.baseline || '—'}</td>
-            <td className="p-4 align-top text-sm text-text-secondary">{item.target || '—'}</td>
-            <td className="p-4 align-top text-sm text-text-secondary">{item.verification_source || '—'}</td>
+            <td className="p-4 align-top text-sm text-text-secondary">{displayIndicatorValues(item.id, 'name')}</td>
+            <td className="p-4 align-top text-sm text-text-secondary">{displayIndicatorValues(item.id, 'baseline')}</td>
+            <td className="p-4 align-top text-sm text-text-secondary">{displayIndicatorValues(item.id, 'target')}</td>
+            <td className="p-4 align-top text-sm text-text-secondary">{displayIndicatorValues(item.id, 'verification_source')}</td>
             <td className="p-4 align-top text-sm text-text-secondary">{item.risks_assumptions || '—'}</td>
             <td className="p-4 align-top text-right">
               <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -237,6 +300,9 @@ export function LogframeClient({ projectId, initialData, canManage }: LogframeCl
                 {canManage && (
                   <>
                     <div className="flex items-center gap-1">
+                      <button onClick={() => openIndicatorEditor(item)} className="p-1.5 text-text-secondary hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="Gérer les indicateurs">
+                        <Plus className="w-4 h-4" />
+                      </button>
                       <button onClick={() => openEditModal(item)} className="p-1.5 text-text-secondary hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors" title="Modifier">
                         <Edit2 className="w-4 h-4" />
                       </button>
@@ -440,6 +506,34 @@ export function LogframeClient({ projectId, initialData, canManage }: LogframeCl
                 })()}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {indicatorItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-surface w-full max-w-xl rounded-xl shadow-xl overflow-hidden">
+            <div className="p-6 border-b border-border flex items-center justify-between">
+              <div><h3 className="text-lg font-semibold text-text-primary">Indicateurs</h3><p className="text-sm text-text-secondary mt-1">{indicatorItem.intervention_label}</p></div>
+              <button onClick={() => setIndicatorItem(null)} className="text-text-secondary hover:text-text-primary p-2">&times;</button>
+            </div>
+            <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+              {indicatorsFor(indicatorItem.id).map(indicator => (
+                <div key={indicator.id} className="border border-border rounded-lg p-3 flex items-start justify-between gap-3">
+                  <div><p className="font-medium text-text-primary">{indicator.name}</p><p className="text-xs text-text-secondary mt-1">Base : {indicator.baseline_numeric ?? indicator.baseline_text ?? '—'} · Cible : {indicator.target_numeric ?? indicator.target_text ?? '—'}</p></div>
+                  {canManage && <div className="flex gap-1"><button onClick={() => openIndicatorEditor(indicatorItem, indicator)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded" title="Modifier"><Edit2 className="w-4 h-4" /></button><button onClick={async () => { if (!confirm('Supprimer cet indicateur ?')) return; await deleteLogframeIndicator(projectId, indicator.id); setIndicators(current => current.filter(value => value.id !== indicator.id)); setEditingIndicator(null) }} className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Supprimer"><Trash2 className="w-4 h-4" /></button></div>}
+                </div>
+              ))}
+              {canManage && <form onSubmit={saveIndicator} className="border-t border-border pt-5 space-y-3">
+                <h4 className="font-medium text-text-primary">{editingIndicator ? 'Modifier l’indicateur' : 'Nouvel indicateur'}</h4>
+                <input required value={indicatorForm.name} onChange={event => setIndicatorForm({ ...indicatorForm, name: event.target.value })} placeholder="Indicateur (IOV)" className="w-full bg-background border border-border rounded-lg px-3 py-2" />
+                <select value={indicatorForm.type} onChange={event => setIndicatorForm({ ...indicatorForm, type: event.target.value as 'quantitative' | 'qualitative' })} className="w-full bg-background border border-border rounded-lg px-3 py-2"><option value="qualitative">Qualitatif</option><option value="quantitative">Quantitatif</option></select>
+                <input required value={indicatorForm.baseline_text} onChange={event => setIndicatorForm({ ...indicatorForm, baseline_text: event.target.value })} placeholder="Ligne de base" className="w-full bg-background border border-border rounded-lg px-3 py-2" />
+                <input required value={indicatorForm.target_text} onChange={event => setIndicatorForm({ ...indicatorForm, target_text: event.target.value })} placeholder="Cible" className="w-full bg-background border border-border rounded-lg px-3 py-2" />
+                <input value={indicatorForm.verification_source} onChange={event => setIndicatorForm({ ...indicatorForm, verification_source: event.target.value })} placeholder="Source de vérification" className="w-full bg-background border border-border rounded-lg px-3 py-2" />
+                <div className="flex justify-end gap-2"><button type="button" onClick={() => { setEditingIndicator(null); setIndicatorForm({ name: '', type: 'qualitative', baseline_text: '', target_text: '', verification_source: '' }) }} className="px-3 py-2 text-sm text-text-secondary">Annuler</button><button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg">Enregistrer</button></div>
+              </form>}
+            </div>
           </div>
         </div>
       )}
