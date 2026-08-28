@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { LogframeClient } from './logframe-client'
 import { getLogframe } from '@/lib/actions/logframe.actions'
-import { getLogframeIndicators } from '@/lib/actions/logframe-indicators.actions'
+import { getLogframeIndicators, getLogframeIndicatorTracking } from '@/lib/actions/logframe-indicators.actions'
 import { getUserRole } from '@/lib/actions/auth.actions'
 import { hasProjectPermission } from '@/lib/permissions/project-permissions'
 
@@ -37,9 +37,10 @@ export default async function LogframePage({ params }: { params: Promise<{ id: s
   const canManage = hasProjectPermission(role, 'manage_logframe')
 
   // 3. Fetch Logframe Items (already secured by getLogframe with requireProjectPermission('view_project'))
-  const [logframeItems, logframeIndicators] = await Promise.all([
+  const [logframeItems, logframeIndicators, logframeTracking] = await Promise.all([
     getLogframe(id),
     getLogframeIndicators(id),
+    getLogframeIndicatorTracking(id),
   ])
 
   return (
@@ -54,6 +55,7 @@ export default async function LogframePage({ params }: { params: Promise<{ id: s
           projectId={id}
           initialData={logframeItems}
           initialIndicators={logframeIndicators}
+          initialTracking={logframeTracking}
           canManage={canManage}
         />
       </div>

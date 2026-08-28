@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { LogframeItem, LogframeLevel, addLogframeItem, updateLogframeItem, deleteLogframeItem } from '@/lib/actions/logframe.actions'
-import { LogframeIndicator, addLogframeIndicator, deleteLogframeIndicator, updateLogframeIndicator } from '@/lib/actions/logframe-indicators.actions'
+import { LogframeIndicator, LogframeIndicatorTracking, addLogframeIndicator, addLogframeIndicatorTracking, deleteLogframeIndicator, deleteLogframeIndicatorTracking, updateLogframeIndicator } from '@/lib/actions/logframe-indicators.actions'
 import { Plus, Edit2, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -10,6 +10,7 @@ interface LogframeClientProps {
   projectId: string
   initialData: LogframeItem[]
   initialIndicators: LogframeIndicator[]
+  initialTracking: LogframeIndicatorTracking[]
   canManage: boolean
 }
 
@@ -70,10 +71,13 @@ const nextLevel: Record<LogframeLevel, LogframeLevel | null> = {
   activite: null
 }
 
-export function LogframeClient({ projectId, initialData, initialIndicators, canManage }: LogframeClientProps) {
+export function LogframeClient({ projectId, initialData, initialIndicators, initialTracking, canManage }: LogframeClientProps) {
   const [activeTab, setActiveTab] = useState<'planification' | 'suivi'>('planification')
   const [data, setData] = useState<LogframeItem[]>(initialData)
   const [indicators, setIndicators] = useState<LogframeIndicator[]>(initialIndicators)
+  const [tracking, setTracking] = useState<LogframeIndicatorTracking[]>(initialTracking)
+  const [trackingIndicator, setTrackingIndicator] = useState<LogframeIndicator | null>(null)
+  const [trackingForm, setTrackingForm] = useState({ measured_at: new Date().toISOString().slice(0, 10), value: '', comment: '', source_url: '' })
   const [indicatorItem, setIndicatorItem] = useState<LogframeItem | null>(null)
   const [editingIndicator, setEditingIndicator] = useState<LogframeIndicator | null>(null)
   const [indicatorForm, setIndicatorForm] = useState({ name: '', type: 'qualitative' as 'quantitative' | 'qualitative', baseline_text: '', target_text: '', verification_source: '' })
@@ -122,6 +126,27 @@ export function LogframeClient({ projectId, initialData, initialIndicators, canM
       target_text: indicator?.target_text ?? (indicator?.target_numeric?.toString() ?? ''),
       verification_source: indicator?.verification_source ?? '',
     })
+  }
+
+  const saveTracking = async (event: React.FormEvent) => {
+    event.preventDefault()
+    if (!trackingIndicator) return
+    try {
+      const isQuantitative = trackingIndicator.type === 'quantitative'
+      const created = await addLogframeIndicatorTracking(projectId, {
+        indicator_id: trackingIndicator.id,
+        measured_at: trackingForm.measured_at,
+        value_numeric: isQuantitative ? Number(trackingForm.value) : null,
+        value_text: isQuantitative ? null : trackingForm.value,
+        comment: trackingForm.comment || null,
+        source_url: trackingForm.source_url || null,
+      })
+      setTracking(current => [created, ...current])
+      setTrackingIndicator(null)
+      setTrackingForm({ measured_at: new Date().toISOString().slice(0, 10), value: '', comment: '', source_url: '' })
+    } catch {
+      alert('Impossible d’enregistrer le relevé')
+    }
   }
 
   const saveIndicator = async (event: React.FormEvent) => {
@@ -521,9 +546,11 @@ export function LogframeClient({ projectId, initialData, initialIndicators, canM
               {indicatorsFor(indicatorItem.id).map(indicator => (
                 <div key={indicator.id} className="border border-border rounded-lg p-3 flex items-start justify-between gap-3">
                   <div><p className="font-medium text-text-primary">{indicator.name}</p><p className="text-xs text-text-secondary mt-1">Base : {indicator.baseline_numeric ?? indicator.baseline_text ?? '—'} · Cible : {indicator.target_numeric ?? indicator.target_text ?? '—'}</p></div>
-                  {canManage && <div className="flex gap-1"><button onClick={() => openIndicatorEditor(indicatorItem, indicator)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded" title="Modifier"><Edit2 className="w-4 h-4" /></button><button onClick={async () => { if (!confirm('Supprimer cet indicateur ?')) return; await deleteLogframeIndicator(projectId, indicator.id); setIndicators(current => current.filter(value => value.id !== indicator.id)); setEditingIndicator(null) }} className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Supprimer"><Trash2 className="w-4 h-4" /></button></div>}
+                  {canManage && <div className="flex gap-1"><button onClick={() => { setTrackingIndicator(indicator); setTrackingForm({ measured_at: new Date().toISOString().slice(0, 10), value: '', comment: '', source_url: '' }) }} className="px-2 text-xs text-blue-600 hover:bg-blue-50 rounded">Relevé</button><button onClick={() => openIndicatorEditor(indicatorItem, indicator)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded" title="Modifier"><Edit2 className="w-4 h-4" /></button><button onClick={async () => { if (!confirm('Supprimer cet indicateur ?')) return; await deleteLogframeIndicator(projectId, indicator.id); setIndicators(current => current.filter(value => value.id !== indicator.id)); setEditingIndicator(null) }} className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Supprimer"><Trash2 className="w-4 h-4" /></button></div>}
                 </div>
               ))}
+              {trackingIndicator && <form onSubmit={saveTracking} className="border border-blue-200 bg-blue-50 rounded-lg p-4 space-y-3"><div className="flex justify-between gap-3"><h4 className="font-medium text-blue-900">Nouveau relevé : {trackingIndicator.name}</h4><button type="button" onClick={() => setTrackingIndicator(null)}>&times;</button></div><div className="grid grid-cols-2 gap-3"><input required type="date" value={trackingForm.measured_at} onChange={event => setTrackingForm({ ...trackingForm, measured_at: event.target.value })} className="bg-white border border-border rounded-lg px-3 py-2" /><input required type={trackingIndicator.type === 'quantitative' ? 'number' : 'text'} step="any" value={trackingForm.value} onChange={event => setTrackingForm({ ...trackingForm, value: event.target.value })} placeholder="Valeur mesurée" className="bg-white border border-border rounded-lg px-3 py-2" /></div><input value={trackingForm.source_url} onChange={event => setTrackingForm({ ...trackingForm, source_url: event.target.value })} placeholder="Lien source (optionnel)" className="w-full bg-white border border-border rounded-lg px-3 py-2" /><textarea value={trackingForm.comment} onChange={event => setTrackingForm({ ...trackingForm, comment: event.target.value })} placeholder="Commentaire (optionnel)" className="w-full bg-white border border-border rounded-lg px-3 py-2" /><button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg">Enregistrer le relevé</button></form>}
+              {indicatorsFor(indicatorItem.id).flatMap(indicator => tracking.filter(value => value.indicator_id === indicator.id).map(value => <div key={value.id} className="text-xs text-text-secondary flex justify-between border-t border-border pt-2"><span>{indicator.name} — {value.measured_at} : {value.value_numeric ?? value.value_text}</span>{canManage && <button onClick={async () => { await deleteLogframeIndicatorTracking(projectId, value.id); setTracking(current => current.filter(item => item.id !== value.id)) }} className="text-red-600">Supprimer</button>}</div>))}
               {canManage && <form onSubmit={saveIndicator} className="border-t border-border pt-5 space-y-3">
                 <h4 className="font-medium text-text-primary">{editingIndicator ? 'Modifier l’indicateur' : 'Nouvel indicateur'}</h4>
                 <input required value={indicatorForm.name} onChange={event => setIndicatorForm({ ...indicatorForm, name: event.target.value })} placeholder="Indicateur (IOV)" className="w-full bg-background border border-border rounded-lg px-3 py-2" />
