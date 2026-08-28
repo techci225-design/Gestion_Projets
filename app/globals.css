@@ -1,26 +1,54 @@
 @import "tailwindcss";
 
 @theme inline {
+  /* Identité visuelle : pilotage institutionnel, lisible et sobre. */
   --color-primary: #022448;
   --color-primary-container: #1E3A5F;
+  --color-primary-dark: #011A35;
+  --color-primary-hover: #06376B;
+  --color-primary-fixed: #D8E8FF;
   --color-success: #006E2D;
   --color-warning: #E39100;
   --color-danger: #BA1A1A;
+  --color-secondary: #445F8A;
+  --color-secondary-container: #D9E5F8;
 
-  --color-background: #F8F9FF;
+  --color-background: #F6F8FC;
+  --color-background-main: #F6F8FC;
   --color-surface: #FFFFFF;
-  --color-border: #E5EEFF;
+  --color-surface-bright: #FFFFFF;
+  --color-surface-dim: #F1F5F9;
+  --color-surface-dimmer: #E8EEF6;
+  --color-surface-hover: #EAF1FA;
+  --color-surface-tint: #E1ECFB;
+  --color-surface-variant: #E8EEF6;
+  --color-surface-container: #EDF2F7;
+  --color-surface-container-low: #F7F9FC;
+  --color-surface-container-lowest: #FFFFFF;
+  --color-border: #DCE5F0;
+  --color-input: #CBD7E6;
+  --color-outline: #68758A;
+  --color-outline-variant: #C5D0DE;
 
   --color-text-primary: #0B1C30;
   --color-text-secondary: #43474E;
+  --color-text-tertiary: #6B778A;
+  --color-on-surface: #0B1C30;
+  --color-on-surface-variant: #5B6678;
+  --color-on-primary: #FFFFFF;
+  --color-on-secondary: #FFFFFF;
+  --color-on-error: #FFFFFF;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-inter: var(--font-inter);
 
-  --radius-DEFAULT: 8px; /* override default rounded */
-  --radius-lg: 8px; /* ensures rounded-lg maps to 8px */
+  --radius-DEFAULT: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
 
-  --shadow-sm: 0px 1px 3px rgba(0,0,0,0.05), 0px 4px 6px rgba(0,0,0,0.02);
+  --shadow-sm: 0 1px 2px rgba(15, 38, 71, 0.04), 0 3px 8px rgba(15, 38, 71, 0.03);
+  --shadow-md: 0 8px 24px rgba(15, 38, 71, 0.08);
+  --shadow-lg: 0 16px 40px rgba(15, 38, 71, 0.12);
 }
 
 :root {
@@ -32,4 +60,38 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: #D8E8FF;
+  color: #011A35;
+}
+
+/* Un repère clavier visible et cohérent, sans modifier les interactions métier. */
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid color-mix(in srgb, #06376B 35%, transparent);
+  outline-offset: 2px;
+}
+
+/* Scrollbars discrètes sur les tableaux, panneaux et formulaires longs. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #B8C5D6 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #B8C5D6;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #8FA0B5;
 }
