@@ -256,22 +256,24 @@ export const RapportDocument = ({ data }: { data: any }) => {
           <Text style={styles.sectionHeader}>4. Plan de Passation des Marchés</Text>
           <View style={styles.table}>
             <View style={[styles.tableRow, styles.tableColHeader]}>
-              <View style={[styles.tableCol, { width: '30%' }]}><Text style={styles.tableCellHeader}>Description</Text></View>
+              <View style={[styles.tableCol, { width: '23%' }]}><Text style={styles.tableCellHeader}>Description</Text></View>
+              <View style={[styles.tableCol, { width: '10%' }]}><Text style={styles.tableCellHeader}>WBS</Text></View>
               <View style={[styles.tableCol, { width: '10%' }]}><Text style={styles.tableCellHeader}>Type</Text></View>
-              <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCellHeader}>Méthode</Text></View>
-              <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCellHeader}>Date Avis</Text></View>
-              <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCellHeader}>Date Signature</Text></View>
+              <View style={[styles.tableCol, { width: '14%' }]}><Text style={styles.tableCellHeader}>Méthode</Text></View>
+              <View style={[styles.tableCol, { width: '14%' }]}><Text style={styles.tableCellHeader}>Date Avis</Text></View>
+              <View style={[styles.tableCol, { width: '14%' }]}><Text style={styles.tableCellHeader}>Date Signature</Text></View>
               <View style={[styles.tableCol, { width: '15%', borderRightWidth: 0 }]}><Text style={styles.tableCellHeader}>Montant</Text></View>
             </View>
             {procurementPlan.map((proc: any, i: number) => {
               const isLate = proc.planned_notice_date && new Date(proc.planned_notice_date) < new Date() && proc.status !== 'Attribué';
               return (
                 <View key={proc.id} style={[styles.tableRow, i % 2 !== 0 ? styles.tableRowAlt : {}]}>
-                  <View style={[styles.tableCol, { width: '30%' }]}><Text style={[styles.tableCell, isLate ? { color: '#DC2626' } : {}]}>{proc.description}</Text></View>
+                  <View style={[styles.tableCol, { width: '23%' }]}><Text style={[styles.tableCell, isLate ? { color: '#DC2626' } : {}]}>{proc.description}</Text></View>
+                  <View style={[styles.tableCol, { width: '10%' }]}><Text style={styles.tableCell}>{proc.wbs_code ?? '—'}</Text></View>
                   <View style={[styles.tableCol, { width: '10%' }]}><Text style={styles.tableCell}>{proc.market_type}</Text></View>
-                  <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCell}>{proc.method}</Text></View>
-                  <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCell}>{proc.planned_notice_date}</Text></View>
-                  <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCell}>{proc.contract_signature_date}</Text></View>
+                  <View style={[styles.tableCol, { width: '14%' }]}><Text style={styles.tableCell}>{proc.method}</Text></View>
+                  <View style={[styles.tableCol, { width: '14%' }]}><Text style={styles.tableCell}>{proc.planned_notice_date}</Text></View>
+                  <View style={[styles.tableCol, { width: '14%' }]}><Text style={styles.tableCell}>{proc.contract_signature_date}</Text></View>
                   <View style={[styles.tableCol, { width: '15%', borderRightWidth: 0 }]}><Text style={styles.tableCell}>{formatCurrency(proc.estimated_amount)}</Text></View>
                 </View>
               )

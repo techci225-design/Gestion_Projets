@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { ProcurementClient } from './procurement-client'
 import { getProcurementPlan } from '@/lib/actions/procurement.actions'
+import { getWbsTasks } from '@/lib/actions/wbs.actions'
 
 export const metadata = {
   title: 'PPM | Gestion de Projets',
@@ -39,7 +40,11 @@ export default async function ProcurementPage({ params }: { params: Promise<{ id
   const canManageProcurement = membership?.role === 'OWNER' || membership?.role === 'PROJECT_MANAGER'
 
   // 2. Fetch Procurement Plan
-  const procurementPlan = await getProcurementPlan(id)
+  const [procurementPlan, wbsTasksResult] = await Promise.all([
+    getProcurementPlan(id),
+    getWbsTasks(id),
+  ])
+  const wbsTasks = (wbsTasksResult.data ?? []).filter(task => task.task_type !== 'SUMMARY')
 
   return (
     <div className="flex-1 overflow-auto bg-background">
@@ -52,6 +57,7 @@ export default async function ProcurementPage({ params }: { params: Promise<{ id
         <ProcurementClient 
           projectId={id} 
           initialData={procurementPlan} 
+          wbsTasks={wbsTasks}
           currency={project.currency}
           canManage={canManageProcurement}
         />

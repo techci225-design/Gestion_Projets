@@ -71,13 +71,22 @@ const nextLevel: Record<LogframeLevel, LogframeLevel | null> = {
   activite: null
 }
 
+const createDefaultTrackingForm = () => ({
+  measured_at: new Date().toISOString().slice(0, 10),
+  period_number: '1',
+  period_year: new Date().getFullYear().toString(),
+  value: '',
+  comment: '',
+  source_url: '',
+})
+
 export function LogframeClient({ projectId, initialData, initialIndicators, initialTracking, canManage }: LogframeClientProps) {
   const [activeTab, setActiveTab] = useState<'planification' | 'suivi'>('planification')
   const [data, setData] = useState<LogframeItem[]>(initialData)
   const [indicators, setIndicators] = useState<LogframeIndicator[]>(initialIndicators)
   const [tracking, setTracking] = useState<LogframeIndicatorTracking[]>(initialTracking)
   const [trackingIndicator, setTrackingIndicator] = useState<LogframeIndicator | null>(null)
-  const [trackingForm, setTrackingForm] = useState({ measured_at: new Date().toISOString().slice(0, 10), value: '', comment: '', source_url: '' })
+  const [trackingForm, setTrackingForm] = useState(createDefaultTrackingForm)
   const [indicatorItem, setIndicatorItem] = useState<LogframeItem | null>(null)
   const [editingIndicator, setEditingIndicator] = useState<LogframeIndicator | null>(null)
   const [indicatorForm, setIndicatorForm] = useState({ name: '', type: 'qualitative' as 'quantitative' | 'qualitative', baseline_text: '', target_text: '', verification_source: '' })
@@ -136,6 +145,9 @@ export function LogframeClient({ projectId, initialData, initialIndicators, init
       const created = await addLogframeIndicatorTracking(projectId, {
         indicator_id: trackingIndicator.id,
         measured_at: trackingForm.measured_at,
+        period_type: 'semester',
+        period_number: Number(trackingForm.period_number),
+        period_year: Number(trackingForm.period_year),
         value_numeric: isQuantitative ? Number(trackingForm.value) : null,
         value_text: isQuantitative ? null : trackingForm.value,
         comment: trackingForm.comment || null,
@@ -143,7 +155,7 @@ export function LogframeClient({ projectId, initialData, initialIndicators, init
       })
       setTracking(current => [created, ...current])
       setTrackingIndicator(null)
-      setTrackingForm({ measured_at: new Date().toISOString().slice(0, 10), value: '', comment: '', source_url: '' })
+      setTrackingForm(createDefaultTrackingForm())
     } catch {
       alert('Impossible d’enregistrer le relevé')
     }
@@ -189,6 +201,16 @@ export function LogframeClient({ projectId, initialData, initialIndicators, init
     }).filter((value): value is string | number => value !== null && value !== undefined && value !== '')
 
     return values.length > 0 ? values.join(' · ') : '—'
+  }
+
+  const matrixValue = (indicatorId: string, semester: number) => {
+    const value = tracking.find(entry =>
+      entry.indicator_id === indicatorId
+      && entry.period_type === 'semester'
+      && entry.period_number === semester,
+    )
+
+    return value?.value_numeric ?? value?.value_text ?? '—'
   }
 
   const openAddModal = (parentId: string | null = null, level: LogframeLevel = 'objectif_global') => {
@@ -431,104 +453,51 @@ export function LogframeClient({ projectId, initialData, initialIndicators, init
       )}
 
       {activeTab === 'suivi' && (
-        <div className="border border-blue-900 rounded-sm overflow-hidden bg-white">
-          <div className="bg-[#1e3a6a] text-white text-center font-bold py-2 text-sm uppercase tracking-wide">
-            COMPOSANTE / RÉSULTAT
+        <div className="border border-[#1e3a6a] rounded-lg overflow-hidden bg-white shadow-sm">
+          <div className="bg-[#1e3a6a] text-white text-center font-bold py-2.5 text-sm uppercase tracking-wide">
+            Matrice des résultats (Suivi semestriel)
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
+            <table className="w-full min-w-[760px] text-left text-sm border-collapse">
               <thead className="bg-[#3b82f6] text-white">
                 <tr>
-                  <th className="p-3 font-semibold border-r border-blue-400 w-[30%]">Composante / Résultat</th>
+                  <th className="p-3 font-semibold border-r border-blue-400 w-[40%]">Composante / Résultat</th>
                   <th className="p-3 font-semibold text-center border-r border-blue-400">Base (départ)</th>
-                  <th className="p-3 font-semibold text-center border-r border-blue-400">S 1</th>
-                  <th className="p-3 font-semibold text-center border-r border-blue-400">S 2</th>
-                  <th className="p-3 font-semibold text-center border-r border-blue-400">S 3</th>
-                  <th className="p-3 font-semibold text-center">S 4 (But final)</th>
+                  <th className="p-3 font-semibold text-center border-r border-blue-400">S1</th>
+                  <th className="p-3 font-semibold text-center border-r border-blue-400">S2</th>
+                  <th className="p-3 font-semibold text-center border-r border-blue-400">S3</th>
+                  <th className="p-3 font-semibold text-center">S4 (But final)</th>
                 </tr>
               </thead>
               <tbody>
-                {(() => {
-                  const renderSuiviRows = (parentId: string | null = null, depth: number = 0) => {
-                    const children = data.filter(item => item.parent_id === parentId && item.level !== 'activite')
-                    
-                    if (children.length === 0) return null
+                {indicators.length > 0 ? indicators.map(indicator => {
+                  const item = data.find(logframeItem => logframeItem.id === indicator.logframe_item_id)
+                  const baseline = indicator.baseline_numeric ?? indicator.baseline_text ?? '—'
+                  const target = indicator.target_numeric ?? indicator.target_text ?? '—'
 
-                    return children.map(ind => {
-                      const isTopLevel = ind.level === 'objectif_global'
-                      const isMidLevel = ind.level === 'objectif_specifique'
-
-                      // Don't render Objectif Global row in Suivi tab, just its children
-                      if (isTopLevel) {
-                        return (
-                          <React.Fragment key={ind.id}>
-                            {renderSuiviRows(ind.id, depth)}
-                          </React.Fragment>
-                        )
-                      }
-
-                      // ALWAYS render mid level items as full-width section headers in the Suivi tab
-                      if (isMidLevel) {
-                        return (
-                          <React.Fragment key={ind.id}>
-                            <tr className="border-b border-blue-200 bg-[#eff6ff]">
-                              <td colSpan={6} className="p-3" style={{ paddingLeft: `${Math.max(0.75, depth * 1.5)}rem` }}>
-                                <div className="flex items-center justify-between group">
-                                  <div className="font-bold text-blue-900">
-                                    {ind.intervention_label}
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>
-                            {renderSuiviRows(ind.id, depth + 1)}
-                          </React.Fragment>
-                        )
-                      }
-
-                      // Otherwise render as a normal tracking row with columns (Résultats)
-                      return (
-                        <React.Fragment key={ind.id}>
-                          <tr className="border-b border-blue-100 hover:bg-slate-50 transition-colors bg-white">
-                            <td className="p-3 border-r border-blue-100" style={{ paddingLeft: `${Math.max(0.75, depth * 1.5)}rem` }}>
-                              <div className="flex items-start justify-between group">
-                                <div>
-                                  <div className="text-[10px] font-bold uppercase tracking-wider mb-1 text-blue-600">{levelLabels[ind.level]}</div>
-                                  <div className="font-medium text-text-primary">{ind.intervention_label}</div>
-                                </div>
-                                <div className="flex flex-col items-end ml-2">
-                                  {canManage && (
-                                    <button onClick={() => openEditModal(ind)} className="p-1.5 text-blue-600 hover:bg-blue-50 bg-white/50 rounded" title="Saisir les données de suivi">
-                                      <Edit2 className="w-4 h-4" />
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            </td>
-                            <td className="p-3 text-center border-r border-blue-100 text-text-secondary">{ind.baseline || '0'}</td>
-                            <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s1_value || '—'}</td>
-                            <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s2_value || '—'}</td>
-                            <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{ind.s3_value || '—'}</td>
-                            <td className="p-3 text-center text-text-secondary font-bold">{ind.target || '—'}</td>
-                          </tr>
-                          {renderSuiviRows(ind.id, depth + 1)}
-                        </React.Fragment>
-                      )
-                    })
-                  }
-
-                  const rootItems = data.filter(item => item.parent_id === null && item.level !== 'activite')
-                  if (rootItems.length === 0) {
-                    return (
-                      <tr>
-                        <td colSpan={6} className="p-8 text-center text-text-secondary">
-                          Aucun résultat, objectif spécifique ou objectif global à afficher dans la matrice.<br/>
-                          <span className="text-xs italic">(Note: Les activités sont suivies dans le PTBA)</span>
-                        </td>
-                      </tr>
-                    )
-                  }
-                  return renderSuiviRows(null, 0)
-                })()}
+                  return (
+                    <tr key={indicator.id} className="border-b border-blue-100 bg-white hover:bg-slate-50 transition-colors">
+                      <td className="p-3 border-r border-blue-100">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700">
+                          {item ? levelLabels[item.level] : 'Résultat'}
+                        </p>
+                        <p className="mt-1 font-medium text-text-primary">{item?.intervention_label ?? 'Élément du cadre logique'}</p>
+                        <p className="mt-1 text-xs text-text-secondary">{indicator.name}</p>
+                      </td>
+                      <td className="p-3 text-center border-r border-blue-100 text-text-secondary">{baseline}</td>
+                      <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{matrixValue(indicator.id, 1)}</td>
+                      <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{matrixValue(indicator.id, 2)}</td>
+                      <td className="p-3 text-center border-r border-blue-100 font-medium text-text-primary">{matrixValue(indicator.id, 3)}</td>
+                      <td className="p-3 text-center font-bold text-text-secondary">{target}</td>
+                    </tr>
+                  )
+                }) : (
+                  <tr>
+                    <td colSpan={6} className="p-8 text-center text-text-secondary">
+                      Aucun indicateur à afficher. Ajoutez un indicateur depuis l’onglet Cadre Logique.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -546,10 +515,25 @@ export function LogframeClient({ projectId, initialData, initialIndicators, init
               {indicatorsFor(indicatorItem.id).map(indicator => (
                 <div key={indicator.id} className="border border-border rounded-lg p-3 flex items-start justify-between gap-3">
                   <div><p className="font-medium text-text-primary">{indicator.name}</p><p className="text-xs text-text-secondary mt-1">Base : {indicator.baseline_numeric ?? indicator.baseline_text ?? '—'} · Cible : {indicator.target_numeric ?? indicator.target_text ?? '—'}</p></div>
-                  {canManage && <div className="flex gap-1"><button onClick={() => { setTrackingIndicator(indicator); setTrackingForm({ measured_at: new Date().toISOString().slice(0, 10), value: '', comment: '', source_url: '' }) }} className="px-2 text-xs text-blue-600 hover:bg-blue-50 rounded">Relevé</button><button onClick={() => openIndicatorEditor(indicatorItem, indicator)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded" title="Modifier"><Edit2 className="w-4 h-4" /></button><button onClick={async () => { if (!confirm('Supprimer cet indicateur ?')) return; await deleteLogframeIndicator(projectId, indicator.id); setIndicators(current => current.filter(value => value.id !== indicator.id)); setEditingIndicator(null) }} className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Supprimer"><Trash2 className="w-4 h-4" /></button></div>}
+                  {canManage && <div className="flex gap-1"><button onClick={() => { setTrackingIndicator(indicator); setTrackingForm(createDefaultTrackingForm()) }} className="px-2 text-xs text-blue-600 hover:bg-blue-50 rounded">Relevé</button><button onClick={() => openIndicatorEditor(indicatorItem, indicator)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded" title="Modifier"><Edit2 className="w-4 h-4" /></button><button onClick={async () => { if (!confirm('Supprimer cet indicateur ?')) return; await deleteLogframeIndicator(projectId, indicator.id); setIndicators(current => current.filter(value => value.id !== indicator.id)); setEditingIndicator(null) }} className="p-1.5 text-red-600 hover:bg-red-50 rounded" title="Supprimer"><Trash2 className="w-4 h-4" /></button></div>}
                 </div>
               ))}
-              {trackingIndicator && <form onSubmit={saveTracking} className="border border-blue-200 bg-blue-50 rounded-lg p-4 space-y-3"><div className="flex justify-between gap-3"><h4 className="font-medium text-blue-900">Nouveau relevé : {trackingIndicator.name}</h4><button type="button" onClick={() => setTrackingIndicator(null)}>&times;</button></div><div className="grid grid-cols-2 gap-3"><input required type="date" value={trackingForm.measured_at} onChange={event => setTrackingForm({ ...trackingForm, measured_at: event.target.value })} className="bg-white border border-border rounded-lg px-3 py-2" /><input required type={trackingIndicator.type === 'quantitative' ? 'number' : 'text'} step="any" value={trackingForm.value} onChange={event => setTrackingForm({ ...trackingForm, value: event.target.value })} placeholder="Valeur mesurée" className="bg-white border border-border rounded-lg px-3 py-2" /></div><input value={trackingForm.source_url} onChange={event => setTrackingForm({ ...trackingForm, source_url: event.target.value })} placeholder="Lien source (optionnel)" className="w-full bg-white border border-border rounded-lg px-3 py-2" /><textarea value={trackingForm.comment} onChange={event => setTrackingForm({ ...trackingForm, comment: event.target.value })} placeholder="Commentaire (optionnel)" className="w-full bg-white border border-border rounded-lg px-3 py-2" /><button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg">Enregistrer le relevé</button></form>}
+              {trackingIndicator && (
+                <form onSubmit={saveTracking} className="border border-blue-200 bg-blue-50 rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between gap-3"><h4 className="font-medium text-blue-900">Nouveau relevé : {trackingIndicator.name}</h4><button type="button" onClick={() => setTrackingIndicator(null)}>&times;</button></div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <input required type="date" value={trackingForm.measured_at} onChange={event => setTrackingForm({ ...trackingForm, measured_at: event.target.value })} className="bg-white border border-border rounded-lg px-3 py-2" />
+                    <input required type={trackingIndicator.type === 'quantitative' ? 'number' : 'text'} step="any" value={trackingForm.value} onChange={event => setTrackingForm({ ...trackingForm, value: event.target.value })} placeholder="Valeur mesurée" className="bg-white border border-border rounded-lg px-3 py-2" />
+                    <select value={trackingForm.period_number} onChange={event => setTrackingForm({ ...trackingForm, period_number: event.target.value })} className="bg-white border border-border rounded-lg px-3 py-2">
+                      <option value="1">Semestre 1</option><option value="2">Semestre 2</option><option value="3">Semestre 3</option><option value="4">Semestre 4</option>
+                    </select>
+                    <input required type="number" min="2000" max="2100" value={trackingForm.period_year} onChange={event => setTrackingForm({ ...trackingForm, period_year: event.target.value })} placeholder="Année" className="bg-white border border-border rounded-lg px-3 py-2" />
+                  </div>
+                  <input value={trackingForm.source_url} onChange={event => setTrackingForm({ ...trackingForm, source_url: event.target.value })} placeholder="Lien source (optionnel)" className="w-full bg-white border border-border rounded-lg px-3 py-2" />
+                  <textarea value={trackingForm.comment} onChange={event => setTrackingForm({ ...trackingForm, comment: event.target.value })} placeholder="Commentaire (optionnel)" className="w-full bg-white border border-border rounded-lg px-3 py-2" />
+                  <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg">Enregistrer le relevé</button>
+                </form>
+              )}
               {indicatorsFor(indicatorItem.id).flatMap(indicator => tracking.filter(value => value.indicator_id === indicator.id).map(value => <div key={value.id} className="text-xs text-text-secondary flex justify-between border-t border-border pt-2"><span>{indicator.name} — {value.measured_at} : {value.value_numeric ?? value.value_text}</span>{canManage && <button onClick={async () => { await deleteLogframeIndicatorTracking(projectId, value.id); setTracking(current => current.filter(item => item.id !== value.id)) }} className="text-red-600">Supprimer</button>}</div>))}
               {canManage && <form onSubmit={saveIndicator} className="border-t border-border pt-5 space-y-3">
                 <h4 className="font-medium text-text-primary">{editingIndicator ? 'Modifier l’indicateur' : 'Nouvel indicateur'}</h4>

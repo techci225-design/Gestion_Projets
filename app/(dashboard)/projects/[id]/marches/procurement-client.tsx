@@ -12,6 +12,7 @@ import { AttachmentsTab } from '@/components/dashboard/AttachmentsTab'
 interface ProcurementClientProps {
   projectId: string
   initialData: ProcurementItem[]
+  wbsTasks: Array<{ id: string; code: string | null; name?: string | null; description?: string | null; task_type: string }>
   currency?: string
   canManage: boolean
 }
@@ -22,7 +23,7 @@ const STATUSES = ['Planifié', 'En cours', 'Attribué', 'Annulé']
 
 import { getDisplayCurrency } from '@/lib/utils/currency'
 
-export function ProcurementClient({ projectId, initialData, currency, canManage }: ProcurementClientProps) {
+export function ProcurementClient({ projectId, initialData, wbsTasks, currency, canManage }: ProcurementClientProps) {
   const displayCurrency = getDisplayCurrency(currency)
   const [data, setData] = useState<ProcurementItem[]>(initialData)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
@@ -30,6 +31,7 @@ export function ProcurementClient({ projectId, initialData, currency, canManage 
   const [activeTab, setActiveTab] = useState<'details' | 'docs'>('details')
   
   const [formData, setFormData] = useState({
+    wbs_task_id: '',
     description: '',
     market_type: MARKET_TYPES[0],
     method: METHODS[0],
@@ -45,6 +47,7 @@ export function ProcurementClient({ projectId, initialData, currency, canManage 
   const openAddModal = () => {
     setEditingItem(null)
     setFormData({
+      wbs_task_id: '',
       description: '',
       market_type: MARKET_TYPES[0],
       method: METHODS[0],
@@ -60,6 +63,7 @@ export function ProcurementClient({ projectId, initialData, currency, canManage 
   const openEditModal = (item: ProcurementItem) => {
     setEditingItem(item)
     setFormData({
+      wbs_task_id: item.wbs_task_id || '',
       description: item.description,
       market_type: item.market_type || MARKET_TYPES[0],
       method: item.method || METHODS[0],
@@ -88,6 +92,7 @@ export function ProcurementClient({ projectId, initialData, currency, canManage 
     setIsSubmitting(true)
     
     const payload = {
+      wbs_task_id: formData.wbs_task_id || null,
       description: formData.description,
       market_type: formData.market_type,
       method: formData.method,
@@ -152,6 +157,7 @@ export function ProcurementClient({ projectId, initialData, currency, canManage 
             <thead className="bg-background border-b border-border">
               <tr>
                 <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider w-[25%]">Description du Marché</th>
+                <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider">Tâche WBS</th>
                 <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider">Type & Méthode</th>
                 <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider text-center">Revue</th>
                 <th className="p-4 text-xs font-semibold text-text-secondary uppercase tracking-wider">Calendrier</th>
@@ -162,10 +168,16 @@ export function ProcurementClient({ projectId, initialData, currency, canManage 
             </thead>
             <tbody>
               {data.length > 0 ? (
-                data.map((item) => (
+                data.map((item) => {
+                  const wbsTask = wbsTasks.find(task => task.id === item.wbs_task_id)
+
+                  return (
                   <tr key={item.id} className="border-b border-border hover:bg-surface-hover transition-colors">
                     <td className="p-4 align-top">
                       <p className="text-sm font-medium text-text-primary">{item.description}</p>
+                    </td>
+                    <td className="p-4 align-top text-sm text-text-secondary">
+                      {wbsTask ? <><span className="font-medium text-text-primary">{wbsTask.code}</span> {wbsTask.name ?? wbsTask.description}</> : '—'}
                     </td>
                     <td className="p-4 align-top">
                       <p className="text-sm text-text-primary font-medium">{item.market_type}</p>
@@ -211,10 +223,11 @@ export function ProcurementClient({ projectId, initialData, currency, canManage 
                       )}
                     </td>
                   </tr>
-                ))
+                  )
+                })
               ) : (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-text-secondary">
+                  <td colSpan={8} className="p-8 text-center text-text-secondary">
                     Aucun marché dans le plan de passation.
                   </td>
                 </tr>
@@ -223,7 +236,7 @@ export function ProcurementClient({ projectId, initialData, currency, canManage 
             {data.length > 0 && (
               <tfoot className="bg-background border-t-2 border-border font-semibold">
                 <tr>
-                  <td colSpan={5} className="p-4 text-right text-text-primary">
+                  <td colSpan={6} className="p-4 text-right text-text-primary">
                     Total Estimé du PPM :
                   </td>
                   <td className="p-4 text-right font-mono text-text-primary">
@@ -275,6 +288,23 @@ export function ProcurementClient({ projectId, initialData, currency, canManage 
                   className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
                   placeholder="Ex: Construction de 50 forages..."
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-1">Tâche WBS associée</label>
+                <select
+                  value={formData.wbs_task_id}
+                  onChange={e => setFormData({ ...formData, wbs_task_id: e.target.value })}
+                  className="w-full bg-background border border-border rounded-lg px-4 py-2 text-text-primary focus:outline-none focus:border-blue-500"
+                >
+                  <option value="">Aucune tâche associée</option>
+                  {wbsTasks.map(task => (
+                    <option key={task.id} value={task.id}>
+                      {task.code ? `${task.code} — ` : ''}{task.name ?? task.description ?? 'Tâche sans libellé'}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-text-secondary">Lien de traçabilité uniquement : ce marché ne modifie ni le budget ni l’EVM.</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

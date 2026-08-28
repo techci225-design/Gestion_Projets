@@ -8,6 +8,7 @@ import { hasProjectPermission, ProjectRole } from '@/lib/permissions/project-per
 export interface ProcurementItem {
   id: string
   project_id: string
+  wbs_task_id: string | null
   description: string
   market_type: string | null
   method: string | null
@@ -20,6 +21,7 @@ export interface ProcurementItem {
 }
 
 const procurementSchema = z.object({
+  wbs_task_id: z.string().uuid().nullable().optional(),
   description: z.string().trim().min(1, 'La description est requise.').max(500),
   market_type: z.string().trim().max(100).nullable().optional(),
   method: z.string().trim().max(250).nullable().optional(),
@@ -40,6 +42,23 @@ const procurementSchema = z.object({
 
 const projectIdSchema = z.string().uuid()
 const procurementIdSchema = z.string().uuid()
+
+async function assertWbsTaskInProject(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  projectId: string,
+  wbsTaskId: string | null | undefined,
+) {
+  if (!wbsTaskId) return
+
+  const { data, error } = await supabase
+    .from('wbs_tasks')
+    .select('id')
+    .eq('id', wbsTaskId)
+    .eq('project_id', projectId)
+    .maybeSingle()
+
+  if (error || !data) throw new Error('La tache WBS doit appartenir a ce projet')
+}
 
 async function requireProcurementPermission(projectId: string, permission: 'view' | 'manage') {
   const parsedProjectId = projectIdSchema.safeParse(projectId)
@@ -92,6 +111,7 @@ export async function addProcurement(
 ) {
   const validatedData = procurementSchema.parse(data)
   const { supabase } = await requireProcurementPermission(projectId, 'manage')
+  await assertWbsTaskInProject(supabase, projectId, validatedData.wbs_task_id)
 
   const { data: item, error } = await supabase
     .from('procurement_plan')
@@ -121,6 +141,7 @@ export async function updateProcurement(
     'Au moins un champ doit être modifié.'
   ).parse(data)
   const { supabase } = await requireProcurementPermission(projectId, 'manage')
+  await assertWbsTaskInProject(supabase, projectId, validatedData.wbs_task_id)
 
   const { data: item, error } = await supabase
     .from('procurement_plan')

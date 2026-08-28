@@ -83,6 +83,11 @@ export async function GET(request: Request) {
   }
 
   const wbsTasks = (wbsTasksData ?? []) as WbsTask[]
+  const wbsCodeById = new Map(wbsTasks.map(task => [task.id, task.code]))
+  const procurementPlanWithWbs = (procurementPlan ?? []).map(procurement => ({
+    ...procurement,
+    wbs_code: procurement.wbs_task_id ? wbsCodeById.get(procurement.wbs_task_id) ?? null : null,
+  }))
   const ptbaActivities = (ptbaActivitiesData ?? []) as PtbaActivity[]
   const operations = (journalData ?? []) as OperationJournal[]
   const disbursements = disbursementsData ?? []
@@ -207,7 +212,7 @@ export async function GET(request: Request) {
       budgetConsumption: budgetConsumption ?? [],
       evmSummary,
       evmIndicators,
-      procurementPlan: procurementPlan ?? [],
+      procurementPlan: procurementPlanWithWbs,
       risks: risks ?? [],
       dateString,
       executiveSummary,
