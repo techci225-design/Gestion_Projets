@@ -62,6 +62,8 @@ export async function GET(request: Request) {
     { data: journalData, error: journalError },
     { data: disbursementsData, error: disbursementsError },
     { data: baselinesData, error: baselinesError },
+    { data: logframeIndicators, error: logframeIndicatorsError },
+    { data: indicatorTracking, error: indicatorTrackingError },
   ] = await Promise.all([
     supabase.from('logframe_items').select('*').eq('project_id', projectId).order('level').order('parent_id'),
     supabase.from('v_budget_consumption').select('*').eq('project_id', projectId),
@@ -72,9 +74,11 @@ export async function GET(request: Request) {
     supabase.from('operations_journal').select('id, wbs_task_id, status, actual_cost, operation_date').eq('project_id', projectId),
     supabase.from('operation_disbursements').select('id, operation_id, project_id, disbursement_date, amount, entry_type').eq('project_id', projectId),
     supabase.from('evm_baselines').select('*').eq('project_id', projectId).in('status', ['APPROVED', 'SUPERSEDED']),
+    supabase.from('logframe_indicators').select('*').eq('project_id', projectId),
+    supabase.from('logframe_indicator_tracking').select('*').eq('project_id', projectId).order('measured_at', { ascending: false }),
   ])
 
-  if (logframeError || budgetError || procurementError || risksError || wbsError || ptbaError || journalError || disbursementsError || baselinesError) {
+  if (logframeError || budgetError || procurementError || risksError || wbsError || ptbaError || journalError || disbursementsError || baselinesError || logframeIndicatorsError || indicatorTrackingError) {
     return NextResponse.json({ error: 'Impossible de rassembler les données du rapport.' }, { status: 500 })
   }
 
@@ -198,6 +202,8 @@ export async function GET(request: Request) {
     const stream = await renderToStream(<RapportDocument data={{
       project,
       logframeItems: logframeItems ?? [],
+      logframeIndicators: logframeIndicators ?? [],
+      indicatorTracking: indicatorTracking ?? [],
       budgetConsumption: budgetConsumption ?? [],
       evmSummary,
       evmIndicators,

@@ -58,7 +58,7 @@ const getLevelLabel = (level: string) => {
 import { formatCurrency as sharedFormatCurrency } from '@/lib/utils/format-currency';
 
 export const RapportDocument = ({ data }: { data: any }) => {
-  const { project, logframeItems, budgetConsumption, evmSummary, evmIndicators, procurementPlan, risks, dateString } = data;
+  const { project, logframeItems, logframeIndicators = [], indicatorTracking = [], budgetConsumption, evmSummary, evmIndicators, procurementPlan, risks, dateString } = data;
   const currency = project.currency;
   const formatCurrency = (amount: number) => sharedFormatCurrency(amount, currency);
   
@@ -129,6 +129,26 @@ export const RapportDocument = ({ data }: { data: any }) => {
                 <View style={[styles.tableCol, { width: '15%', borderRightWidth: 0 }]}><Text style={styles.tableCell}>{item.risks_assumptions}</Text></View>
               </View>
             ))}
+          </View>
+          <Text style={styles.sectionHeader}>Suivi des indicateurs</Text>
+          <View style={styles.table}>
+            <View style={[styles.tableRow, styles.tableColHeader]}>
+              <View style={[styles.tableCol, { width: '45%' }]}><Text style={styles.tableCellHeader}>Indicateur</Text></View>
+              <View style={[styles.tableCol, { width: '20%' }]}><Text style={styles.tableCellHeader}>Base / Cible</Text></View>
+              <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCellHeader}>Dernier relevé</Text></View>
+              <View style={[styles.tableCol, { width: '20%', borderRightWidth: 0 }]}><Text style={styles.tableCellHeader}>Date</Text></View>
+            </View>
+            {logframeIndicators.map((indicator: any, i: number) => {
+              const latest = indicatorTracking.find((tracking: any) => tracking.indicator_id === indicator.id);
+              const baseline = indicator.baseline_numeric ?? indicator.baseline_text ?? '—';
+              const target = indicator.target_numeric ?? indicator.target_text ?? '—';
+              return <View key={indicator.id} style={[styles.tableRow, i % 2 !== 0 ? styles.tableRowAlt : {}]}>
+                <View style={[styles.tableCol, { width: '45%' }]}><Text style={styles.tableCell}>{indicator.name}</Text></View>
+                <View style={[styles.tableCol, { width: '20%' }]}><Text style={styles.tableCell}>{baseline} / {target}</Text></View>
+                <View style={[styles.tableCol, { width: '15%' }]}><Text style={styles.tableCell}>{latest?.value_numeric ?? latest?.value_text ?? '—'}</Text></View>
+                <View style={[styles.tableCol, { width: '20%', borderRightWidth: 0 }]}><Text style={styles.tableCell}>{latest?.measured_at ?? '—'}</Text></View>
+              </View>
+            })}
           </View>
         </View>
 
