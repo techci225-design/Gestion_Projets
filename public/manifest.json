@@ -1,6 +1,6 @@
 {
-  "name": "ProjetPilote",
-  "short_name": "ProjetPilote",
+  "name": "Smart Project Manager",
+  "short_name": "Smart PM",
   "description": "Pilotage de vos projets bailleurs",
   "start_url": "/projects",
   "display": "standalone",

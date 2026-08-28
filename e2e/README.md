@@ -21,5 +21,10 @@ local non versionné. Ne jamais utiliser un compte utilisateur réel ni un proje
 de production : les futurs scénarios de mutation devront utiliser des données
 E2E dédiées et réinitialisables.
 
+Les contrôles actuellement couverts sans données de test sont : la redirection
+d’un visiteur vers la connexion et la validation locale des mots de passe lors
+de l’inscription. Les contrôles de permissions par rôle restent exécutés
+uniquement avec les variables `E2E_READONLY_*`.
+
 Pour viser un environnement déjà démarré, définir également
 `PLAYWRIGHT_BASE_URL`, par exemple `http://127.0.0.1:3000`.

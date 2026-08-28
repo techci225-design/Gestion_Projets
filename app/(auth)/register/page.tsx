@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { BriefcaseBusiness, Lock, Eye, EyeOff } from 'lucide-react'
+import { BriefcaseBusiness, Eye, EyeOff } from 'lucide-react'
 import { z } from 'zod'
 
 const userSchema = z.object({
@@ -54,10 +54,17 @@ export default function RegisterPage() {
     setUserForm({ ...userForm, [e.target.name]: e.target.value })
   }
 
-  const handleStep1Submit = async (e: React.FormEvent) => {
+  const handleStep1Submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError(null)
     setIsPending(true)
+
+    const formData = new FormData(e.currentTarget)
+    if (formData.get('password') !== formData.get('confirmPassword')) {
+      setError('Les mots de passe ne correspondent pas')
+      setIsPending(false)
+      return
+    }
 
     try {
       userSchema.parse(userForm)
@@ -101,11 +108,13 @@ export default function RegisterPage() {
         setStep(2)
       }
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof z.ZodError) {
         setError(err.issues[0]?.message || 'Erreur de validation')
-      } else {
+      } else if (err instanceof Error) {
         setError(err.message || 'Une erreur est survenue.')
+      } else {
+        setError('Une erreur est survenue.')
       }
       setIsPending(false)
     }
@@ -135,7 +144,7 @@ export default function RegisterPage() {
         {error === 'SIGNUPS_DISABLED' ? (
           <div className="mb-6 w-full bg-red-50 border border-red-200 text-red-800 text-sm p-4 rounded-xl flex flex-col gap-3">
             <p className="font-semibold text-red-700">Les inscriptions sont temporairement suspendues.</p>
-            <p className="text-red-600/90">Contactez l'administrateur pour créer votre accès.</p>
+            <p className="text-red-600/90">Contactez l&apos;administrateur pour créer votre accès.</p>
           </div>
         ) : error ? (
           <div className="mb-6 w-full bg-red-50 border border-red-200 text-red-600 text-sm p-3 rounded-xl font-medium flex items-center justify-between">

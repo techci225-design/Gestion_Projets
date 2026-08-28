@@ -1,4 +1,4 @@
-const CACHE_NAME = 'projetpilote-cache-v1';
+const CACHE_NAME = 'smart-project-manager-cache-v2';
 
 const URLS_TO_CACHE = [
   '/',
