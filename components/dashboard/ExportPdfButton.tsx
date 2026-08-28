@@ -38,8 +38,9 @@ export function ExportPdfButton({ projectId }: ExportPdfButtonProps) {
       a.download = filename
       document.body.appendChild(a)
       a.click()
-      window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
+      // Laisser le navigateur initier le téléchargement avant de libérer le Blob.
+      window.setTimeout(() => window.URL.revokeObjectURL(url), 1000)
     } catch (err: any) {
       setError(err.message)
       setTimeout(() => setError(null), 5000)

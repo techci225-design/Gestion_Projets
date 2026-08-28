@@ -95,8 +95,24 @@ export function BudgetClient({ items, fundingSources, operations, objectifsSpeci
     }
   }
 
-  const handleExport = () => {
-    window.location.assign(`/api/export/excel?projectId=${encodeURIComponent(projectId)}`)
+  const handleExport = async () => {
+    try {
+      const response = await fetch(`/api/export/excel?projectId=${encodeURIComponent(projectId)}`)
+      if (!response.ok) throw new Error('Export impossible')
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'export_projet.xlsx'
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Erreur d’export Excel:', error)
+      alert('Impossible de télécharger le fichier Excel. Réessayez dans un instant.')
+    }
   }
 
   return (
