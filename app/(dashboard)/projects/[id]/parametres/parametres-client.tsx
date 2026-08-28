@@ -17,13 +17,13 @@ interface ParametresClientProps {
   fundingSources: any[]
   budgetLines: any[]
   userRole: string
-  project?: any
+  project: any
 }
 
 export function ParametresClient({ projectId, fundingSources, budgetLines, userRole, project }: ParametresClientProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<'general' | 'bailleurs' | 'budget' | 'statuts'>('general')
-  const displayCurrency = getDisplayCurrency(project?.currency)
+  const displayCurrency = getDisplayCurrency(project.currency)
   
   // Modals state
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false)
@@ -39,17 +39,17 @@ export function ParametresClient({ projectId, fundingSources, budgetLines, userR
   const [isDeleting, setIsDeleting] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [formData, setFormData] = useState({
-    name: project?.name || '',
-    code: project?.code || '',
-    start_date: project?.start_date || '',
-    end_date: project?.end_date || '',
-    description: project?.description || '',
-    status: project?.status || 'actif',
-    evm_control_date: project?.evm_control_date ? new Date(project.evm_control_date).toISOString().split('T')[0] : '',
-    budget: project?.budget || '',
-    funder: project?.funder || '',
-    implementing_agency: project?.implementing_agency || '',
-    currency: project?.currency || 'XOF'
+    name: project.name || '',
+    code: project.code || '',
+    start_date: project.start_date || '',
+    end_date: project.end_date || '',
+    description: project.description || '',
+    status: project.status || 'actif',
+    evm_control_date: project.evm_control_date ? new Date(project.evm_control_date).toISOString().split('T')[0] : '',
+    budget: project.budget || '',
+    funder: project.funder || '',
+    implementing_agency: project.implementing_agency || '',
+    currency: project.currency
   })
 
   const [deleteConfirmText, setDeleteConfirmText] = useState('')

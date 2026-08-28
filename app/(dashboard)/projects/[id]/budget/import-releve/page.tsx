@@ -13,7 +13,7 @@ export default async function ImportRelevePage({ params }: { params: Promise<{ i
     .eq('id', id)
     .single()
 
-  if (!project) redirect('/projects')
+  if (!project?.currency) redirect('/projects')
 
   // Load operations with budget lines
   const [
@@ -73,7 +73,7 @@ export default async function ImportRelevePage({ params }: { params: Promise<{ i
       projectId={id} 
       operations={operations} 
       pendingTransactions={pendingTxData || []} 
-      currency={project?.currency || 'XOF'} 
+      currency={project.currency}
     />
   )
 }

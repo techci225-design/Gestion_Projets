@@ -44,7 +44,11 @@ export async function importBankStatementAction(params: {
     return { error: 'Projet introuvable' }
   }
 
-  const projectCurrency = project.currency || 'XOF'
+  if (!project.currency) {
+    return { error: 'Devise du projet introuvable' }
+  }
+
+  const projectCurrency = project.currency
   const statementCurrency = params.statementCurrency || projectCurrency
 
   if (statementCurrency !== projectCurrency) {

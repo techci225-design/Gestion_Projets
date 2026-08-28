@@ -27,7 +27,7 @@ export interface BudgetConsumption {
   funding_source_id?: string
 }
 
-export function BudgetClient({ items, fundingSources, operations, objectifsSpecifiques = [], projectId, currency = 'XOF', isNewProject }: { items: BudgetConsumption[], fundingSources?: any[], operations?: any[], objectifsSpecifiques?: string[], projectId: string, currency?: string, isNewProject?: boolean }) {
+export function BudgetClient({ items, fundingSources, operations, objectifsSpecifiques = [], projectId, currency, isNewProject }: { items: BudgetConsumption[], fundingSources?: any[], operations?: any[], objectifsSpecifiques?: string[], projectId: string, currency: string, isNewProject?: boolean }) {
   const displayCurrency = getDisplayCurrency(currency)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingBudgetLine, setEditingBudgetLine] = useState<BudgetConsumption | null>(null)

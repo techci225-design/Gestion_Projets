@@ -478,7 +478,11 @@ export async function approveBaseline(projectId: string, baselineId: string, eff
     }
 
     const { data: project } = await supabase.from('projects').select('currency').eq('id', projectId).single()
-    const currency = project?.currency || 'XOF'
+    if (!project?.currency) {
+      throw new Error('Devise du projet introuvable')
+    }
+
+    const currency = project.currency
 
     // Compare totalItemBac to referenceBudget
     const diff = Math.abs(totalItemBac - referenceBudget)

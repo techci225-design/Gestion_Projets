@@ -1,7 +1,6 @@
 import React from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { BudgetClient, BudgetConsumption } from './budget-client'
-import { getDisplayCurrency } from '@/lib/utils/currency'
 
 export default async function BudgetPage({ 
   params,
@@ -18,7 +17,7 @@ export default async function BudgetPage({
   let fundingData = null
   let operationsData = null
   let logframeData = null
-  let projectCurrency = 'XOF'
+  let projectCurrency: string | null = null
   let queryError = null
 
   try {
@@ -76,7 +75,7 @@ export default async function BudgetPage({
       .select('currency')
       .eq('id', id)
       .single()
-    projectCurrency = resProject.data?.currency || 'XOF'
+    projectCurrency = resProject.data?.currency ?? null
 
     queryError = res.error || resFunding.error || resRawBudget.error || resOps.error || resLogframe.error || resProject.error
   } catch (err: any) {
@@ -91,6 +90,10 @@ export default async function BudgetPage({
         </div>
       </div>
     )
+  }
+
+  if (!projectCurrency) {
+    return <div className="p-6 text-danger">La devise du projet est introuvable.</div>
   }
 
   const items = (budgetData || []) as BudgetConsumption[]

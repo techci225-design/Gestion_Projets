@@ -24,7 +24,7 @@ export default async function ParametresPage({ params }: { params: Promise<{ id:
     .eq('id', id)
     .single()
 
-  if (!project) {
+  if (!project?.currency) {
     redirect('/projects')
   }
 

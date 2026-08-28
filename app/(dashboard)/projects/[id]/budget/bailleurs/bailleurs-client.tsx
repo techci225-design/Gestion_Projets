@@ -34,7 +34,7 @@ function ProgressBar({ percentage }: { percentage: number }) {
 import { AddBailleurModal } from './add-bailleur-modal'
 import { Edit2 } from 'lucide-react'
 
-export function BailleursClient({ projectId, bailleurs, currency = 'XOF' }: { projectId: string, bailleurs: any[], currency?: string }) {
+export function BailleursClient({ projectId, bailleurs, currency }: { projectId: string, bailleurs: any[], currency: string }) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingBailleur, setEditingBailleur] = useState<any>(null)
   const displayCurrency = getDisplayCurrency(currency)

@@ -175,7 +175,11 @@ async function validatePtbaBudgetEnvelope(
       .eq('id', projectId)
       .single()
 
-    const currency = project?.currency || 'XOF'
+    if (!project?.currency) {
+      throw new Error('Devise du projet introuvable')
+    }
+
+    const currency = project.currency
     const availableFormatted = formatCurrency(available, currency)
     const requestedFormatted = formatCurrency(requested, currency)
     const lineLabel = bLine.code ? `${bLine.code} - ${bLine.label}` : bLine.label

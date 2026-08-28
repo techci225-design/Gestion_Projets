@@ -13,7 +13,7 @@ export default async function BailleursPage({ params }: { params: Promise<{ id: 
     .eq('id', id)
     .single()
 
-  if (!project) redirect('/projects')
+  if (!project?.currency) redirect('/projects')
 
   const { data: bailleurs, error } = await supabase
     .from('v_funding_tracking')
@@ -25,5 +25,5 @@ export default async function BailleursPage({ params }: { params: Promise<{ id: 
     return <div className="p-6 text-danger">Erreur de chargement: {error.message}</div>
   }
 
-  return <BailleursClient projectId={id} bailleurs={bailleurs || []} currency={project?.currency || 'XOF'} />
+  return <BailleursClient projectId={id} bailleurs={bailleurs || []} currency={project.currency} />
 }

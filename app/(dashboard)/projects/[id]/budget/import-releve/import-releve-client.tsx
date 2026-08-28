@@ -44,12 +44,12 @@ export function ImportReleveClient({
   projectId, 
   operations, 
   pendingTransactions = [],
-  currency = 'XOF' 
+  currency
 }: { 
   projectId: string
   operations: OperationOption[]
   pendingTransactions?: any[]
-  currency?: string 
+  currency: string
 }) {
   const displayCurrency = getDisplayCurrency(currency)
   const router = useRouter()

@@ -59,7 +59,7 @@ export function JournalClient({
   budgetLines, 
   fundingSources,
   wbsTasks,
-  currency = 'XOF' 
+  currency
 }: { 
   projectId: string
   items?: OperationJournal[]
@@ -67,7 +67,7 @@ export function JournalClient({
   budgetLines: any[]
   fundingSources: any[]
   wbsTasks: any[]
-  currency?: string 
+  currency: string
 }) {
   const router = useRouter()
   const opsList = items || initialOperations || []

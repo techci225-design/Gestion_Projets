@@ -8,12 +8,12 @@ import { useRouter } from 'next/navigation'
 
 export function EditBudgetModal({ 
   projectId,
-  currency = 'XOF',
+  currency,
   budgetLine,
   onClose
 }: { 
   projectId: string
-  currency?: string
+  currency: string
   budgetLine: any
   onClose: () => void 
 }) {
