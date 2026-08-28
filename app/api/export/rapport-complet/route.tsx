@@ -203,8 +203,7 @@ export async function GET(request: Request) {
     console.error('Résumé exécutif indisponible:', error)
   }
 
-  try {
-    const stream = await renderToStream(<RapportDocument data={{
+  const reportDocument = <RapportDocument data={{
       project,
       logframeItems: logframeItems ?? [],
       logframeIndicators: logframeIndicators ?? [],
@@ -216,7 +215,10 @@ export async function GET(request: Request) {
       risks: risks ?? [],
       dateString,
       executiveSummary,
-    }} />)
+    }} />
+
+  try {
+    const stream = await renderToStream(reportDocument)
 
     const webStream = new ReadableStream({
       start(controller) {

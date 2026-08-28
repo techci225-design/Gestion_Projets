@@ -11,7 +11,7 @@ export function AddOperationModal({
   budgetLines,
   fundingSources,
   wbsTasks = [],
-  currency = 'XOF',
+  currency,
   editItem,
   onClose
 }: { 
@@ -19,7 +19,7 @@ export function AddOperationModal({
   budgetLines: any[]
   fundingSources: any[]
   wbsTasks?: any[]
-  currency?: string
+  currency: string
   editItem?: any
   onClose: () => void 
 }) {

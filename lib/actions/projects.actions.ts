@@ -290,6 +290,10 @@ export async function updateProject(projectId: string, payload: {
     return { error: "Vous n'avez pas les droits pour modifier ce projet." }
   }
 
+  if (!payload.currency) {
+    return { error: 'La devise du projet est requise.' }
+  }
+
   const { data: currentProject } = await adminClient
     .from('projects')
     .select('status, name')
@@ -309,7 +313,7 @@ export async function updateProject(projectId: string, payload: {
       budget: payload.budget ? Number(payload.budget) : null,
       funder: payload.funder || null,
       implementing_agency: payload.implementing_agency || null,
-      currency: payload.currency || 'XOF'
+      currency: payload.currency
     })
     .eq('id', projectId)
 

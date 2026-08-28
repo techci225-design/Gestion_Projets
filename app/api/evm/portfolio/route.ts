@@ -39,6 +39,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ portfolio: [], projects: [] })
   }
 
+  if (projectList.some(project => !project.currency)) {
+    return NextResponse.json({ error: 'Devise introuvable pour un projet du portefeuille.' }, { status: 500 })
+  }
+
   const projectIds = projectList.map(p => p.id)
 
   // WBS, PTBA, Journal
@@ -110,10 +114,10 @@ export async function GET(request: Request) {
   })
 
   // Group by currency
-  const currencies = Array.from(new Set(projectList.map(p => p.currency || 'XOF')))
+  const currencies = Array.from(new Set(projectList.map(p => p.currency!)))
   
   const portfolio = currencies.map(currency => {
-    const projs = projectSummaries.filter(ps => (ps.project.currency || 'XOF') === currency)
+    const projs = projectSummaries.filter(ps => ps.project.currency === currency)
     
     const sumBac = projs.reduce((sum, p) => sum + p.bac, 0)
     const sumPv = projs.reduce((sum, p) => sum + p.pv, 0)
@@ -149,7 +153,7 @@ export async function GET(request: Request) {
       id: ps.project.id,
       name: ps.project.name,
       code: ps.project.code,
-      currency: ps.project.currency || 'XOF',
+      currency: ps.project.currency,
       cpi: ps.cpi,
       spi: ps.spi,
       isAlert: alertReasons.length > 0,

@@ -210,12 +210,12 @@ export function parseBankStatement(
 
   // Détection des index de colonnes
   let dateIdx = headerCols.findIndex(c => c.includes('date') && !c.includes('valeur'))
-  let valueDateIdx = headerCols.findIndex(c => c.includes('valeur'))
+  const valueDateIdx = headerCols.findIndex(c => c.includes('valeur'))
   let descIdx = headerCols.findIndex(c => c.includes('libelle') || c.includes('description') || c.includes('operation') || c.includes('detail'))
-  let refIdx = headerCols.findIndex(c => c.includes('reference') || c.includes('ref') || c.includes('piece') || c.includes('numero') || c.includes('num'))
+  const refIdx = headerCols.findIndex(c => c.includes('reference') || c.includes('ref') || c.includes('piece') || c.includes('numero') || c.includes('num'))
   let debitIdx = headerCols.findIndex(c => c.includes('debit') || c.includes('depense') || c.includes('sortie'))
   let creditIdx = headerCols.findIndex(c => c.includes('credit') || c.includes('recette') || c.includes('entree'))
-  let amountIdx = headerCols.findIndex(c => c === 'montant' || c === 'montant devise' || c === 'amount')
+  const amountIdx = headerCols.findIndex(c => c === 'montant' || c === 'montant devise' || c === 'amount')
 
   // Fallbacks positionnels si en-tête non reconnu
   if (dateIdx === -1) dateIdx = 0

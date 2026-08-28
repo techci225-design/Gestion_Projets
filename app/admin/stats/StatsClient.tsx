@@ -7,24 +7,22 @@ import {
 } from 'recharts'
 import { AlertTriangle, TrendingUp, Activity } from 'lucide-react'
 
-export function StatsClient({ kpis, churnRisk, graphData, moduleUsage }: { kpis: any, churnRisk: any[], graphData: any[], moduleUsage: any[] }) {
-  
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white border border-gray-200 p-3 rounded-lg shadow-lg">
-          <p className="font-bold text-gray-900 mb-1">{label}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} className="text-sm font-medium" style={{ color: entry.color }}>
-              {entry.name}: {entry.value}
-            </p>
-          ))}
-        </div>
-      )
-    }
-    return null
-  }
+function CustomTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null
 
+  return (
+    <div className="bg-white border border-gray-200 p-3 rounded-lg shadow-lg">
+      <p className="font-bold text-gray-900 mb-1">{label}</p>
+      {payload.map((entry: any, index: number) => (
+        <p key={index} className="text-sm font-medium" style={{ color: entry.color }}>
+          {entry.name}: {entry.value}
+        </p>
+      ))}
+    </div>
+  )
+}
+
+export function StatsClient({ kpis, churnRisk, graphData, moduleUsage }: { kpis: any, churnRisk: any[], graphData: any[], moduleUsage: any[] }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       

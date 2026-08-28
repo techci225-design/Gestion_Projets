@@ -363,7 +363,7 @@ export function PlanningClient({ projectId, project, initialTasks, teamMembers, 
                 // Calculate position for Gantt bar
                 let leftOffset = 0
                 let barWidth = 0
-                let hasDates = !!(task.date_start && task.date_end)
+                const hasDates = !!(task.date_start && task.date_end)
                 
                 let renderStart = parseDateString(task.date_start)
                 let renderEnd = parseDateString(task.date_end)

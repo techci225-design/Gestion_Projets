@@ -179,9 +179,9 @@ export function ImportReleveClient({
   // Application atomique
   const handleApplyReconciliation = async () => {
     setIsReconciling(true)
-    let appliedCount = 0
-    let ignoredCount = 0
-    let errorCount = 0
+    const appliedCount = 0
+    const ignoredCount = 0
+    const errorCount = 0
 
     // Utilisation de la nouvelle action serveur réconciliant les transactions
     router.refresh()

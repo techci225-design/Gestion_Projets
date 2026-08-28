@@ -115,6 +115,7 @@ export function BailleursClient({ projectId, bailleurs, currency }: { projectId:
         </div>
       </div>
       <AddBailleurModal 
+        key={isModalOpen ? editingBailleur?.funding_source_id ?? 'new' : 'closed'}
         projectId={projectId} 
         isOpen={isModalOpen} 
         onClose={handleCloseModal}

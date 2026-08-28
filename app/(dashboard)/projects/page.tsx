@@ -158,7 +158,11 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
 
   // 1. CONSOLIDATION PAR PROJET
   const projectsData = (projects || []).map(p => {
-    const currency = p.currency || 'XOF'
+    if (!p.currency) {
+      throw new Error(`Devise introuvable pour le projet ${p.id}`)
+    }
+
+    const currency = p.currency
     
     // Budget alloué = SUM(budget_lines.initial_allocated_amount)
     const pBudgetLines = budgetLines.filter(bl => bl.project_id === p.id)
@@ -285,8 +289,6 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
     const newOrder = sort === field && order === 'desc' ? 'asc' : 'desc'
     return `?sort=${field}&order=${newOrder}`
   }
-
-  const globalCurrency = (projects && projects.length > 0) ? (projects[0].currency || 'XOF') : 'XOF'
 
   return (
     <>

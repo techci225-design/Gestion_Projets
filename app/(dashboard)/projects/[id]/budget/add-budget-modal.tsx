@@ -22,12 +22,17 @@ export function AddBudgetModal({
   const [unitCost, setUnitCost] = useState<number | ''>('')
   const [allocatedAmount, setAllocatedAmount] = useState<number | ''>('')
 
-  // Auto-calculate allocated amount when qty and unit cost change
-  React.useEffect(() => {
-    if (qty !== '' && unitCost !== '') {
-      setAllocatedAmount(Number(qty) * Number(unitCost))
-    }
-  }, [qty, unitCost])
+  const updateQuantity = (value: string) => {
+    const nextQuantity = value ? Number(value) : ''
+    setQty(nextQuantity)
+    if (nextQuantity !== '' && unitCost !== '') setAllocatedAmount(Number(nextQuantity) * Number(unitCost))
+  }
+
+  const updateUnitCost = (value: string) => {
+    const nextUnitCost = value ? Number(value) : ''
+    setUnitCost(nextUnitCost)
+    if (qty !== '' && nextUnitCost !== '') setAllocatedAmount(Number(qty) * Number(nextUnitCost))
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -103,11 +108,11 @@ export function AddBudgetModal({
             </div>
             <div>
               <label className="block text-sm font-medium text-text-primary mb-1">Quantité</label>
-              <input type="number" min="0" step="any" name="quantity" value={qty} onChange={(e) => setQty(e.target.value ? Number(e.target.value) : '')} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+              <input type="number" min="0" step="any" name="quantity" value={qty} onChange={(e) => updateQuantity(e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
             <div>
               <label className="block text-sm font-medium text-text-primary mb-1">Coût unitaire ({getDisplayCurrency(currency)})</label>
-              <input type="number" min="0" step="any" name="unit_cost" value={unitCost} onChange={(e) => setUnitCost(e.target.value ? Number(e.target.value) : '')} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
+              <input type="number" min="0" step="any" name="unit_cost" value={unitCost} onChange={(e) => updateUnitCost(e.target.value)} className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
             </div>
           </div>
 

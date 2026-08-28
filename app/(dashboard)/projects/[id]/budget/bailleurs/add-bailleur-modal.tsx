@@ -15,27 +15,11 @@ export function AddBailleurModal({
   onClose: () => void
   initialData?: any
 }) {
-  const [name, setName] = useState('')
-  const [type, setType] = useState('subvention')
-  const [amountCommitted, setAmountCommitted] = useState('')
+  const [name, setName] = useState(initialData?.name || initialData?.bailleur_name || '')
+  const [type, setType] = useState(initialData?.type || 'subvention')
+  const [amountCommitted, setAmountCommitted] = useState(initialData?.amount_committed?.toString() || initialData?.total_engage?.toString() || '')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  // Reset form when modal opens or initialData changes
-  React.useEffect(() => {
-    if (isOpen) {
-      if (initialData) {
-        setName(initialData.name || initialData.bailleur_name || '')
-        setType(initialData.type || 'subvention')
-        setAmountCommitted(initialData.amount_committed?.toString() || initialData.total_engage?.toString() || '')
-      } else {
-        setName('')
-        setType('subvention')
-        setAmountCommitted('')
-      }
-      setError(null)
-    }
-  }, [isOpen, initialData])
 
   if (!isOpen) return null
 

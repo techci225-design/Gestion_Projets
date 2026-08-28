@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react'
 import { Search, MoreVertical, Key, ExternalLink, Trash2, Mail } from 'lucide-react'
 import { generatePasswordResetLink, deleteAdminUser } from '@/lib/actions/admin.actions'
 import { useRouter } from 'next/navigation'
+import Cookies from 'js-cookie'
 
 export function UsersClient({ users }: { users: any[] }) {
   const router = useRouter()
@@ -47,7 +48,7 @@ export function UsersClient({ users }: { users: any[] }) {
 
   const handleViewProjects = (orgId: string) => {
     if (orgId) {
-      document.cookie = `support_org_id=${orgId}; path=/; max-age=86400`
+      Cookies.set('support_org_id', orgId, { path: '/', expires: 1 })
       router.push('/projects')
     }
   }

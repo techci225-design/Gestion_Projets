@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Building2, Users, Save, Shield } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useOrganization } from '@/lib/hooks/useOrganization'
@@ -8,17 +8,11 @@ import { useRouter } from 'next/navigation'
 
 export function OrganizationSettingsClient({ adminOrgs }: { adminOrgs: any[] }) {
   const { activeOrganization, setActiveOrganization } = useOrganization()
-  const [name, setName] = useState('')
+  const [editedName, setEditedName] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const supabase = createClient()
   const router = useRouter()
-
-  useEffect(() => {
-    if (activeOrganization) {
-      setName(activeOrganization.name)
-    }
-  }, [activeOrganization])
 
   // If the currently active organization is not one where the user is admin, show a message
   const isCurrentOrgAdmin = activeOrganization && adminOrgs.some(org => org.id === activeOrganization.id)
@@ -31,6 +25,8 @@ export function OrganizationSettingsClient({ adminOrgs }: { adminOrgs: any[] }) 
       </div>
     )
   }
+
+  const name = editedName ?? activeOrganization.name
 
   const handleUpdateName = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,6 +42,7 @@ export function OrganizationSettingsClient({ adminOrgs }: { adminOrgs: any[] }) 
     if (!error) {
       setSuccess(true)
       setActiveOrganization({ ...activeOrganization, name })
+      setEditedName(null)
       setTimeout(() => setSuccess(false), 3000)
     }
     setLoading(false)
@@ -67,7 +64,7 @@ export function OrganizationSettingsClient({ adminOrgs }: { adminOrgs: any[] }) 
               <input
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => setEditedName(e.target.value)}
                 className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 required
               />

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useTransition, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useTransition } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff, Lock, BriefcaseBusiness, Mail } from 'lucide-react'
 import { login } from './actions'
@@ -9,22 +9,23 @@ import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
-  
-  // Read URL search params to display errors from callbacks
-  useEffect(() => {
-    const url = new URL(window.location.href)
-    const errParam = url.searchParams.get('error')
-    const msgParam = url.searchParams.get('message')
-    if (errParam && errParam !== 'EMAIL_NOT_CONFIRMED') {
-      if (errParam === 'auth-callback') {
-        setError(`Erreur d'authentification. Si vous avez cliqué sur un lien depuis un email, assurez-vous de l'ouvrir dans le même navigateur. Détail: ${msgParam || ''}`)
-      } else {
-        setError(msgParam || errParam)
-      }
+  const [dismissCallbackError, setDismissCallbackError] = useState(false)
+
+  const callbackError = (() => {
+    const errorParam = searchParams.get('error')
+    const messageParam = searchParams.get('message')
+
+    if (!errorParam || errorParam === 'EMAIL_NOT_CONFIRMED') return null
+    if (errorParam === 'auth-callback') {
+      return `Erreur d'authentification. Si vous avez cliqué sur un lien depuis un email, assurez-vous de l'ouvrir dans le même navigateur. Détail: ${messageParam || ''}`
     }
-  }, [])
+
+    return messageParam || errorParam
+  })()
+  const displayedError = error ?? (dismissCallbackError ? null : callbackError)
 
   const [showPassword, setShowPassword] = useState(false)
   const [attemptedEmail, setAttemptedEmail] = useState<string | null>(null)
@@ -33,6 +34,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError(null)
+    setDismissCallbackError(true)
     setResendStatus('idle')
     const formData = new FormData(e.currentTarget)
     const email = formData.get('email') as string
@@ -89,7 +91,7 @@ export default function LoginPage() {
         </div>
 
         {/* Error Message */}
-        {error === 'EMAIL_NOT_CONFIRMED' ? (
+        {displayedError === 'EMAIL_NOT_CONFIRMED' ? (
           <div className="mb-6 w-full bg-orange-50 border border-orange-200 text-orange-800 text-sm p-4 rounded-xl flex flex-col gap-3">
             <div className="flex items-start gap-2">
               <Mail className="w-5 h-5 shrink-0 mt-0.5 text-orange-600" />
@@ -111,9 +113,9 @@ export default function LoginPage() {
               </button>
             )}
           </div>
-        ) : error ? (
+        ) : displayedError ? (
           <div className="mb-6 w-full bg-red-50 border border-red-200 text-red-600 text-sm p-3 rounded-xl font-medium">
-            {error}
+            {displayedError}
           </div>
         ) : null}
 

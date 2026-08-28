@@ -71,7 +71,7 @@ export function JournalClient({
 }) {
   const router = useRouter()
   const opsList = items || initialOperations || []
-  const [operations, setOperations] = useState(opsList)
+  const operations = opsList
   const [selectedOperation, setSelectedOperation] = useState<OperationJournal | null>(null)
   const [activeTab, setActiveTab] = useState<'details' | 'docs' | 'comments'>('details')
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -91,16 +91,6 @@ export function JournalClient({
   const [reversalReason, setReversalReason] = useState<string>('')
   const [reversalLoading, setReversalLoading] = useState(false)
   const [reversalError, setReversalError] = useState<string>('')
-
-  // Synchronise les opérations si les props changent
-  React.useEffect(() => {
-    const nextList = items || initialOperations || []
-    setOperations(nextList)
-    if (selectedOperation) {
-      const updated = nextList.find(op => op.id === selectedOperation.id)
-      if (updated) setSelectedOperation(updated)
-    }
-  }, [items, initialOperations])
 
   const getStatusBadge = (status: string) => {
     switch (status) {
