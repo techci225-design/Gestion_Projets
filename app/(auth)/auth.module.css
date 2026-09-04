@@ -120,6 +120,56 @@
 .successMessage { color: #25805a; font-weight: 700; }
 .errorMessage { margin-top: 6px; color: #b72d35; font-weight: 700; }
 
+.registerCard { width: 100%; }
+.registerHeader { display: flex; align-items: center; gap: 14px; }
+.registerIcon { width: 43px; height: 43px; display: grid; place-items: center; flex: 0 0 auto; color: #fff; border-radius: 12px; background: linear-gradient(145deg, var(--auth-orange-bright), #e95416); box-shadow: 0 10px 24px rgba(242,103,34,.22); }
+.registerHeader > div:last-child { min-width: 0; }
+.registerHeader span, .confirmationKicker { color: var(--auth-orange); font-size: 8px; font-weight: 850; letter-spacing: 1.15px; }
+.registerHeader h1 { margin: 3px 0 2px; color: #0b1a2c; font-size: 27px; line-height: 1.1; letter-spacing: -1px; }
+.registerHeader p { margin: 0; color: #7a889a; font-size: 10px; }
+.registerProgress { margin: 19px 0 17px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 9px; color: #98a3b1; font-size: 8px; font-weight: 700; }
+.registerProgress > span:not(.progressLine) { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.registerProgress b { width: 19px; height: 19px; display: grid; place-items: center; color: #8b98a7; font-size: 8px; border: 1px solid #dbe2e9; border-radius: 50%; background: #fff; }
+.registerProgress .progressActive { color: #263b52; }
+.registerProgress .progressActive b { color: #fff; border-color: var(--auth-orange); background: var(--auth-orange); }
+.progressLine { height: 1px; background: #dfe5eb; }
+.registerForm { display: flex; flex-direction: column; gap: 12px; }
+.nameGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.compactField { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.compactField label { color: #293c52; font-size: 9px; font-weight: 760; }
+.compactInput { min-height: 43px; padding: 0 12px; display: flex; align-items: center; gap: 9px; color: #92a0b0; border: 1px solid #dce4ec; border-radius: 10px; background: #fff; box-shadow: 0 3px 10px rgba(22,45,72,.025); transition: border-color .2s ease, box-shadow .2s ease; }
+.compactInput:focus-within { color: var(--auth-orange); border-color: rgba(242,103,34,.7); box-shadow: 0 0 0 4px rgba(242,103,34,.08); }
+.compactInput input { min-width: 0; height: 41px; flex: 1; color: #14263a; font: inherit; font-size: 11px; font-weight: 550; outline: 0; border: 0; background: transparent; }
+.compactInput input::placeholder { color: #a1acb8; font-weight: 450; }
+.compactToggle { width: 29px; height: 29px; display: grid; place-items: center; flex: 0 0 auto; color: #8795a6; cursor: pointer; border: 0; border-radius: 7px; background: transparent; }
+.compactToggle:hover { color: #32485f; background: #f1f4f7; }
+.passwordLabel { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.passwordLabel span { color: #8794a4; font-size: 8px; font-weight: 750; }
+.passwordLabel span[data-score="3"], .passwordLabel span[data-score="4"] { color: #288b61; }
+.strengthMeter { height: 3px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.strengthMeter span { border-radius: 99px; background: #e1e7ed; }
+.strengthMeter .strengthFilled { background: linear-gradient(90deg, var(--auth-orange), #2aaa72); }
+.legalText { margin: 0; color: #8793a2; font-size: 8px; line-height: 1.45; text-align: center; }
+.registerSubmit { min-height: 46px; display: flex; align-items: center; justify-content: center; gap: 9px; color: #fff; font-size: 11px; font-weight: 800; cursor: pointer; border: 0; border-radius: 10px; background: linear-gradient(135deg, var(--auth-orange-bright), #e95617); box-shadow: 0 12px 28px rgba(242,103,34,.2); transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease; }
+.registerSubmit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 16px 34px rgba(242,103,34,.28); }
+.registerSubmit:disabled { cursor: wait; opacity: .65; }
+.registerLogin { margin-top: 14px; padding-top: 12px; color: #8491a1; font-size: 9px; text-align: center; border-top: 1px solid #e2e8ee; }
+.registerLogin a { margin-left: 4px; display: inline-flex; align-items: center; gap: 4px; color: #173a5e; font-weight: 800; text-decoration: none; }
+.registerError { margin: -4px 0 12px; padding: 9px 10px; display: flex; align-items: center; gap: 8px; color: #b52e36; font-size: 9px; border: 1px solid #f0cbd0; border-radius: 8px; background: #fff3f4; }
+.registerError > svg { flex: 0 0 auto; }
+.registerError > span { display: flex; flex-direction: column; }
+.registerError small { margin-top: 2px; color: #c06066; }
+.registerError a { margin-left: auto; color: #a6242d; font-weight: 800; }
+.confirmationCard { text-align: center; }
+.confirmationIcon { width: 62px; height: 62px; margin: 0 auto 20px; display: grid; place-items: center; color: var(--auth-orange); border-radius: 18px; background: #fff0e7; box-shadow: 0 12px 30px rgba(242,103,34,.12); }
+.confirmationCard h1 { margin: 8px 0 8px; color: #0c1c30; font-size: 31px; letter-spacing: -1.2px; }
+.confirmationCard > p { margin: 0; color: #788699; font-size: 11px; }
+.confirmationEmail { margin-top: 9px; display: block; color: #173a5e; font-size: 12px; }
+.confirmationSteps { margin: 25px 0; padding: 17px; display: flex; flex-direction: column; gap: 12px; text-align: left; border: 1px solid #e1e7ed; border-radius: 11px; background: #fff; }
+.confirmationSteps span { display: flex; align-items: center; gap: 9px; color: #536378; font-size: 10px; }
+.confirmationSteps svg { padding: 3px; box-sizing: content-box; color: #fff; border-radius: 50%; background: #2ba36e; }
+.backToLogin { margin: auto; display: inline-flex; align-items: center; gap: 7px; color: var(--auth-orange); font-size: 10px; font-weight: 800; cursor: pointer; border: 0; background: transparent; }
+
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 1050px) {
@@ -149,6 +199,9 @@
   .loginHeading h1 { font-size: 31px; }
   .loginIcon { width: 45px; height: 45px; }
   .signupPrompt { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .nameGrid { grid-template-columns: 1fr; }
+  .registerCard { padding-bottom: 10px; }
+  .registerHeader h1 { font-size: 25px; }
 }
 
 @media (max-height: 760px) and (min-width: 821px) {
@@ -197,6 +250,14 @@
   .submitButton { min-height: 46px; }
   .signupPrompt { margin-top: 13px; padding-top: 12px; }
   .formAssurance { bottom: 8px; }
+  .registerHeader h1 { font-size: 24px; }
+  .registerProgress { margin: 12px 0 10px; }
+  .registerForm { gap: 8px; }
+  .compactField { gap: 3px; }
+  .compactInput { min-height: 38px; }
+  .compactInput input { height: 36px; }
+  .registerSubmit { min-height: 40px; }
+  .registerLogin { margin-top: 9px; padding-top: 8px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
