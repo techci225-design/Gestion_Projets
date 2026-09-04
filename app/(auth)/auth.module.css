@@ -170,6 +170,43 @@
 .confirmationSteps svg { padding: 3px; box-sizing: content-box; color: #fff; border-radius: 50%; background: #2ba36e; }
 .backToLogin { margin: auto; display: inline-flex; align-items: center; gap: 7px; color: var(--auth-orange); font-size: 10px; font-weight: 800; cursor: pointer; border: 0; background: transparent; }
 
+.profileCard { width: 100%; }
+.profileHeader { display: flex; align-items: center; gap: 14px; }
+.profileSuccessIcon { width: 45px; height: 45px; display: grid; place-items: center; flex: 0 0 auto; color: #fff; border-radius: 13px; background: linear-gradient(145deg, #20b974, #07945a); box-shadow: 0 11px 25px rgba(14,158,96,.2); }
+.profileHeader > div:last-child { min-width: 0; }
+.profileHeader span { color: #23865e; font-size: 8px; font-weight: 850; letter-spacing: 1.15px; }
+.profileHeader h1 { margin: 3px 0 2px; color: #0b1a2c; font-size: 27px; line-height: 1.1; letter-spacing: -1px; }
+.profileHeader p { margin: 0; color: #7a889a; font-size: 10px; }
+.profileProgress { margin: 20px 0 18px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 9px; color: #8491a2; font-size: 8px; font-weight: 700; }
+.profileProgress > span:not(.profileProgressLine) { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.profileProgress b { width: 19px; height: 19px; display: grid; place-items: center; font-size: 8px; border-radius: 50%; }
+.profileStepDone { color: #358366; }
+.profileStepDone b { color: #fff; background: #2aa46e; }
+.profileStepActive { color: #263b52; }
+.profileStepActive b { color: #fff; background: var(--auth-orange); }
+.profileProgressLine { height: 1px; background: linear-gradient(90deg, #65bf98, #e0e6ec); }
+.profileForm { display: flex; flex-direction: column; gap: 12px; }
+.profileNameGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.profileField { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.profileField label { color: #293c52; font-size: 9px; font-weight: 760; }
+.profileLabelRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.profileLabelRow span { color: #8b97a6; font-size: 8px; }
+.profileInput { min-height: 43px; padding: 0 12px; display: flex; align-items: center; gap: 9px; color: #92a0b0; border: 1px solid #dce4ec; border-radius: 10px; background: #fff; box-shadow: 0 3px 10px rgba(22,45,72,.025); transition: border-color .2s ease, box-shadow .2s ease; }
+.profileInput:focus-within:not(.profileInputDisabled) { color: var(--auth-orange); border-color: rgba(242,103,34,.7); box-shadow: 0 0 0 4px rgba(242,103,34,.08); }
+.profileInput input { min-width: 0; height: 41px; flex: 1; color: #14263a; font: inherit; font-size: 11px; font-weight: 550; outline: 0; border: 0; background: transparent; }
+.profileInput input::placeholder { color: #a1acb8; font-weight: 450; }
+.profileInput button { width: 29px; height: 29px; display: grid; place-items: center; flex: 0 0 auto; color: #8795a6; cursor: pointer; border: 0; border-radius: 7px; background: transparent; }
+.profileInput button:hover { color: #32485f; background: #f1f4f7; }
+.profileInputDisabled { color: #8190a0; border-color: #e1e6ec; background: #f1f4f7; }
+.profileInputDisabled input { color: #5e6d7e; cursor: not-allowed; }
+.profileInputDisabled > span { padding: 4px 7px; color: #277b59; font-size: 7px; font-weight: 800; border-radius: 99px; background: #e4f5ec; }
+.profileSubmit { min-height: 46px; margin-top: 2px; display: flex; align-items: center; justify-content: center; gap: 9px; color: #fff; font-size: 11px; font-weight: 800; cursor: pointer; border: 0; border-radius: 10px; background: linear-gradient(135deg, var(--auth-orange-bright), #e95617); box-shadow: 0 12px 28px rgba(242,103,34,.2); transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease; }
+.profileSubmit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 16px 34px rgba(242,103,34,.28); }
+.profileSubmit:disabled { cursor: wait; opacity: .65; }
+.profileSecurity { margin: 13px 0 0; display: flex; align-items: center; justify-content: center; gap: 6px; color: #8492a3; font-size: 8px; }
+.profileError { margin: -4px 0 12px; padding: 9px 10px; display: flex; align-items: center; gap: 8px; color: #b52e36; font-size: 9px; border: 1px solid #f0cbd0; border-radius: 8px; background: #fff3f4; }
+.profileError > svg { flex: 0 0 auto; }
+
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 1050px) {
@@ -202,6 +239,8 @@
   .nameGrid { grid-template-columns: 1fr; }
   .registerCard { padding-bottom: 10px; }
   .registerHeader h1 { font-size: 25px; }
+  .profileNameGrid { grid-template-columns: 1fr; }
+  .profileHeader h1 { font-size: 25px; }
 }
 
 @media (max-height: 760px) and (min-width: 821px) {
@@ -258,6 +297,14 @@
   .compactInput input { height: 36px; }
   .registerSubmit { min-height: 40px; }
   .registerLogin { margin-top: 9px; padding-top: 8px; }
+  .profileHeader h1 { font-size: 24px; }
+  .profileProgress { margin: 12px 0 10px; }
+  .profileForm { gap: 8px; }
+  .profileField { gap: 3px; }
+  .profileInput { min-height: 38px; }
+  .profileInput input { height: 36px; }
+  .profileSubmit { min-height: 40px; }
+  .profileSecurity { margin-top: 8px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

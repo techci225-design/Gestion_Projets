@@ -1,9 +1,21 @@
 'use client'
 
-import React, { useState, useTransition, useEffect } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import {
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  CircleAlert,
+  Eye,
+  EyeOff,
+  Loader2,
+  LockKeyhole,
+  Mail,
+  UserRound,
+} from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { Eye, EyeOff, CheckCircle2 } from 'lucide-react'
+import styles from '../auth.module.css'
 
 export default function SetupProfilePage() {
   const router = useRouter()
@@ -11,168 +23,172 @@ export default function SetupProfilePage() {
   const [error, setError] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [userEmail, setUserEmail] = useState<string>('')
+  const [userEmail, setUserEmail] = useState('')
+  const [isLoadingUser, setIsLoadingUser] = useState(true)
 
   useEffect(() => {
     const fetchUser = async () => {
       const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user && user.email) {
-        setUserEmail(user.email)
-      } else {
-        router.push('/login')
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user?.email) {
+        router.replace('/login')
+        return
       }
+
+      setUserEmail(user.email)
+      setIsLoadingUser(false)
     }
-    fetchUser()
+
+    void fetchUser()
   }, [router])
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
     setError(null)
-    const formData = new FormData(e.currentTarget)
-    const password = formData.get('password') as string
-    const confirmPassword = formData.get('confirmPassword') as string
-    const firstName = formData.get('firstName') as string
-    const lastName = formData.get('lastName') as string
+    const formData = new FormData(event.currentTarget)
+    const password = String(formData.get('password') || '')
+    const confirmPassword = String(formData.get('confirmPassword') || '')
+    const firstName = String(formData.get('firstName') || '').trim()
+    const lastName = String(formData.get('lastName') || '').trim()
 
-    if (password !== confirmPassword) {
-      setError('Les mots de passe ne correspondent pas.')
+    if (!firstName || !lastName) {
+      setError('Renseignez votre prénom et votre nom.')
       return
     }
-    
     if (password.length < 8) {
       setError('Le mot de passe doit contenir au moins 8 caractères.')
+      return
+    }
+    if (password !== confirmPassword) {
+      setError('Les mots de passe ne correspondent pas.')
       return
     }
 
     startTransition(async () => {
       const supabase = createClient()
-      
-      // Update password
+      const fullName = `${firstName} ${lastName}`
+
       const { error: updateAuthError } = await supabase.auth.updateUser({
-        password: password
+        password,
+        data: {
+          full_name: fullName,
+          first_name: firstName,
+          last_name: lastName,
+        },
       })
 
       if (updateAuthError) {
-        setError("Erreur lors de la mise à jour du mot de passe.")
+        setError('Impossible de sécuriser votre compte. Veuillez réessayer.')
         return
       }
 
-      // Update profile
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        await supabase.from('profiles').upsert({
-          id: user.id,
-          email: user.email,
-          full_name: `${firstName} ${lastName}`
-        })
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        setError('Votre session a expiré. Reconnectez-vous pour continuer.')
+        return
       }
 
-      // Redirect to onboarding (which will auto-accept invitations and redirect to projects)
+      const { error: profileError } = await supabase.from('profiles').upsert({
+        id: user.id,
+        email: user.email,
+        full_name: fullName,
+      })
+
+      if (profileError) {
+        setError('Le profil n’a pas pu être enregistré. Veuillez réessayer.')
+        return
+      }
+
       router.push('/onboarding')
       router.refresh()
     })
   }
 
   return (
-    <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl w-full max-w-md mx-auto">
-      <div className="text-center mb-6">
-        <div className="w-12 h-12 bg-green-500 rounded-xl mx-auto flex items-center justify-center mb-4 shadow-lg">
-          <CheckCircle2 className="w-6 h-6 text-white" />
+    <div className={styles.profileCard}>
+      <div className={styles.profileHeader}>
+        <div className={styles.profileSuccessIcon} aria-hidden="true"><CheckCircle2 size={22} /></div>
+        <div>
+          <span>INVITATION CONFIRMÉE</span>
+          <h1>Finalisez votre profil</h1>
+          <p>Quelques informations avant de rejoindre votre organisation.</p>
         </div>
-        <h1 className="text-2xl font-bold text-white leading-tight">
-          Bienvenue sur Smart-Project-Manager
-        </h1>
-        <p className="text-white/70 mt-2 text-sm font-medium">
-          Créez votre profil pour rejoindre votre organisation
-        </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
-          <div className="p-3 bg-red-500/10 text-red-200 text-sm rounded-xl border border-red-500/20">
-            {error}
-          </div>
-        )}
+      <div className={styles.profileProgress} aria-label="Étape 2 sur 2">
+        <span className={styles.profileStepDone}><b><Check size={11} /></b> Invitation acceptée</span>
+        <span className={styles.profileProgressLine} />
+        <span className={styles.profileStepActive}><b>2</b> Votre profil</span>
+      </div>
 
-        <div>
-          <label className="block text-sm font-medium text-white/90 mb-1.5">Email</label>
-          <input
-            type="email"
-            value={userEmail}
-            disabled
-            className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white/50 cursor-not-allowed"
-          />
+      {error && (
+        <div className={styles.profileError} role="alert">
+          <CircleAlert size={17} />
+          <span>{error}</span>
         </div>
+      )}
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-white/90 mb-1.5">Prénom</label>
-            <input
-              type="text"
-              name="firstName"
-              required
-              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-white/90 mb-1.5">Nom</label>
-            <input
-              type="text"
-              name="lastName"
-              required
-              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+      <form onSubmit={handleSubmit} className={styles.profileForm}>
+        <div className={styles.profileField}>
+          <label htmlFor="profileEmail">Email professionnel</label>
+          <div className={`${styles.profileInput} ${styles.profileInputDisabled}`}>
+            {isLoadingUser ? <Loader2 className={styles.spinner} size={16} /> : <Mail size={16} />}
+            <input id="profileEmail" type="email" value={userEmail} disabled aria-label="Adresse email du compte" placeholder="Chargement de votre email…" />
+            <span>Vérifié</span>
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-white/90 mb-1.5">Mot de passe</label>
-          <div className="relative">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              name="password"
-              required
-              minLength={8}
-              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white"
-            >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        <div className={styles.profileNameGrid}>
+          <div className={styles.profileField}>
+            <label htmlFor="profileFirstName">Prénom</label>
+            <div className={styles.profileInput}>
+              <UserRound size={16} />
+              <input id="profileFirstName" type="text" name="firstName" required autoComplete="given-name" placeholder="Votre prénom" />
+            </div>
+          </div>
+          <div className={styles.profileField}>
+            <label htmlFor="profileLastName">Nom</label>
+            <div className={styles.profileInput}>
+              <UserRound size={16} />
+              <input id="profileLastName" type="text" name="lastName" required autoComplete="family-name" placeholder="Votre nom" />
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.profileField}>
+          <div className={styles.profileLabelRow}><label htmlFor="profilePassword">Créez votre mot de passe</label><span>8 caractères minimum</span></div>
+          <div className={styles.profileInput}>
+            <LockKeyhole size={16} />
+            <input id="profilePassword" type={showPassword ? 'text' : 'password'} name="password" required minLength={8} autoComplete="new-password" placeholder="Votre mot de passe" />
+            <button type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'} aria-pressed={showPassword}>
+              {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
             </button>
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-white/90 mb-1.5">Confirmer le mot de passe</label>
-          <div className="relative">
-            <input
-              type={showConfirmPassword ? 'text' : 'password'}
-              name="confirmPassword"
-              required
-              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white"
-            >
-              {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        <div className={styles.profileField}>
+          <label htmlFor="profileConfirmPassword">Confirmez le mot de passe</label>
+          <div className={styles.profileInput}>
+            <LockKeyhole size={16} />
+            <input id="profileConfirmPassword" type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" required minLength={8} autoComplete="new-password" placeholder="Saisissez-le à nouveau" />
+            <button type="button" onClick={() => setShowConfirmPassword((visible) => !visible)} aria-label={showConfirmPassword ? 'Masquer la confirmation' : 'Afficher la confirmation'} aria-pressed={showConfirmPassword}>
+              {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
             </button>
           </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={isPending}
-          className="w-full mt-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-xl shadow-lg shadow-blue-500/20 transition-all disabled:opacity-50"
-        >
-          {isPending ? 'Enregistrement...' : 'Valider et rejoindre'}
+        <button type="submit" className={styles.profileSubmit} disabled={isPending || isLoadingUser}>
+          {isPending ? <><Loader2 className={styles.spinner} size={18} /> Enregistrement…</> : <>Rejoindre mon organisation <ArrowRight size={18} /></>}
         </button>
       </form>
+
+      <p className={styles.profileSecurity}><LockKeyhole size={12} /> Votre accès sera protégé par un mot de passe chiffré.</p>
     </div>
   )
 }
