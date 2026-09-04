@@ -1,15 +1,16 @@
 'use client'
 
 import { Suspense, useState, useTransition } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Eye, EyeOff, Lock, BriefcaseBusiness, Mail } from 'lucide-react'
-import { login } from './actions'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { ArrowRight, BriefcaseBusiness, CircleAlert, Eye, EyeOff, Loader2, LockKeyhole, Mail } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { login } from './actions'
+import styles from '../auth.module.css'
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<div className={styles.formLoading}><Loader2 size={24} /></div>}>
       <LoginForm />
     </Suspense>
   )
@@ -21,6 +22,9 @@ function LoginForm() {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [dismissCallbackError, setDismissCallbackError] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [attemptedEmail, setAttemptedEmail] = useState<string | null>(null)
+  const [resendStatus, setResendStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
 
   const callbackError = (() => {
     const errorParam = searchParams.get('error')
@@ -28,26 +32,21 @@ function LoginForm() {
 
     if (!errorParam || errorParam === 'EMAIL_NOT_CONFIRMED') return null
     if (errorParam === 'auth-callback') {
-      return `Erreur d'authentification. Si vous avez cliqué sur un lien depuis un email, assurez-vous de l'ouvrir dans le même navigateur. Détail: ${messageParam || ''}`
+      return `Erreur d'authentification. Si vous avez cliqué sur un lien depuis un email, ouvrez-le dans le même navigateur. ${messageParam || ''}`
     }
-
     return messageParam || errorParam
   })()
   const displayedError = error ?? (dismissCallbackError ? null : callbackError)
 
-  const [showPassword, setShowPassword] = useState(false)
-  const [attemptedEmail, setAttemptedEmail] = useState<string | null>(null)
-  const [resendStatus, setResendStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
     setError(null)
     setDismissCallbackError(true)
     setResendStatus('idle')
-    const formData = new FormData(e.currentTarget)
+    const formData = new FormData(event.currentTarget)
     const email = formData.get('email') as string
     setAttemptedEmail(email)
-    
+
     startTransition(async () => {
       const result = await login(formData)
       if (result?.error) {
@@ -56,9 +55,9 @@ function LoginForm() {
         } else {
           setError(result.error)
         }
-      } else {
-        router.push('/projects')
+        return
       }
+      router.push('/projects')
     })
   }
 
@@ -66,141 +65,96 @@ function LoginForm() {
     if (!attemptedEmail) return
     setResendStatus('loading')
     const supabase = createClient()
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email: attemptedEmail
-    })
-    
-    if (error) {
-      setResendStatus('error')
-    } else {
-      setResendStatus('success')
-    }
+    const { error: resendError } = await supabase.auth.resend({ type: 'signup', email: attemptedEmail })
+    setResendStatus(resendError ? 'error' : 'success')
   }
 
   return (
-    <div className="bg-white w-full rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col items-center">
-      
-      {/* Form Content Wrapper */}
-      <div className="w-full px-8 py-8 sm:px-12 pt-8 lg:pt-10 flex flex-col items-center">
-        
-        {/* Header */}
-        <div className="text-center mb-8 w-full flex flex-col items-center">
-          <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mb-3 shadow-lg shadow-orange-500/30 text-white">
-            <BriefcaseBusiness className="w-7 h-7" />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
-            Smart-Project-Manager
-          </h1>
-          <p className="text-sm font-medium text-slate-500 mt-1">
-            Plateforme de gestion de projets
-          </p>
-          <div className="h-1 w-12 bg-orange-500 rounded-full mt-3"></div>
-        </div>
-
-        {/* Error Message */}
-        {displayedError === 'EMAIL_NOT_CONFIRMED' ? (
-          <div className="mb-6 w-full bg-orange-50 border border-orange-200 text-orange-800 text-sm p-4 rounded-xl flex flex-col gap-3">
-            <div className="flex items-start gap-2">
-              <Mail className="w-5 h-5 shrink-0 mt-0.5 text-orange-600" />
-              <div>
-                <p className="font-semibold">Votre compte est en attente de confirmation.</p>
-                <p className="text-orange-700/80">Vérifiez vos emails ou contactez l'administrateur.</p>
-              </div>
-            </div>
-            {resendStatus === 'success' ? (
-              <p className="text-green-600 font-medium text-sm">L'email a été renvoyé avec succès.</p>
-            ) : (
-              <button
-                type="button"
-                onClick={handleResend}
-                disabled={resendStatus === 'loading'}
-                className="bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 font-medium transition-colors disabled:opacity-50 text-sm self-start"
-              >
-                {resendStatus === 'loading' ? 'Envoi en cours...' : "Renvoyer l'email"}
-              </button>
-            )}
-          </div>
-        ) : displayedError ? (
-          <div className="mb-6 w-full bg-red-50 border border-red-200 text-red-600 text-sm p-3 rounded-xl font-medium">
-            {displayedError}
-          </div>
-        ) : null}
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="w-full space-y-4 lg:space-y-5">
-          
-          <div className="space-y-1.5">
-            <label htmlFor="email" className="block text-sm font-bold text-slate-700 flex items-center gap-2">
-              <Mail className="w-4 h-4 text-slate-700" /> Adresse email professionnelle
-            </label>
-            <div className="relative">
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                placeholder="utilisateur@projet-ci.ci"
-                className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-medium text-sm"
-              />
-              <Mail className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="password" className="block text-sm font-bold text-slate-700 flex items-center gap-2">
-              <Lock className="w-4 h-4 text-slate-700" /> Mot de passe
-            </label>
-            <div className="relative">
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                required
-                placeholder="••••••••••••"
-                className="w-full pl-11 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-medium text-sm tracking-widest"
-              />
-              <Lock className="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-transparent text-slate-400 hover:text-slate-600 transition-colors"
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
-          </div>
-
-          <div className="flex justify-between items-center pt-2">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-orange-500 focus:ring-orange-500" />
-              <span className="text-sm font-medium text-slate-600">Se souvenir de moi</span>
-            </label>
-            <Link href="/forgot-password" className="text-sm font-bold text-orange-600 hover:text-orange-700 transition-colors">
-              Mot de passe oublié ?
-            </Link>
-          </div>
-
-          <div className="pt-4">
-            <button
-              type="submit"
-              disabled={isPending}
-              className="w-full flex items-center justify-center gap-2 bg-[#e86915] hover:bg-[#d55e10] text-white py-3.5 rounded-xl font-bold text-base transition-all shadow-lg shadow-orange-500/20 active:scale-[0.98]"
-            >
-              {isPending ? 'Connexion...' : <><BriefcaseBusiness className="w-5 h-5" /> Se connecter</>}
-            </button>
-          </div>
-        </form>
+    <div className={styles.loginCard}>
+      <div className={styles.loginIcon} aria-hidden="true"><BriefcaseBusiness size={24} /></div>
+      <div className={styles.loginHeading}>
+        <span>ESPACE SÉCURISÉ</span>
+        <h1>Heureux de vous revoir</h1>
+        <p>Connectez-vous pour retrouver vos projets et vos indicateurs.</p>
       </div>
 
-      {/* Footer Block */}
-      <div className="w-full bg-slate-50 border-t border-slate-100 p-5 flex justify-center mt-0 lg:mt-2">
-        <p className="text-sm font-medium text-slate-600 flex items-center gap-2">
-          <BriefcaseBusiness className="w-4 h-4 text-slate-400" /> Pas encore de compte ?{' '}
-          <Link href="/register" className="font-bold text-orange-600 hover:text-orange-700">
-            Créer un compte
-          </Link>
-        </p>
+      {displayedError === 'EMAIL_NOT_CONFIRMED' ? (
+        <div className={styles.warningBox} role="alert">
+          <CircleAlert size={19} />
+          <div>
+            <strong>Compte en attente de confirmation</strong>
+            <p>Vérifiez vos emails ou contactez votre administrateur.</p>
+            {resendStatus === 'success' ? (
+              <span className={styles.successMessage}>L’email de confirmation a été renvoyé.</span>
+            ) : (
+              <button type="button" onClick={handleResend} disabled={resendStatus === 'loading'}>
+                {resendStatus === 'loading' ? 'Envoi en cours…' : 'Renvoyer l’email'}
+              </button>
+            )}
+            {resendStatus === 'error' && <span className={styles.errorMessage}>L’envoi a échoué. Réessayez.</span>}
+          </div>
+        </div>
+      ) : displayedError ? (
+        <div className={styles.errorBox} role="alert"><CircleAlert size={18} /><span>{displayedError}</span></div>
+      ) : null}
+
+      <form onSubmit={handleSubmit} className={styles.loginForm}>
+        <div className={styles.fieldGroup}>
+          <label htmlFor="email">Adresse email professionnelle</label>
+          <div className={styles.inputShell}>
+            <Mail size={18} aria-hidden="true" />
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              autoComplete="email"
+              inputMode="email"
+              placeholder="nom@organisation.com"
+            />
+          </div>
+        </div>
+
+        <div className={styles.fieldGroup}>
+          <div className={styles.labelRow}>
+            <label htmlFor="password">Mot de passe</label>
+            <Link href="/forgot-password">Mot de passe oublié ?</Link>
+          </div>
+          <div className={styles.inputShell}>
+            <LockKeyhole size={18} aria-hidden="true" />
+            <input
+              id="password"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              required
+              autoComplete="current-password"
+              placeholder="Votre mot de passe"
+            />
+            <button
+              type="button"
+              className={styles.passwordToggle}
+              onClick={() => setShowPassword((visible) => !visible)}
+              aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+              aria-pressed={showPassword}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+        </div>
+
+        <label className={styles.rememberRow}>
+          <input type="checkbox" name="remember" />
+          <span>Rester connecté sur cet appareil</span>
+        </label>
+
+        <button type="submit" className={styles.submitButton} disabled={isPending}>
+          {isPending ? <><Loader2 className={styles.spinner} size={19} /> Connexion en cours…</> : <>Se connecter <ArrowRight size={19} /></>}
+        </button>
+      </form>
+
+      <div className={styles.signupPrompt}>
+        <span>Vous découvrez la plateforme ?</span>
+        <Link href="/register">Créer un compte <ArrowRight size={14} /></Link>
       </div>
     </div>
   )

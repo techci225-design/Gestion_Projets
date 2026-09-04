@@ -1,99 +1,112 @@
-import { BriefcaseBusiness, Calendar, Users, TrendingUp, ShieldCheck, Heart, Shield, Headphones } from 'lucide-react'
+import Link from 'next/link'
+import {
+  ArrowLeft,
+  BarChart3,
+  BriefcaseBusiness,
+  CalendarDays,
+  Check,
+  CircleDollarSign,
+  FolderKanban,
+  ShieldCheck,
+  TrendingUp,
+  Users,
+} from 'lucide-react'
+import styles from './auth.module.css'
 
-export default function AuthLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+const highlights = [
+  { icon: CalendarDays, label: 'Planification', value: 'Maîtrisée' },
+  { icon: Users, label: 'Collaboration', value: 'Fluidifiée' },
+  { icon: TrendingUp, label: 'Performance', value: 'Mesurable' },
+]
+
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-[100dvh] relative overflow-y-auto overflow-x-hidden bg-slate-900">
-      {/* Global Background Image with strong overlay */}
-      <div 
-        className="absolute inset-0 bg-cover bg-[80%_center] md:bg-center bg-no-repeat z-0"
-        style={{ backgroundImage: 'url("/bridge-bg.jpg")' }}
-      >
-        <div className="absolute inset-0 bg-[#0f172a]/85 mix-blend-multiply"></div>
-        {/* Subtle gradient to highlight the left text */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#030712]/90 to-transparent"></div>
-      </div>
+    <main className={styles.authPage}>
+      <div className={styles.ambientOne} aria-hidden="true" />
+      <div className={styles.ambientTwo} aria-hidden="true" />
+      <div className={styles.authGrid} aria-hidden="true" />
 
-      <div className="relative z-10 w-full max-w-[1400px] mx-auto flex flex-col lg:flex-row items-center justify-center lg:justify-between p-4 sm:p-8 lg:p-12 gap-8 lg:gap-12 min-h-screen">
-        
-        {/* Left Column (Text & Features) - Always visible on desktop */}
-        <div className="hidden lg:flex flex-col flex-1 max-w-2xl text-white py-4 h-full max-h-[750px] justify-center">
-          {/* Top Logo */}
-          <div className="flex items-center gap-4 mb-8 lg:mb-12">
-            <div className="flex items-center justify-center bg-white rounded-lg p-2.5">
-              <div className="flex items-end gap-0.5">
-                <div className="w-2.5 h-6 bg-orange-500 rounded-sm"></div>
-                <div className="w-2.5 h-8 bg-gray-800 rounded-sm"></div>
-                <div className="w-2.5 h-12 bg-orange-500 rounded-sm"></div>
+      <section className={styles.storyPanel}>
+        <div className={styles.storyInner}>
+          <header className={styles.storyHeader}>
+            <Link href="/" className={styles.brand} aria-label="Smart-Project-Manager — Accueil">
+              <span className={styles.logoMark} aria-hidden="true"><span /><span /><span /></span>
+              <span className={styles.brandCopy}>
+                <strong>Smart-Project-<b>Manager</b></strong>
+                <small>Gestion de projets · Performance · Résultats</small>
+              </span>
+            </Link>
+            <Link href="/" className={styles.backHome}><ArrowLeft size={15} /> Accueil</Link>
+          </header>
+
+          <div className={styles.storyContent}>
+            <span className={styles.kicker}><span /> L’espace de pilotage de vos équipes</span>
+            <h1>Pilotez vos projets<br /><em>avec efficacité.</em></h1>
+            <p>Une vision claire de vos budgets, de vos délais et de vos résultats — pour décider plus vite et agir au bon moment.</p>
+
+            <div className={styles.previewCard}>
+              <div className={styles.previewTopbar}>
+                <span className={styles.miniBrand}><BriefcaseBusiness size={12} /> Demo TSBC</span>
+                <span className={styles.liveStatus}><span /> Données à jour</span>
+              </div>
+              <div className={styles.previewBody}>
+                <div className={styles.previewSidebar}>
+                  <span className={styles.activeNav}><BarChart3 size={12} /></span>
+                  <span><FolderKanban size={12} /></span>
+                  <span><CircleDollarSign size={12} /></span>
+                </div>
+                <div className={styles.previewMain}>
+                  <div className={styles.previewHeading}>
+                    <span><small>VUE CONSOLIDÉE</small><strong>Portefeuille de projets</strong></span>
+                    <span className={styles.period}>Ce trimestre</span>
+                  </div>
+                  <div className={styles.previewMetrics}>
+                    <span><small>Projets actifs</small><strong>12</strong></span>
+                    <span><small>Budget alloué</small><strong>1,8 Md</strong></span>
+                    <span><small>CPI moyen</small><strong className={styles.positive}>1.03</strong></span>
+                  </div>
+                  <div className={styles.miniChart}>
+                    <div className={styles.chartLines} />
+                    <svg viewBox="0 0 380 80" preserveAspectRatio="none" aria-hidden="true">
+                      <defs><linearGradient id="authChartFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#ff7417" stopOpacity=".28" /><stop offset="100%" stopColor="#ff7417" stopOpacity="0" /></linearGradient></defs>
+                      <path d="M0,70 C35,68 45,52 78,55 C118,59 126,34 164,40 C200,46 219,24 255,29 C301,35 329,9 380,12 L380,80 L0,80Z" fill="url(#authChartFill)" />
+                      <path d="M0,70 C35,68 45,52 78,55 C118,59 126,34 164,40 C200,46 219,24 255,29 C301,35 329,9 380,12" fill="none" stroke="#ff7417" strokeWidth="3" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-1">
-                Smart-Project<span className="text-orange-500">-Manager</span>
-              </h1>
-              <p className="text-sm text-gray-300 font-medium">Gestion de Projets • Performance • Résultats</p>
+
+            <div className={styles.highlightGrid}>
+              {highlights.map(({ icon: Icon, label, value }) => (
+                <div className={styles.highlight} key={label}>
+                  <span><Icon size={17} /></span>
+                  <p><small>{label}</small><strong>{value}</strong></p>
+                  <Check size={13} />
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Main Headline */}
-          <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight mb-4 lg:mb-6 leading-tight">
-            Pilotez vos projets <br />
-            <span className="text-orange-500">avec efficacité</span>
-          </h2>
-
-          <p className="text-base lg:text-lg text-gray-300 mb-8 lg:mb-12 max-w-lg leading-relaxed">
-            La solution intelligente de gestion de projets pour les administrations, les entreprises publiques et les PME.
-          </p>
-
-          {/* Feature Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-auto">
-            <div className="flex flex-col items-center justify-center text-center p-4 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors">
-              <Calendar className="w-8 h-8 text-orange-500 mb-3" />
-              <span className="text-xs font-semibold leading-tight">Planification<br />& Suivi</span>
-            </div>
-            <div className="flex flex-col items-center justify-center text-center p-4 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors">
-              <Users className="w-8 h-8 text-orange-500 mb-3" />
-              <span className="text-xs font-semibold leading-tight">Collaboration<br />optimale</span>
-            </div>
-            <div className="flex flex-col items-center justify-center text-center p-4 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors">
-              <TrendingUp className="w-8 h-8 text-orange-500 mb-3" />
-              <span className="text-xs font-semibold leading-tight">Résultats<br />mesurables</span>
-            </div>
-            <div className="flex flex-col items-center justify-center text-center p-4 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-colors">
-              <ShieldCheck className="w-8 h-8 text-orange-500 mb-3" />
-              <span className="text-xs font-semibold leading-tight">Sécurité &<br />Fiabilité</span>
-            </div>
-          </div>
-
-          {/* Bottom Footer */}
-          <div className="mt-12 lg:mt-16 pt-6 lg:pt-8 border-t border-white/10 flex items-center justify-between text-sm text-gray-400">
-            <div className="flex items-center gap-6">
-               <span className="flex items-center gap-2"><Shield className="w-4 h-4" /> Sécurisé</span>
-               <span className="flex items-center gap-2"><Headphones className="w-4 h-4" /> Support 24/7</span>
-            </div>
-            <span>© 2026 Smart-Project-Manager — Tous droits réservés</span>
-          </div>
+          <footer className={styles.storyFooter}>
+            <span><ShieldCheck size={15} /> Connexion sécurisée</span>
+            <span>© 2026 Smart-Project-Manager</span>
+          </footer>
         </div>
+      </section>
 
-        {/* Right Column (Auth Form) */}
-        <div className="w-full max-w-[440px] flex-shrink-0 flex flex-col items-center">
-          {/* Mobile Logo (Visible only on small screens) */}
-          <div className="flex lg:hidden items-center justify-center gap-3 mb-6 w-full">
-            <div className="flex items-center justify-center bg-white rounded-lg p-2 shadow-lg">
-              <BriefcaseBusiness className="w-6 h-6 text-orange-500" />
-            </div>
-            <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-1 shadow-black drop-shadow-md">
-              Smart-Project<span className="text-orange-500">-Manager</span>
-            </h1>
-          </div>
-          
-          {children}
+      <section className={styles.formPanel}>
+        <div className={styles.mobileHeader}>
+          <Link href="/" className={styles.brand}>
+            <span className={styles.logoMark} aria-hidden="true"><span /><span /><span /></span>
+            <span className={styles.brandCopy}><strong>Smart-Project-<b>Manager</b></strong></span>
+          </Link>
         </div>
-
-      </div>
-    </div>
+        <div className={styles.formSlot}>{children}</div>
+        <div className={styles.formAssurance}>
+          <ShieldCheck size={14} /> Vos données sont protégées et chiffrées
+        </div>
+      </section>
+    </main>
   )
 }
