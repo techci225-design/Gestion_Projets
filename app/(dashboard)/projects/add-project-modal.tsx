@@ -128,10 +128,10 @@ export function AddProjectModal() {
     <>
       <button 
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md font-medium text-sm transition-colors shadow-sm"
+        className="flex min-h-11 items-center gap-2 bg-[#f26722] hover:bg-[#dc5618] text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-[0_10px_24px_rgba(242,103,34,0.2)] hover:-translate-y-0.5"
       >
         <Plus className="w-4 h-4" />
-        Nouveau Projet
+        Nouveau projet
       </button>
 
       {isOpen && (

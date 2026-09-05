@@ -83,28 +83,28 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-surface border-r border-border h-full fixed left-0 top-0 z-10">
-        <div className="p-4 flex flex-col gap-1 border-b border-border/50">
-          <div className="flex items-center gap-2 text-primary">
-            <BriefcaseBusiness className="w-6 h-6" />
-            <Link href="/projects" className="text-xl font-bold tracking-tight truncate">{orgName}</Link>
+      <aside className="hidden md:flex flex-col w-64 bg-[#071827] border-r border-white/5 h-full fixed left-0 top-0 z-20 shadow-[8px_0_30px_rgba(7,24,39,0.08)]">
+        <div className="px-5 py-5 flex flex-col gap-1 border-b border-white/10">
+          <div className="flex items-center gap-3 text-white">
+            <span className="grid place-items-center w-9 h-9 rounded-xl bg-white text-orange-600 shadow-sm"><BriefcaseBusiness className="w-5 h-5" /></span>
+            <div className="min-w-0"><Link href="/projects" className="block text-base font-bold tracking-tight truncate">{orgName}</Link><span className="block mt-0.5 text-[9px] uppercase tracking-[0.12em] text-slate-400">Gestion de projets</span></div>
           </div>
           {isOrgAdmin && (
             <div className="mt-1">
-              <span className="inline-block px-2 py-0.5 bg-primary/10 text-primary rounded text-[10px] font-bold uppercase tracking-wider">
+              <span className="inline-block px-2 py-0.5 bg-orange-500/15 text-orange-300 rounded text-[9px] font-bold uppercase tracking-wider">
                 Admin
               </span>
             </div>
           )}
         </div>
 
-        <nav className="flex-1 overflow-y-auto py-4 space-y-2">
+        <nav className="flex-1 overflow-y-auto py-5 space-y-2 [scrollbar-width:thin]">
           
           <div className="px-4 space-y-1 mb-4">
             <Link 
               href="/projects"
               className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                pathname === '/projects' ? 'bg-primary/10 text-primary' : 'text-text-secondary hover:text-text-primary hover:bg-surface-dim'
+                pathname === '/projects' ? 'bg-white/10 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
             >
               {isProjectRoute ? <ArrowLeft className="w-4 h-4" /> : <LayoutGrid className="w-4 h-4" />}
@@ -115,7 +115,7 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
               <Link 
                 href="/projects/list"
                 className={`flex items-center gap-3 px-3 py-2 mt-1 rounded-md text-sm font-medium transition-colors ${
-                  pathname === '/projects/list' ? 'bg-primary/10 text-primary' : 'text-text-secondary hover:text-text-primary hover:bg-surface-dim'
+                  pathname === '/projects/list' ? 'bg-white/10 text-white shadow-sm' : 'text-slate-400 hover:text-white hover:bg-white/5'
                 }`}
               >
                 <BriefcaseBusiness className="w-4 h-4" />
@@ -126,10 +126,10 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
 
           {/* Sub-menu if a project is selected */}
           {isProjectRoute && (
-            <div className="px-4 space-y-6 border-t border-border pt-4">
+            <div className="px-4 space-y-6 border-t border-white/10 pt-4">
               {projectGroups.map((group, groupIdx) => (
                 <div key={groupIdx} className="space-y-1">
-                  <h4 className="text-[10px] font-bold text-text-tertiary uppercase tracking-wider px-3 mb-2">{group.title}</h4>
+                  <h4 className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.12em] px-3 mb-2">{group.title}</h4>
                   <div className="space-y-0.5">
                     {group.links.map((link) => {
                       const Icon = link.icon
@@ -139,10 +139,10 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
                           key={link.name}
                           href={link.href}
                           className={`flex items-center gap-3 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                            isActive ? 'bg-primary/10 text-primary' : 'text-text-secondary hover:text-text-primary hover:bg-surface-dim'
+                            isActive ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'
                           }`}
                         >
-                          <Icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-text-tertiary'}`} />
+                          <Icon className={`w-4 h-4 ${isActive ? 'text-orange-400' : 'text-slate-500'}`} />
                           {link.name}
                         </Link>
                       )
@@ -153,11 +153,11 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
             </div>
           )}
 
-          <div className={`px-4 pt-4 mt-4 ${!isProjectRoute ? 'border-t border-border' : ''}`}>
+          <div className={`px-4 pt-4 mt-4 ${!isProjectRoute ? 'border-t border-white/10' : ''}`}>
             <Link 
               href="/settings"
               className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                pathname.startsWith('/settings') ? 'bg-primary/10 text-primary' : 'text-text-secondary hover:text-text-primary hover:bg-surface-dim'
+                pathname.startsWith('/settings') ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
             >
               <Settings className="w-4 h-4" />
@@ -166,30 +166,30 @@ export function Sidebar({ userFullName, orgName = 'ProjetPilote', isOrgAdmin = f
           </div>
         </nav>
 
-        <div className="p-4 border-t border-border flex flex-col gap-3">
+        <div className="p-4 border-t border-white/10 flex flex-col gap-3 bg-black/10">
           <a
             href="https://wa.me/2250707363020?text=Bonjour+TSBC%2C+j%27ai+besoin+d%27aide+sur+ProjetPilote"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-sm font-medium transition-colors border border-emerald-200"
+            className="flex items-center justify-center gap-2 w-full py-2.5 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/15 rounded-xl text-xs font-semibold transition-colors border border-emerald-400/20"
           >
             <span>💬</span> Support TSBC
           </a>
           <div className="flex items-center justify-between gap-3 pt-1">
             <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/20 font-bold uppercase text-primary">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 font-bold uppercase text-orange-300">
                 {userFullName.charAt(0)}
               </div>
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-text-primary">{userFullName}</p>
-                <Link href="/settings" className="block truncate text-xs text-text-secondary transition-colors hover:text-primary">
+                <p className="truncate text-xs font-semibold text-white">{userFullName}</p>
+                <Link href="/settings" className="block truncate text-[10px] text-slate-400 transition-colors hover:text-orange-300">
                   Mon profil
                 </Link>
               </div>
             </div>
             <button
               onClick={handleLogout}
-              className="shrink-0 rounded-lg p-2 text-danger transition-colors hover:bg-danger/10"
+              className="shrink-0 rounded-lg p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-red-300"
               title="Déconnexion"
               aria-label="Déconnexion"
             >

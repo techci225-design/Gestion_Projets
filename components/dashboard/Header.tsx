@@ -24,29 +24,32 @@ export function Header({ title, userFullName }: HeaderProps) {
   }
 
   return (
-    <header className="h-16 flex items-center justify-between px-6 bg-surface border-b border-border sticky top-0 z-10 gap-4">
+    <header className="h-[68px] flex items-center justify-between px-5 lg:px-8 bg-white/90 backdrop-blur-xl border-b border-slate-200/80 sticky top-0 z-10 gap-4 shadow-[0_1px_0_rgba(15,35,60,0.02)]">
       <div className="flex items-center gap-4 min-w-0 flex-1">
-        <h1 className="text-xl font-semibold text-text-primary tracking-tight truncate">{title}</h1>
+        <div className="min-w-0">
+          <span className="hidden sm:block text-[9px] font-extrabold uppercase tracking-[0.12em] text-orange-600">Smart Project Manager</span>
+          <h1 className="text-lg font-bold text-[#0b213b] tracking-tight truncate">{title}</h1>
+        </div>
         
         {/* Org Selector */}
         {!isLoading && activeOrganization && organizations.length > 1 && (
-          <div className="relative group ml-4 border-l border-border pl-4 flex items-center shrink-0">
+          <div className="relative group ml-2 border-l border-slate-200 pl-4 flex items-center shrink-0">
             {isSuperAdmin && (
               <Link href="/admin/organizations" className="mr-4 px-3 py-1.5 bg-red-100 text-red-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-red-200 transition-colors">
                 Admin
               </Link>
             )}
-            <button className="flex items-center gap-2 text-sm text-text-secondary hover:text-primary transition-colors">
+            <button className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-[#123f69] hover:bg-slate-50 transition-colors">
               <Building2 className="w-4 h-4" />
               <span className="font-medium">{activeOrganization.name}</span>
               <ChevronDown className="w-4 h-4 opacity-50" />
             </button>
-            <div className="absolute top-full left-4 mt-2 w-48 bg-surface border border-border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+            <div className="absolute top-full left-4 mt-2 w-52 bg-white border border-slate-200 rounded-xl shadow-[0_16px_40px_rgba(15,35,60,0.14)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden p-1">
               {organizations.map(org => (
                 <button
                   key={org.id}
                   onClick={() => setActiveOrganization(org)}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-surface-hover first:rounded-t-lg last:rounded-b-lg ${org.id === activeOrganization.id ? 'text-primary font-medium bg-primary/5' : 'text-text-primary'}`}
+                  className={`w-full text-left px-3 py-2.5 text-xs rounded-lg hover:bg-slate-50 ${org.id === activeOrganization.id ? 'text-[#123f69] font-bold bg-blue-50/70' : 'text-slate-700'}`}
                 >
                   {org.name}
                 </button>
@@ -55,13 +58,13 @@ export function Header({ title, userFullName }: HeaderProps) {
           </div>
         )}
         {!isLoading && activeOrganization && organizations.length === 1 && (
-          <div className="hidden md:flex items-center gap-4 ml-4 border-l border-border pl-4">
+          <div className="hidden md:flex items-center gap-4 ml-2 border-l border-slate-200 pl-4">
             {isSuperAdmin && (
               <Link href="/admin/organizations" className="px-3 py-1.5 bg-red-100 text-red-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-red-200 transition-colors">
                 Admin
               </Link>
             )}
-            <div className="flex items-center gap-2 text-sm text-text-tertiary">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-50 text-xs font-semibold text-slate-500">
               <Building2 className="w-4 h-4" />
               <span>{activeOrganization.name}</span>
             </div>

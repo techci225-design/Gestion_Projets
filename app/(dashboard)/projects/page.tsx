@@ -293,13 +293,22 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
   return (
     <>
       <Header title="Tableau de bord — Portefeuille" userFullName={profile?.full_name || 'Utilisateur'} />
-      <div className="p-6 max-w-7xl mx-auto space-y-8">
+      <div className="px-5 py-8 lg:px-10 lg:py-10 max-w-[1480px] mx-auto space-y-7">
         
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-text-primary">Vue consolidée du portefeuille</h2>
+            <div className="flex items-center gap-2 mb-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-orange-600">
+              <span className="w-6 h-0.5 rounded-full bg-orange-500" /> Vue d’ensemble
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-bold tracking-[-0.035em] text-[#071d35]">Votre portefeuille, en un coup d’œil.</h2>
+            <p className="mt-2 text-sm text-slate-500">Suivez la performance, les budgets et les points d’attention de tous vos projets.</p>
           </div>
-          {canCreateProject && <AddProjectModal />}
+          <div className="flex items-center gap-4 shrink-0">
+            <span className="hidden lg:flex items-center gap-2 text-xs font-semibold text-slate-500">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 ring-4 ring-emerald-50" /> Données actualisées
+            </span>
+            {canCreateProject && <AddProjectModal />}
+          </div>
         </div>
 
         {projectsError ? (
@@ -336,53 +345,56 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
               </div>
             )}
             {/* 1. BLOC KPIs GLOBAUX */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+              <div className="group bg-white border border-slate-200/80 rounded-2xl p-5 min-h-40 shadow-[0_4px_18px_rgba(24,46,75,0.055)] hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(24,46,75,0.09)] transition-all flex flex-col justify-between">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-sm font-medium text-text-secondary">Projets actifs</span>
-                  <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                  <div className="p-2.5 bg-[#eaf1f8] rounded-xl text-[#0b3c68]">
                     <Briefcase className="w-4 h-4" />
                   </div>
                 </div>
-                <div className="text-2xl font-bold text-text-primary">{activeProjects.length}</div>
+                <div>
+                  <div className="text-3xl font-bold tracking-tight text-[#071d35]">{activeProjects.length}</div>
+                  <div className="flex items-center gap-1.5 mt-2 text-[11px] font-medium text-slate-400"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Portefeuille en cours</div>
+                </div>
               </div>
               
               {aggregatesByCurrency.map(agg => (
-                <div key={`budget-${agg.currency}`} className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between min-w-0">
+                <div key={`budget-${agg.currency}`} className="group bg-white border border-slate-200/80 rounded-2xl p-5 min-h-40 shadow-[0_4px_18px_rgba(24,46,75,0.055)] hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(24,46,75,0.09)] transition-all flex flex-col justify-between min-w-0">
                   <div className="flex justify-between items-start mb-2">
                     <span className="text-sm font-medium text-text-secondary">
                       Budget alloué {activeCurrencies.length > 1 ? `(${agg.currency})` : ''}
                     </span>
-                    <div className="p-2 bg-primary/10 rounded-lg text-primary shrink-0 ml-2">
+                    <div className="p-2.5 bg-orange-50 rounded-xl text-orange-600 shrink-0 ml-2">
                       <Target className="w-4 h-4" />
                     </div>
                   </div>
-                  <div className="text-base sm:text-lg font-bold text-text-primary whitespace-nowrap" title={formatCurrency(agg.totalBudgetAlloue, agg.currency, true)}>
+                  <div className="text-xl font-bold tracking-tight text-[#071d35] whitespace-nowrap overflow-hidden text-ellipsis" title={formatCurrency(agg.totalBudgetAlloue, agg.currency, true)}>
                     {formatCurrency(agg.totalBudgetAlloue, agg.currency, true)}
                   </div>
                 </div>
               ))}
 
               {aggregatesByCurrency.map(agg => (
-                <div key={`decaisse-${agg.currency}`} className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between min-w-0">
+                <div key={`decaisse-${agg.currency}`} className="group bg-white border border-slate-200/80 rounded-2xl p-5 min-h-40 shadow-[0_4px_18px_rgba(24,46,75,0.055)] hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(24,46,75,0.09)] transition-all flex flex-col justify-between min-w-0">
                   <div className="flex justify-between items-start mb-2">
                     <span className="text-sm font-medium text-text-secondary">
                       Décaissements {activeCurrencies.length > 1 ? `(${agg.currency})` : ''}
                     </span>
-                    <div className="p-2 bg-success/10 rounded-lg text-success shrink-0 ml-2">
+                    <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600 shrink-0 ml-2">
                       <DollarSign className="w-4 h-4" />
                     </div>
                   </div>
-                  <div className="text-base sm:text-lg font-bold text-text-primary whitespace-nowrap" title={formatCurrency(agg.totalDecaisse, agg.currency, true)}>
+                  <div className="text-xl font-bold tracking-tight text-[#071d35] whitespace-nowrap overflow-hidden text-ellipsis" title={formatCurrency(agg.totalDecaisse, agg.currency, true)}>
                     {formatCurrency(agg.totalDecaisse, agg.currency, true)}
                   </div>
                 </div>
               ))}
 
-              <div className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between">
+              <div className="group bg-white border border-slate-200/80 rounded-2xl p-5 min-h-40 shadow-[0_4px_18px_rgba(24,46,75,0.055)] hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(24,46,75,0.09)] transition-all flex flex-col justify-between">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-sm font-medium text-text-secondary">CPI moyen</span>
-                  <div className="p-2 bg-surface-dim rounded-lg text-text-secondary">
+                  <div className="p-2.5 bg-blue-50 rounded-xl text-blue-600">
                     <Activity className="w-4 h-4" />
                   </div>
                 </div>
@@ -394,10 +406,10 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                 </div>
               </div>
 
-              <div className="bg-surface border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between">
+              <div className="group bg-white border border-slate-200/80 rounded-2xl p-5 min-h-40 shadow-[0_4px_18px_rgba(24,46,75,0.055)] hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(24,46,75,0.09)] transition-all flex flex-col justify-between">
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-sm font-medium text-text-secondary">SPI moyen</span>
-                  <div className="p-2 bg-surface-dim rounded-lg text-text-secondary">
+                  <div className="p-2.5 bg-violet-50 rounded-xl text-violet-600">
                     <Activity className="w-4 h-4" />
                   </div>
                 </div>
@@ -412,25 +424,28 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
 
             {/* 2. SECTION PROJETS EN ALERTE */}
             {alertProjects.length > 0 && (
-              <div className="bg-danger/5 border border-danger/20 rounded-xl overflow-hidden">
-                <div className="bg-danger/10 px-4 py-3 border-b border-danger/20 flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5 text-danger" />
-                  <h3 className="font-bold text-danger">Projets nécessitant une attention immédiate</h3>
+              <div className="bg-white border border-red-200/80 rounded-2xl overflow-hidden shadow-[0_5px_20px_rgba(165,43,43,0.04)]">
+                <div className="bg-gradient-to-r from-red-50 to-white px-5 py-4 border-b border-red-100 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="grid place-items-center w-9 h-9 rounded-xl bg-red-100 text-red-600"><AlertTriangle className="w-4 h-4" /></span>
+                    <div><span className="block text-[9px] font-extrabold tracking-[0.12em] uppercase text-red-500">Points d’attention</span><h3 className="font-bold text-[15px] text-red-900">Projets à surveiller maintenant</h3></div>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full border border-red-200 bg-white text-[10px] font-bold text-red-600">{alertProjects.length} alerte{alertProjects.length > 1 ? 's' : ''}</span>
                 </div>
-                <div className="p-4 space-y-3">
+                <div className="p-3 space-y-2">
                   {alertProjects.map(p => (
-                    <div key={`alert-${p.id}`} className="flex items-center justify-between bg-surface p-3 rounded-lg border border-danger/10 shadow-sm">
+                    <div key={`alert-${p.id}`} className="flex items-center justify-between gap-4 bg-white p-3 rounded-xl border border-red-100 hover:border-red-200 transition-colors">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-bold bg-danger/10 text-danger px-2 py-0.5 rounded uppercase tracking-wider">{p.code}</span>
-                          <span className="font-semibold text-text-primary">{p.name}</span>
+                          <span className="text-[10px] font-extrabold bg-red-50 text-red-600 px-2 py-1 rounded-md uppercase tracking-wider">{p.code}</span>
+                          <span className="font-semibold text-sm text-slate-800">{p.name}</span>
                         </div>
                         <p className="text-sm text-text-secondary">
                           {p.alertReasons.join(' — ')}
                         </p>
                       </div>
-                      <Link href={`/projects/${p.id}`} className="px-3 py-1.5 bg-surface-dim hover:bg-surface-container border border-border rounded text-sm font-medium text-primary transition-colors flex items-center gap-1">
-                        Voir <ChevronRight className="w-4 h-4" />
+                      <Link href={`/projects/${p.id}`} className="px-3 py-2 bg-slate-50 hover:bg-red-50 border border-slate-200 hover:border-red-200 rounded-lg text-xs font-bold text-slate-700 hover:text-red-700 transition-colors flex items-center gap-1 shrink-0">
+                        Examiner <ChevronRight className="w-3.5 h-3.5" />
                       </Link>
                     </div>
                   ))}
@@ -439,12 +454,19 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
             )}
 
             {/* 3. TABLEAU COMPARATIF */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-bold text-text-primary">Comparaison des projets</h3>
-              <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-sm">
+            <div className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-[0_7px_28px_rgba(19,41,68,0.06)]">
+              <div className="px-6 py-5 flex items-end justify-between gap-5">
+                <div>
+                  <span className="text-[9px] font-extrabold tracking-[0.13em] uppercase text-orange-600">Analyse comparative</span>
+                  <h3 className="mt-0.5 text-xl font-bold tracking-tight text-[#071d35]">Performance des projets</h3>
+                  <p className="mt-1 text-xs text-slate-400">Comparez les indicateurs essentiels et identifiez les écarts.</p>
+                </div>
+                <Link href="/projects/list" className="hidden sm:flex items-center gap-1 text-xs font-bold text-[#294b6e] hover:text-orange-600 transition-colors">Tous les projets <ChevronRight className="w-3.5 h-3.5" /></Link>
+              </div>
+              <div className="border-t border-slate-100 overflow-hidden">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left">
-                    <thead className="bg-surface-dim text-text-secondary font-medium border-b border-border">
+                  <table className="w-full min-w-[1080px] text-xs text-left">
+                    <thead className="bg-slate-50/80 text-slate-500 font-semibold border-b border-slate-200">
                       <tr>
                         <th className="px-4 py-3 whitespace-nowrap">
                           <Link href={getSortLink('name')} className="flex items-center gap-1 hover:text-primary transition-colors">
@@ -482,12 +504,12 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                         <th className="px-4 py-3"></th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-border">
+                    <tbody className="divide-y divide-slate-100">
                       {sortedProjects.map(p => (
-                        <tr key={`row-${p.id}`} className="hover:bg-surface-dim/50 transition-colors">
+                        <tr key={`row-${p.id}`} className="hover:bg-slate-50/70 transition-colors">
                           <td className="px-4 py-3">
-                            <div className="font-semibold text-text-primary line-clamp-1" title={p.name}>{p.name}</div>
-                            <div className="text-xs text-text-tertiary">{p.code}</div>
+                            <div className="font-bold text-slate-800 line-clamp-1" title={p.name}>{p.name}</div>
+                            <div className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">{p.code}</div>
                           </td>
                           <td className="px-4 py-3">
                             <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full uppercase ${
@@ -514,9 +536,9 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                                   {p.budgetAllocated > 0 ? `${p.consoRate.toFixed(1)}%` : 'N/A'}
                                 </span>
                               </div>
-                              <div className="w-full bg-surface-dim rounded-full h-1.5 overflow-hidden">
+                              <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
                                 <div 
-                                  className={`h-full rounded-full ${p.consoRate >= 100 ? 'bg-danger' : p.consoRate >= 80 ? 'bg-warning' : 'bg-primary'}`} 
+                                  className={`h-full rounded-full ${p.consoRate >= 100 ? 'bg-red-500' : p.consoRate >= 80 ? 'bg-amber-500' : 'bg-gradient-to-r from-[#123f69] to-[#4c7dac]'}`}
                                   style={{ width: `${Math.min(p.consoRate, 100)}%` }}
                                 />
                               </div>
@@ -560,8 +582,8 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
                             )}
                           </td>
                           <td className="px-4 py-3 text-right">
-                            <Link href={`/projects/${p.id}`} className="text-primary hover:text-primary/80 font-medium text-sm">
-                              Ouvrir
+                            <Link href={`/projects/${p.id}`} className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 text-slate-600 hover:text-orange-600 hover:bg-orange-50 hover:border-orange-200 transition-all" aria-label={`Ouvrir ${p.name}`}>
+                              <ChevronRight className="w-4 h-4" />
                             </Link>
                           </td>
                         </tr>
@@ -577,17 +599,6 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Pro
               </div>
             </div>
 
-            {/* 4. LIEN VERS TOUS LES PROJETS */}
-            <div className="flex justify-center pt-6 border-t border-border mt-8">
-              <Link 
-                href="/projects/list" 
-                className="flex items-center gap-2 px-6 py-3 bg-surface border border-border hover:border-primary/50 rounded-xl text-text-primary font-medium hover:text-primary transition-all shadow-sm hover:shadow-md"
-              >
-                <Briefcase className="w-5 h-5" />
-                Voir tous les projets en détail
-                <ChevronRight className="w-4 h-4 ml-2" />
-              </Link>
-            </div>
           </>
         )}
       </div>
