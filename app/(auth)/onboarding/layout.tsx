@@ -26,14 +26,6 @@ export default async function OnboardingLayout({
     redirect('/projects')
   }
 
-  // Vérifier s'il a un profil. S'il n'en a pas, c'est un utilisateur invité qui n'a pas encore de mot de passe.
-  const { data: profile } = await supabase.from('profiles').select('id').eq('id', user.id).single()
-  if (!profile) {
-    redirect('/setup-profile')
-  }
-
-  // Check if there are any pending invitations for this email
-  // Instead of auto-accepting silently, FORCE the user to the invite page to confirm and enter password.
   const adminClient = await import('@/lib/supabase/admin').then(m => m.createAdminClient())
   const { data: pendingInvs } = await adminClient
     .from('invitations')
@@ -46,6 +38,26 @@ export default async function OnboardingLayout({
     redirect(`/invite/${pendingInvs[0].token}`)
   }
 
-  // If no pending invitations, and they have no org, they must create one
+  // Une inscription classique n'est pas une invitation : créer le profil depuis
+  // les métadonnées d'inscription, puis poursuivre vers la création d'organisation.
+  const { data: profile } = await supabase.from('profiles').select('id').eq('id', user.id).maybeSingle()
+  if (!profile) {
+    const fullName = String(user.user_metadata?.full_name || '').trim()
+    if (!fullName || !user.email) {
+      redirect('/setup-profile')
+    }
+
+    const { error: profileError } = await adminClient.from('profiles').upsert({
+      id: user.id,
+      email: user.email,
+      full_name: fullName,
+    })
+
+    if (profileError) {
+      console.error('Onboarding profile creation error:', profileError)
+      redirect('/setup-profile')
+    }
+  }
+
   return <>{children}</>
 }

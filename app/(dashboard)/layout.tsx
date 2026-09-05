@@ -20,34 +20,10 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
-  // Get user profile
-  const { data: profile, error: profileError } = await supabase
-    .from('profiles')
-    .select('full_name, is_super_admin')
-    .eq('id', user.id)
-    .single()
-
-  if (profileError || !profile) {
-    redirect('/setup-profile')
-  }
-
-  // Ensure they have a password set
   const authAdminClient = createAdminClient()
-  const { data: authUser } = await authAdminClient.auth.admin.getUserById(user.id)
-  
-  // Checking if identities exist and are linked to a password provider, 
-  // or explicitly checking if they need to setup profile.
-  // Actually, if they were invited, their identity might not have a password yet.
-  // We can check if they have a 'password' in their providers list.
-  const hasPassword = authUser?.user?.app_metadata?.providers?.includes('email') && 
-                      authUser?.user?.identities?.some(id => id.provider === 'email');
-                      
-  // Wait, inviteUserByEmail adds 'email' to providers. 
-  // Let's use a custom flag in app_metadata if possible, but since we can't easily,
-  // we will just rely on the fact that if they don't have a profile, they go to setup-profile.
-  // BUT to be absolutely certain, let's just create the setup-profile logic.
 
-  // Check if they have ANY pending invitations. If they do, FORCE them to the invite confirmation screen.
+  // Une invitation doit être résolue avant le profil générique : rejoindre une
+  // organisation et créer son propre espace sont deux parcours distincts.
   const { data: pendingInvs } = await authAdminClient
     .from('invitations')
     .select('id')
@@ -56,9 +32,34 @@ export default async function DashboardLayout({
     .limit(1)
 
   if (pendingInvs && pendingInvs.length > 0) {
-    // Si l'utilisateur arrive ici, il doit finaliser son invitation.
-    // L'ID est passé pour que /invitation/setup puisse faire sa vérification de sécurité.
     redirect(`/invitation/setup?invitation_id=${pendingInvs[0].id}`)
+  }
+
+  let { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('full_name, is_super_admin')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  if (profileError || !profile) {
+    const fullName = String(user.user_metadata?.full_name || '').trim()
+    if (!fullName || !user.email) {
+      redirect('/setup-profile')
+    }
+
+    const { data: createdProfile, error: createProfileError } = await authAdminClient
+      .from('profiles')
+      .upsert({ id: user.id, email: user.email, full_name: fullName })
+      .select('full_name, is_super_admin')
+      .single()
+
+    if (createProfileError || !createdProfile) {
+      console.error('Dashboard profile creation error:', createProfileError)
+      redirect('/setup-profile')
+    }
+
+    profile = createdProfile
+    profileError = null
   }
 
   const cookieStore = await cookies()

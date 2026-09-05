@@ -76,6 +76,7 @@ export default function RegisterPage() {
         email: userForm.email,
         password: userForm.password,
         options: {
+          emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/onboarding`,
           data: {
             full_name: `${userForm.firstName} ${userForm.lastName}`,
             first_name: userForm.firstName,

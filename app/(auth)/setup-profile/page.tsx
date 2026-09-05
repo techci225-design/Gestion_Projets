@@ -15,6 +15,7 @@ import {
   UserRound,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { completeAccountProfile } from './actions'
 import styles from '../auth.module.css'
 
 export default function SetupProfilePage() {
@@ -68,40 +69,9 @@ export default function SetupProfilePage() {
     }
 
     startTransition(async () => {
-      const supabase = createClient()
-      const fullName = `${firstName} ${lastName}`
-
-      const { error: updateAuthError } = await supabase.auth.updateUser({
-        password,
-        data: {
-          full_name: fullName,
-          first_name: firstName,
-          last_name: lastName,
-        },
-      })
-
-      if (updateAuthError) {
-        setError('Impossible de sécuriser votre compte. Veuillez réessayer.')
-        return
-      }
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (!user) {
-        setError('Votre session a expiré. Reconnectez-vous pour continuer.')
-        return
-      }
-
-      const { error: profileError } = await supabase.from('profiles').upsert({
-        id: user.id,
-        email: user.email,
-        full_name: fullName,
-      })
-
-      if (profileError) {
-        setError('Le profil n’a pas pu être enregistré. Veuillez réessayer.')
+      const result = await completeAccountProfile({ firstName, lastName, password })
+      if (result.error) {
+        setError(result.error)
         return
       }
 
@@ -115,14 +85,14 @@ export default function SetupProfilePage() {
       <div className={styles.profileHeader}>
         <div className={styles.profileSuccessIcon} aria-hidden="true"><CheckCircle2 size={22} /></div>
         <div>
-          <span>INVITATION CONFIRMÉE</span>
+          <span>COMPTE CONFIRMÉ</span>
           <h1>Finalisez votre profil</h1>
-          <p>Quelques informations avant de rejoindre votre organisation.</p>
+          <p>Complétez votre identité avant de configurer votre espace.</p>
         </div>
       </div>
 
       <div className={styles.profileProgress} aria-label="Étape 2 sur 2">
-        <span className={styles.profileStepDone}><b><Check size={11} /></b> Invitation acceptée</span>
+        <span className={styles.profileStepDone}><b><Check size={11} /></b> Compte créé</span>
         <span className={styles.profileProgressLine} />
         <span className={styles.profileStepActive}><b>2</b> Votre profil</span>
       </div>
@@ -184,7 +154,7 @@ export default function SetupProfilePage() {
         </div>
 
         <button type="submit" className={styles.profileSubmit} disabled={isPending || isLoadingUser}>
-          {isPending ? <><Loader2 className={styles.spinner} size={18} /> Enregistrement…</> : <>Rejoindre mon organisation <ArrowRight size={18} /></>}
+          {isPending ? <><Loader2 className={styles.spinner} size={18} /> Enregistrement…</> : <>Continuer vers mon espace <ArrowRight size={18} /></>}
         </button>
       </form>
 
